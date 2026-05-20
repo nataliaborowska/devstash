@@ -272,6 +272,12 @@ model ItemTag {
 - `</>` **Syntax highlighting** — via [Shiki](https://shiki.style) or [highlight.js](https://highlightjs.org)
 - Inspired by **Notion**, **Linear**, and **Raycast**
 
+### Screenshots
+
+Refer to the screenshots below as a base for the dashboard ui. It does not have to be exact. Use it as a reference:
+@context/screenshots/dashboard-ui-drawer.png
+@context/screenshots/dashboard-ui-main.png
+
 ### Layout
 
 ```
