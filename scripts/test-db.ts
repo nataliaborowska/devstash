@@ -15,7 +15,7 @@ async function main() {
   // Item types
   const itemTypes = await prisma.itemType.findMany({ orderBy: { name: "asc" } })
   console.log(`── Item Types (${itemTypes.length}) ──`)
-  itemTypes.forEach((t) => console.log(`  ${t.icon.padEnd(12)} ${t.name}  ${t.color}`))
+  itemTypes.forEach((t) => console.log(`  ${(t.icon ?? "").padEnd(12)} ${t.name}  ${t.color}`))
 
   // Demo user
   const user = await prisma.user.findUnique({
