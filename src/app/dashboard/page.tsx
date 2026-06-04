@@ -1,10 +1,11 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
-import { mockCollections, mockItems } from "@/lib/mock-data";
+import { mockItems } from "@/lib/mock-data";
+import { getRecentCollections } from "@/lib/db/collections";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { CollectionCard } from "@/components/dashboard/collection-card";
 import { ItemCard } from "@/components/dashboard/item-card";
-
-const recentCollections = mockCollections.slice(0, 4);
 
 const pinnedItems = mockItems.filter((i) => i.isPinned);
 
@@ -16,7 +17,9 @@ const recentItems = [...mockItems]
   })
   .slice(0, 10);
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const recentCollections = await getRecentCollections(6);
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
@@ -41,7 +44,7 @@ export default function DashboardPage() {
             View all
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {recentCollections.map((col) => (
             <CollectionCard key={col.id} collection={col} />
           ))}
