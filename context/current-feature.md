@@ -1,18 +1,18 @@
 # Current feature
 
-<!-- feature name and short description -->
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+<!-- In Progress | Completed | Blocked -->
 
 ## Goals
 
-<!-- Goals and requirements -->
+<!-- List the goals for this feature -->
 
 ## Notes
 
-<!-- Any extra notes -->
+<!-- Any notes or references -->
 
 ## History
 
@@ -25,3 +25,4 @@
 - **2026-05-30** — Database phase complete: Prisma 7 + Neon PostgreSQL configured, full schema with NextAuth models, initial migration applied, 7 system item types seeded
 - **2026-05-30** — Seed data complete: demo user (`demo@devstash.io`), 7 system item types updated to Lucide icon names, 5 collections with 17 items (snippets, prompts, commands, links)
 - **2026-06-04** — Dashboard collections complete: live data from Neon DB via Prisma, Lucide type icons, dominant-type colored left border accent, 3-column 2-row grid layout
+- **2026-06-04** — Dashboard items complete: live pinned and recent items from Neon DB, Lucide type icons with colored left border accents, conditional pinned section, live stats cards

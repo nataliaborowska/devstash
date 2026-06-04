@@ -1,44 +1,78 @@
 "use client";
 
-import { Star, Pin, MoreHorizontal } from "lucide-react";
-import { mockItemTypes } from "@/lib/mock-data";
+import {
+  Star,
+  Pin,
+  MoreHorizontal,
+  Code,
+  Sparkles,
+  Terminal,
+  StickyNote,
+  File,
+  Image,
+  Link,
+  HelpCircle,
+  type LucideIcon,
+} from "lucide-react";
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  Code,
+  Sparkles,
+  Terminal,
+  StickyNote,
+  File,
+  Image,
+  Link,
+};
+
+interface ItemType {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+}
 
 interface Item {
   id: string;
   title: string;
   description: string | null;
-  typeId: string;
   isFavorite: boolean;
   isPinned: boolean;
+  createdAt: string | Date;
+  lastUsedAt: string | Date | null;
+  type: ItemType;
   tags: string[];
-  createdAt: string;
-  lastUsedAt: string | null;
 }
 
 interface ItemCardProps {
   item: Item;
 }
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
+function formatDate(date: string | Date) {
+  return new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
 }
 
 export function ItemCard({ item }: ItemCardProps) {
-  const type = mockItemTypes.find((t) => t.id === item.typeId);
+  const Icon = ICON_MAP[item.type.icon ?? ""] ?? HelpCircle;
   const date = item.lastUsedAt ?? item.createdAt;
 
   return (
-    <div className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-border/80 hover:bg-accent/30 transition-colors cursor-pointer">
+    <div
+      className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-border/80 hover:bg-accent/30 transition-colors cursor-pointer"
+      style={{
+        borderLeftWidth: "3px",
+        borderLeftColor: item.type.color ?? undefined,
+      }}
+    >
       {/* Type icon badge */}
       <div
-        className="shrink-0 h-9 w-9 rounded-md flex items-center justify-center text-sm font-mono bg-muted mt-0.5"
-        style={{ color: type?.color }}
-        title={type?.name}
+        className="shrink-0 h-9 w-9 rounded-md flex items-center justify-center bg-muted mt-0.5"
+        title={item.type.name}
       >
-        {type?.icon}
+        <Icon className="h-4 w-4" style={{ color: item.type.color ?? undefined }} />
       </div>
 
       {/* Content */}
