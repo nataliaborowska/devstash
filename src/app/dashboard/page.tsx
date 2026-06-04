@@ -1,24 +1,19 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { mockItems } from "@/lib/mock-data";
 import { getRecentCollections } from "@/lib/db/collections";
+import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { CollectionCard } from "@/components/dashboard/collection-card";
 import { ItemCard } from "@/components/dashboard/item-card";
 
-const pinnedItems = mockItems.filter((i) => i.isPinned);
-
-const recentItems = [...mockItems]
-  .sort((a, b) => {
-    const aDate = a.lastUsedAt ?? a.createdAt;
-    const bDate = b.lastUsedAt ?? b.createdAt;
-    return new Date(bDate).getTime() - new Date(aDate).getTime();
-  })
-  .slice(0, 10);
-
 export default async function DashboardPage() {
-  const recentCollections = await getRecentCollections(6);
+  const [recentCollections, pinnedItems, recentItems, stats] = await Promise.all([
+    getRecentCollections(6),
+    getPinnedItems(),
+    getRecentItems(10),
+    getItemStats(),
+  ]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -31,7 +26,12 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats */}
-      <StatsCards />
+      <StatsCards
+        totalItems={stats.totalItems}
+        totalCollections={stats.totalCollections}
+        favoriteItems={stats.favoriteItems}
+        favoriteCollections={stats.favoriteCollections}
+      />
 
       {/* Collections */}
       <section>
