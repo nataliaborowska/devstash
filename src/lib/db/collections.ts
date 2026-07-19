@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import type { Prisma } from "@/generated/prisma/client"
 
 export type CollectionType = {
   id: string
@@ -17,8 +18,12 @@ export type CollectionWithStats = {
   dominantColor: string | null
 }
 
-export async function getRecentCollections(limit = 4): Promise<CollectionWithStats[]> {
+async function getCollectionsWithStats(
+  where: Prisma.CollectionWhereInput,
+  limit: number
+): Promise<CollectionWithStats[]> {
   const collections = await prisma.collection.findMany({
+    where,
     take: limit,
     orderBy: { updatedAt: "desc" },
     include: {
@@ -61,4 +66,16 @@ export async function getRecentCollections(limit = 4): Promise<CollectionWithSta
       dominantColor,
     }
   })
+}
+
+export async function getRecentCollections(limit = 4): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({}, limit)
+}
+
+export async function getFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ isFavorite: true }, limit)
+}
+
+export async function getNonFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ isFavorite: false }, limit)
 }
