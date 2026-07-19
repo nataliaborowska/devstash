@@ -2,25 +2,65 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Star, Settings, ChevronDown, ChevronRight, PanelLeft, PanelRight } from "lucide-react";
-import {
-  mockUser,
-  mockItemTypes,
-  mockCollections,
-  mockItemTypeCounts,
-} from "@/lib/mock-data";
+import { Star, Settings, ChevronDown, PanelLeft, PanelRight } from "lucide-react";
+import { mockUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { getTypeIcon } from "@/lib/icon-map";
+import type { ItemTypeWithCount } from "@/lib/db/items";
+import type { CollectionWithStats } from "@/lib/db/collections";
+
+interface CollapsibleGroupProps {
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  labelClassName?: string;
+  children: React.ReactNode;
+}
+
+function CollapsibleGroup({ title, isOpen, onToggle, labelClassName, children }: CollapsibleGroupProps) {
+  return (
+    <div>
+      <button
+        onClick={onToggle}
+        className={cn(
+          "w-full flex items-center justify-between px-2 py-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-accent",
+          labelClassName
+        )}
+      >
+        {title}
+        <ChevronDown
+          className={cn("h-3 w-3 shrink-0 transition-transform duration-200", !isOpen && "-rotate-90")}
+        />
+      </button>
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-in-out",
+          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        )}
+      >
+        <div className="overflow-hidden">{children}</div>
+      </div>
+    </div>
+  );
+}
 
 interface SidebarContentProps {
+  itemTypes: ItemTypeWithCount[];
+  favoriteCollections: CollectionWithStats[];
+  recentCollections: CollectionWithStats[];
   onNavigate?: () => void;
 }
 
-export function SidebarContent({ onNavigate }: SidebarContentProps) {
+export function SidebarContent({
+  itemTypes,
+  favoriteCollections,
+  recentCollections,
+  onNavigate,
+}: SidebarContentProps) {
   const [typesOpen, setTypesOpen] = useState(true);
   const [collectionsOpen, setCollectionsOpen] = useState(true);
-
-  const favoriteCollections = mockCollections.filter((c) => c.isFavorite);
-  const recentCollections = mockCollections.filter((c) => !c.isFavorite);
+  const [favoritesOpen, setFavoritesOpen] = useState(true);
+  const [recentOpen, setRecentOpen] = useState(true);
 
   const initials = mockUser.name
     .split(" ")
@@ -31,67 +71,51 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
     <div className="flex flex-col flex-1 overflow-hidden">
       <div className="flex-1 overflow-y-auto py-2 px-2">
         {/* Types */}
-        <button
-          onClick={() => setTypesOpen(!typesOpen)}
-          className="w-full flex items-center justify-between px-2 py-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors rounded-md hover:bg-accent"
+        <CollapsibleGroup
+          title="Types"
+          isOpen={typesOpen}
+          onToggle={() => setTypesOpen(!typesOpen)}
+          labelClassName="text-[11px] font-semibold uppercase tracking-wider"
         >
-          Types
-          {typesOpen ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
-        </button>
-
-        {typesOpen && (
           <div className="mt-1 space-y-0.5">
-            {mockItemTypes.map((type) => (
-              <Link
-                key={type.id}
-                href={`/items/${type.name.toLowerCase()}s`}
-                onClick={onNavigate}
-                className="flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="text-xs w-5 text-center shrink-0 font-mono"
-                    style={{ color: type.color }}
-                  >
-                    {type.icon}
-                  </span>
-                  <span>{type.name}s</span>
-                </div>
-                <span className="text-xs tabular-nums">
-                  {mockItemTypeCounts[type.id]}
-                </span>
-              </Link>
-            ))}
+            {itemTypes.map((type) => {
+              const Icon = getTypeIcon(type.icon);
+              return (
+                <Link
+                  key={type.id}
+                  href={`/items/${type.name}s`}
+                  onClick={onNavigate}
+                  className="flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: type.color ?? undefined }} />
+                    <span className="capitalize">{type.name}s</span>
+                  </div>
+                  <span className="text-xs tabular-nums">{type.count}</span>
+                </Link>
+              );
+            })}
           </div>
-        )}
+        </CollapsibleGroup>
 
         <div className="my-3 border-t border-border" />
 
         {/* Collections */}
-        <button
-          onClick={() => setCollectionsOpen(!collectionsOpen)}
-          className="w-full flex items-center justify-between px-2 py-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors rounded-md hover:bg-accent"
+        <CollapsibleGroup
+          title="Collections"
+          isOpen={collectionsOpen}
+          onToggle={() => setCollectionsOpen(!collectionsOpen)}
+          labelClassName="text-[11px] font-semibold uppercase tracking-wider"
         >
-          Collections
-          {collectionsOpen ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronRight className="h-3 w-3" />
-          )}
-        </button>
-
-        {collectionsOpen && (
-          <>
-            {favoriteCollections.length > 0 && (
-              <div className="mt-2">
-                <p className="px-2 mb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Favorites
-                </p>
-                <div className="space-y-0.5">
+          {favoriteCollections.length > 0 && (
+            <div className="mt-2">
+              <CollapsibleGroup
+                title="Favorites"
+                isOpen={favoritesOpen}
+                onToggle={() => setFavoritesOpen(!favoritesOpen)}
+                labelClassName="text-[10px] font-semibold uppercase tracking-wider py-1"
+              >
+                <div className="space-y-0.5 mt-0.5">
                   {favoriteCollections.map((col) => (
                     <Link
                       key={col.id}
@@ -107,14 +131,18 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
                     </Link>
                   ))}
                 </div>
-              </div>
-            )}
+              </CollapsibleGroup>
+            </div>
+          )}
 
-            <div className="mt-3">
-              <p className="px-2 mb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Recent
-              </p>
-              <div className="space-y-0.5">
+          <div className="mt-3">
+            <CollapsibleGroup
+              title="Recent"
+              isOpen={recentOpen}
+              onToggle={() => setRecentOpen(!recentOpen)}
+              labelClassName="text-[10px] font-semibold uppercase tracking-wider py-1"
+            >
+              <div className="space-y-0.5 mt-0.5">
                 {recentCollections.map((col) => (
                   <Link
                     key={col.id}
@@ -122,16 +150,29 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
                     onClick={onNavigate}
                     className="flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                   >
-                    <span className="truncate">{col.name}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: col.dominantColor ?? "#6b7280" }}
+                      />
+                      <span className="truncate">{col.name}</span>
+                    </div>
                     <span className="text-xs tabular-nums shrink-0 ml-1">
                       {col.itemCount}
                     </span>
                   </Link>
                 ))}
               </div>
-            </div>
-          </>
-        )}
+              <Link
+                href="/collections"
+                onClick={onNavigate}
+                className="block px-2 py-1.5 mt-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                View all collections
+              </Link>
+            </CollapsibleGroup>
+          </div>
+        </CollapsibleGroup>
       </div>
 
       {/* User avatar */}
@@ -158,10 +199,20 @@ export function SidebarContent({ onNavigate }: SidebarContentProps) {
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
+  itemTypes: ItemTypeWithCount[];
+  favoriteCollections: CollectionWithStats[];
+  recentCollections: CollectionWithStats[];
   className?: string;
 }
 
-export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
+export function Sidebar({
+  isOpen,
+  onToggle,
+  itemTypes,
+  favoriteCollections,
+  recentCollections,
+  className,
+}: SidebarProps) {
   return (
     <aside
       className={cn(
@@ -182,7 +233,11 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
             </button>
           </div>
           <div className="flex-1 overflow-hidden">
-            <SidebarContent />
+            <SidebarContent
+              itemTypes={itemTypes}
+              favoriteCollections={favoriteCollections}
+              recentCollections={recentCollections}
+            />
           </div>
         </div>
       ) : (
@@ -196,17 +251,20 @@ export function Sidebar({ isOpen, onToggle, className }: SidebarProps) {
           </button>
           <div className="w-full border-t border-border my-2" />
           <div className="flex flex-col items-center gap-1">
-            {mockItemTypes.map((type) => (
-              <Link
-                key={type.id}
-                href={`/items/${type.name.toLowerCase()}s`}
-                title={type.name + "s"}
-                className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors text-sm"
-                style={{ color: type.color }}
-              >
-                {type.icon}
-              </Link>
-            ))}
+            {itemTypes.map((type) => {
+              const Icon = getTypeIcon(type.icon);
+              return (
+                <Link
+                  key={type.id}
+                  href={`/items/${type.name}s`}
+                  title={`${type.name}s`}
+                  className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors"
+                  style={{ color: type.color ?? undefined }}
+                >
+                  <Icon className="h-4 w-4" />
+                </Link>
+              );
+            })}
           </div>
           <div className="flex-1" />
           <div className="h-7 w-7 rounded-full bg-violet-600 flex items-center justify-center text-white text-[11px] font-semibold shrink-0">
