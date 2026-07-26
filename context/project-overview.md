@@ -598,4 +598,4 @@ git switch -c lesson-03-items-crud
 
 ## Status
 
-> 🟡 **In Planning** — environment setup and UI scaffolding next.
+> 🟢 **In Development** — dashboard UI, database schema, and live sidebar/stats are in place; auth, items CRUD, and collections pages are next.
