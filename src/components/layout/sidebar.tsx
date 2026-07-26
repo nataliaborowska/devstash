@@ -6,6 +6,7 @@ import { Star, Settings, ChevronDown, PanelLeft, PanelRight } from "lucide-react
 import { mockUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 import { getTypeIcon } from "@/lib/icon-map";
+import { Badge } from "@/components/ui/badge";
 import type { ItemTypeWithCount } from "@/lib/db/items";
 import type { CollectionWithStats } from "@/lib/db/collections";
 
@@ -16,6 +17,8 @@ interface CollapsibleGroupProps {
   labelClassName?: string;
   children: React.ReactNode;
 }
+
+const PRO_TYPES = new Set(["file", "image"]);
 
 function CollapsibleGroup({ title, isOpen, onToggle, labelClassName, children }: CollapsibleGroupProps) {
   return (
@@ -87,11 +90,19 @@ export function SidebarContent({
                   onClick={onNavigate}
                   className="flex items-center justify-between px-2 py-1.5 rounded-md text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: type.color ?? undefined }} />
-                    <span className="capitalize">{type.name}s</span>
+                    <span className="capitalize truncate">{type.name}s</span>
+                    {PRO_TYPES.has(type.name) && (
+                      <Badge
+                        variant="outline"
+                        className="h-4 shrink-0 px-1 text-[9px] font-semibold uppercase text-muted-foreground"
+                      >
+                        Pro
+                      </Badge>
+                    )}
                   </div>
-                  <span className="text-xs tabular-nums">{type.count}</span>
+                  <span className="text-xs tabular-nums shrink-0 ml-1">{type.count}</span>
                 </Link>
               );
             })}
