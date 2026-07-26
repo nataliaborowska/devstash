@@ -1,19 +1,18 @@
-# Current Feature: Add Pro Badge to Sidebar
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
+<!-- In Progress | Completed | Blocked -->
 
 ## Goals
 
-- Add a "PRO" badge next to the Files item type in the sidebar
-- Add a "PRO" badge next to the Images item type in the sidebar
+<!-- List the goals for this feature -->
 
 ## Notes
 
-- Use the shadcn/ui `Badge` component
-- Badge should be clean and subtle in style
-- Badge text must be all uppercase ("PRO")
+<!-- Any notes or references -->
 
 ## History
 
@@ -28,3 +27,4 @@ In Progress
 - **2026-06-04** — Dashboard collections complete: live data from Neon DB via Prisma, Lucide type icons, dominant-type colored left border accent, 3-column 2-row grid layout
 - **2026-06-04** — Dashboard items complete: live pinned and recent items from Neon DB, Lucide type icons with colored left border accents, conditional pinned section, live stats cards
 - **2026-07-19** — Stats & Sidebar complete: sidebar item types and collections (favorites + recent) now live from Neon DB via `getItemTypesWithCounts`, `getFavoriteCollections`, `getNonFavoriteCollections`; recent collections show a dominant-type colored dot; added "View all collections" link and animated collapsible carets for Types/Collections/Favorites/Recent groups
+- **2026-07-26** — Pro badge complete: added shadcn/ui `Badge` component and a subtle uppercase "PRO" badge next to the Files and Images item types in the expanded sidebar
