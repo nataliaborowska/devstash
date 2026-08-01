@@ -1,54 +1,12 @@
-"use client";
-
-import {
-  Star,
-  Pin,
-  MoreHorizontal,
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link,
-  HelpCircle,
-  type LucideIcon,
-} from "lucide-react";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link,
-};
-
-interface ItemType {
-  id: string;
-  name: string;
-  icon: string | null;
-  color: string | null;
-}
-
-interface Item {
-  id: string;
-  title: string;
-  description: string | null;
-  isFavorite: boolean;
-  isPinned: boolean;
-  createdAt: string | Date;
-  lastUsedAt: string | Date | null;
-  type: ItemType;
-  tags: string[];
-}
+import { Star, Pin, MoreHorizontal } from "lucide-react";
+import { TypeIcon } from "@/lib/icon-map";
+import type { ItemWithType } from "@/lib/db/items";
 
 interface ItemCardProps {
-  item: Item;
+  item: ItemWithType;
 }
 
-function formatDate(date: string | Date) {
+function formatDate(date: Date) {
   return new Date(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -56,7 +14,6 @@ function formatDate(date: string | Date) {
 }
 
 export function ItemCard({ item }: ItemCardProps) {
-  const Icon = ICON_MAP[item.type.icon ?? ""] ?? HelpCircle;
   const date = item.lastUsedAt ?? item.createdAt;
 
   return (
@@ -72,7 +29,11 @@ export function ItemCard({ item }: ItemCardProps) {
         className="shrink-0 h-9 w-9 rounded-md flex items-center justify-center bg-muted mt-0.5"
         title={item.type.name}
       >
-        <Icon className="h-4 w-4" style={{ color: item.type.color ?? undefined }} />
+        <TypeIcon
+          name={item.type.icon}
+          className="h-4 w-4"
+          style={{ color: item.type.color ?? undefined }}
+        />
       </div>
 
       {/* Content */}
