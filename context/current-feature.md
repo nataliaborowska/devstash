@@ -1,27 +1,18 @@
-# Dashboard Quick-Win Cleanups
+# Current Feature
 
-Code quality quick-win fixes from the 2026-08-01 code-scanner audit — low/no-risk cleanups only, no behavior-changing or auth-adjacent items.
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
+<!-- In Progress | Completed | Blocked -->
 
 ## Goals
 
-- [x] `src/lib/db/items.ts` / `src/lib/db/collections.ts` — replace `include` with `select` limited to the fields actually consumed (`mapItem`, dominant-type calc), so dashboard queries stop pulling the full `content` text field and unused columns
-- [x] `src/lib/db/items.ts` — add a `limit` param (with sane default) to `getPinnedItems()`, matching the pattern already used by `getRecentItems` / `getFavoriteCollections` / `getNonFavoriteCollections`
-- [x] `src/components/dashboard/item-card.tsx` — remove unnecessary `'use client'` directive (no state/handlers require it)
-- [x] `src/components/dashboard/item-card.tsx` — drop local `Item`/`ItemType` interfaces, import `ItemWithType` from `src/lib/db/items.ts` instead
-- [x] `src/components/dashboard/item-card.tsx` / `src/components/dashboard/collection-card.tsx` — remove locally duplicated `ICON_MAP`, use shared `getTypeIcon()` from `src/lib/icon-map.ts`; fixes `collection-card.tsx` silently rendering nothing for unknown icons instead of a fallback
-- [x] `src/app/dashboard/layout.tsx` / `src/app/dashboard/page.tsx` — remove redundant duplicate `dynamic = "force-dynamic"` (keep on layout only)
-- [x] `src/app/dashboard/loading.tsx` — add a skeleton loading state for the dashboard route
+<!-- List the goals for this feature -->
 
 ## Notes
 
-Source: code-scanner audit findings, 2026-08-01. Excluded from this pass (need separate follow-up, not quick wins):
-- `userId` scoping gap in `src/lib/db/items.ts` / `collections.ts` — must be resolved alongside the auth implementation, not before
-- Sidebar "Pro" badge on Images vs. monetization docs table — product decision, needs user confirmation, not a code fix
-- Next/React version drift in docs vs. `package.json` — doc-only, unrelated to this cleanup
+<!-- Any notes or references -->
 
 ## History
 
@@ -37,3 +28,4 @@ Source: code-scanner audit findings, 2026-08-01. Excluded from this pass (need s
 - **2026-06-04** — Dashboard items complete: live pinned and recent items from Neon DB, Lucide type icons with colored left border accents, conditional pinned section, live stats cards
 - **2026-07-19** — Stats & Sidebar complete: sidebar item types and collections (favorites + recent) now live from Neon DB via `getItemTypesWithCounts`, `getFavoriteCollections`, `getNonFavoriteCollections`; recent collections show a dominant-type colored dot; added "View all collections" link and animated collapsible carets for Types/Collections/Favorites/Recent groups
 - **2026-07-26** — Pro badge complete: added shadcn/ui `Badge` component and a subtle uppercase "PRO" badge next to the Files and Images item types in the expanded sidebar
+- **2026-08-01** — Dashboard quick-win cleanups complete: `select` replaces `include` in `items.ts`/`collections.ts` to stop over-fetching item content on dashboard loads, `getPinnedItems()` gained a `limit` param, `item-card.tsx` dropped an unneeded `'use client'` and duplicated types, icon lookup consolidated into shared `icon-map.tsx` (new `TypeIcon` component), redundant `force-dynamic` removed from `page.tsx`, and a `loading.tsx` skeleton added for `/dashboard`
