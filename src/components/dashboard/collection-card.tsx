@@ -1,18 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Star, MoreHorizontal, Code, Sparkles, Terminal, StickyNote, File, Image, Link as LinkIcon, type LucideIcon } from "lucide-react";
+import { Star, MoreHorizontal } from "lucide-react";
+import { getTypeIcon } from "@/lib/icon-map";
 import type { CollectionWithStats } from "@/lib/db/collections";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link: LinkIcon,
-};
 
 interface CollectionCardProps {
   collection: CollectionWithStats;
@@ -49,8 +40,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           {types.map((type) => {
-            const Icon = ICON_MAP[type.icon];
-            if (!Icon) return null;
+            const Icon = getTypeIcon(type.icon);
             return (
               <span key={type.id} title={type.name}>
                 <Icon className="h-3.5 w-3.5" style={{ color: type.color }} />

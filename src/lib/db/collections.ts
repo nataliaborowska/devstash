@@ -26,9 +26,16 @@ async function getCollectionsWithStats(
     where,
     take: limit,
     orderBy: { updatedAt: "desc" },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
       items: {
-        include: { type: true },
+        select: {
+          typeId: true,
+          type: { select: { id: true, name: true, icon: true, color: true } },
+        },
       },
     },
   })

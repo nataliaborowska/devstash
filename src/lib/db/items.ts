@@ -48,13 +48,23 @@ function mapItem(item: {
   }
 }
 
-export async function getPinnedItems(): Promise<ItemWithType[]> {
+const ITEM_SELECT = {
+  id: true,
+  title: true,
+  description: true,
+  isFavorite: true,
+  isPinned: true,
+  createdAt: true,
+  lastUsedAt: true,
+  type: { select: { id: true, name: true, icon: true, color: true } },
+  tags: { select: { tag: { select: { name: true } } } },
+} as const
+
+export async function getPinnedItems(limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
     where: { isPinned: true },
-    include: {
-      type: true,
-      tags: { include: { tag: true } },
-    },
+    take: limit,
+    select: ITEM_SELECT,
     orderBy: { updatedAt: "desc" },
   })
   return items.map(mapItem)
@@ -63,10 +73,7 @@ export async function getPinnedItems(): Promise<ItemWithType[]> {
 export async function getRecentItems(limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
     take: limit,
-    include: {
-      type: true,
-      tags: { include: { tag: true } },
-    },
+    select: ITEM_SELECT,
     orderBy: [
       { lastUsedAt: { sort: "desc", nulls: "last" } },
       { createdAt: "desc" },
