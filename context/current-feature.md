@@ -1,47 +1,16 @@
-# Current Feature: Auth Phase 1 - NextAuth + GitHub Provider
+# Current Feature
 
 <!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
-- Set up split auth config pattern for edge compatibility (`src/auth.config.ts` + `src/auth.ts`)
-- Add GitHub OAuth provider
-- Protect `/dashboard/*` routes using Next.js 16 proxy (`src/proxy.ts`)
-- Redirect unauthenticated users to sign-in
-- Extend Session type with `user.id` (`src/types/next-auth.d.ts`)
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-**Files to create:**
-1. `src/auth.config.ts` - Edge-compatible config (providers only, no adapter)
-2. `src/auth.ts` - Full config with Prisma adapter and JWT strategy
-3. `src/app/api/auth/[...nextauth]/route.ts` - Export handlers from auth.ts
-4. `src/proxy.ts` - Route protection with redirect logic
-5. `src/types/next-auth.d.ts` - Extend Session type with user.id
-
-**Key gotchas:**
-- Use Context7 to verify the newest config and conventions
-- Use `next-auth@beta` (not `@latest` which installs v4)
-- Proxy file must be at `src/proxy.ts` (same level as `app/`)
-- Use named export: `export const proxy = auth(...)` not default export
-- Use `session: { strategy: 'jwt' }` with split config pattern
-- Don't set custom `pages.signIn` - use NextAuth's default page
-
-**Env vars:** `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
-
-**Testing:**
-1. Go to `/dashboard` - should redirect to sign-in
-2. Click "Sign in with GitHub"
-3. Verify redirect back to `/dashboard` after auth
-
-**References:**
-- Edge compatibility: https://authjs.dev/getting-started/installation#edge-compatibility
-- Prisma adapter: https://authjs.dev/getting-started/adapters/prisma
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -58,3 +27,4 @@ In Progress
 - **2026-07-19** — Stats & Sidebar complete: sidebar item types and collections (favorites + recent) now live from Neon DB via `getItemTypesWithCounts`, `getFavoriteCollections`, `getNonFavoriteCollections`; recent collections show a dominant-type colored dot; added "View all collections" link and animated collapsible carets for Types/Collections/Favorites/Recent groups
 - **2026-07-26** — Pro badge complete: added shadcn/ui `Badge` component and a subtle uppercase "PRO" badge next to the Files and Images item types in the expanded sidebar
 - **2026-08-01** — Dashboard quick-win cleanups complete: `select` replaces `include` in `items.ts`/`collections.ts` to stop over-fetching item content on dashboard loads, `getPinnedItems()` gained a `limit` param, `item-card.tsx` dropped an unneeded `'use client'` and duplicated types, icon lookup consolidated into shared `icon-map.tsx` (new `TypeIcon` component), redundant `force-dynamic` removed from `page.tsx`, and a `loading.tsx` skeleton added for `/dashboard`
+- **2026-09-13** — Auth Phase 1 complete: NextAuth v5 (`next-auth@beta`) + `@auth/prisma-adapter` installed, split edge-compatible config (`src/auth.config.ts` + `src/auth.ts`) with JWT strategy, GitHub OAuth provider, `/dashboard/*` routes protected via Next.js 16 proxy (`src/proxy.ts`) with sign-in redirect, Session type extended with `user.id` (`src/types/next-auth.d.ts`)
