@@ -1,30 +1,16 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 <!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
 <!-- Bullet points of what success looks like -->
 
-- Add Credentials provider for email/password authentication with registration
-- Add password field to User model via migration (if not already present)
-- Update `auth.config.ts` with a Credentials provider `authorize: () => null` placeholder
-- Update `auth.ts` to override the Credentials provider with real bcrypt validation logic
-- Create `POST /api/auth/register` — accepts name/email/password/confirmPassword, validates passwords match, checks for existing user, hashes password with bcryptjs, creates the user, returns success/error
-- Verify: registration via curl, sign-in with email/password redirects to `/dashboard`, and GitHub OAuth still works
-- Keep unauthenticated `/dashboard` access redirecting to NextAuth's default `/api/auth/signin` page (as in Auth Phase 1); the Credentials provider's `credentials` field shape (email/password with proper `type`/`label`) auto-renders a login form there alongside the existing GitHub button, no custom page needed
-
 ## Notes
 
 <!-- Additional context, constraints, or details from spec -->
-
-- Use `bcryptjs` for hashing (already installed)
-- Split-pattern auth: `auth.config.ts` holds the edge-compatible provider placeholder; `auth.ts` overrides it with the actual bcrypt-based `authorize` logic
-- Reference: https://authjs.dev/getting-started/authentication/credentials
 
 ## History
 
@@ -42,3 +28,4 @@ In Progress
 - **2026-07-26** — Pro badge complete: added shadcn/ui `Badge` component and a subtle uppercase "PRO" badge next to the Files and Images item types in the expanded sidebar
 - **2026-08-01** — Dashboard quick-win cleanups complete: `select` replaces `include` in `items.ts`/`collections.ts` to stop over-fetching item content on dashboard loads, `getPinnedItems()` gained a `limit` param, `item-card.tsx` dropped an unneeded `'use client'` and duplicated types, icon lookup consolidated into shared `icon-map.tsx` (new `TypeIcon` component), redundant `force-dynamic` removed from `page.tsx`, and a `loading.tsx` skeleton added for `/dashboard`
 - **2026-09-13** — Auth Phase 1 complete: NextAuth v5 (`next-auth@beta`) + `@auth/prisma-adapter` installed, split edge-compatible config (`src/auth.config.ts` + `src/auth.ts`) with JWT strategy, GitHub OAuth provider, `/dashboard/*` routes protected via Next.js 16 proxy (`src/proxy.ts`) with sign-in redirect, Session type extended with `user.id` (`src/types/next-auth.d.ts`)
+- **2026-09-13** — Auth Phase 2 complete: Credentials provider added alongside GitHub (`src/auth.config.ts` placeholder + `src/auth.ts` bcrypt `authorize`, sanitized to `{ id, name, email, image }`), `POST /api/auth/register` with Zod validation and normalized (trimmed/lowercased) email, default NextAuth `/api/auth/signin` page dark-themed via `theme.colorScheme` and auto-rendering the credentials form through field `label`/`type`; registration, credentials sign-in, and GitHub OAuth all verified working
