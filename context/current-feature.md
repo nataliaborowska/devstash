@@ -1,32 +1,16 @@
-# Current Feature: Auth Phase 3 - Sign In, Register & Sign Out UI
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Custom `/sign-in` page replaces the NextAuth default: email + password fields, "Sign in with GitHub" button, link to register, form validation with error display
-- Custom `/register` page: name, email, password, confirm password fields; validates email format and matching passwords; submits to `/api/auth/register`; redirects to `/sign-in` on success
-- Bottom of sidebar shows the signed-in user's avatar and name
-- Clicking the avatar opens a dropdown with two options: "Profile" (navigates to `/profile`) and "Sign out" (logs the user out and redirects)
-- Reusable avatar component: uses the GitHub `image` when present, otherwise initials from the name (e.g., "Brad Traversy" → "BT")
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Spec: `context/features/auth-phase-3-spec.md`
-- Builds on Auth Phase 1 (NextAuth v5, JWT, GitHub, proxy-protected `/dashboard/*`) and Phase 2 (Credentials provider, `POST /api/auth/register`)
-- NextAuth config must point its sign-in page at `/sign-in` so protected routes redirect there instead of the default page
-- Decision: the avatar click opens the dropdown only; `/profile` is reached through the dropdown's "Profile" option instead of a direct click
-- Decision: the avatar goes at the bottom of the sidebar, not in the top bar (overrides the spec's testing step 4)
-- Testing:
-  1. `/sign-in` renders the custom page
-  2. GitHub sign-in works
-  3. Email/password sign-in works
-  4. Avatar shows at the bottom of the sidebar (GitHub image or initials)
-  5. Clicking the avatar opens the dropdown with "Profile" and "Sign out"; "Profile" goes to `/profile`
-  6. "Sign out" logs out and redirects
-  7. `/register` creates an account and redirects to `/sign-in`
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -45,3 +29,4 @@ In Progress
 - **2026-08-01** — Dashboard quick-win cleanups complete: `select` replaces `include` in `items.ts`/`collections.ts` to stop over-fetching item content on dashboard loads, `getPinnedItems()` gained a `limit` param, `item-card.tsx` dropped an unneeded `'use client'` and duplicated types, icon lookup consolidated into shared `icon-map.tsx` (new `TypeIcon` component), redundant `force-dynamic` removed from `page.tsx`, and a `loading.tsx` skeleton added for `/dashboard`
 - **2026-09-13** — Auth Phase 1 complete: NextAuth v5 (`next-auth@beta`) + `@auth/prisma-adapter` installed, split edge-compatible config (`src/auth.config.ts` + `src/auth.ts`) with JWT strategy, GitHub OAuth provider, `/dashboard/*` routes protected via Next.js 16 proxy (`src/proxy.ts`) with sign-in redirect, Session type extended with `user.id` (`src/types/next-auth.d.ts`)
 - **2026-09-13** — Auth Phase 2 complete: Credentials provider added alongside GitHub (`src/auth.config.ts` placeholder + `src/auth.ts` bcrypt `authorize`, sanitized to `{ id, name, email, image }`), `POST /api/auth/register` with Zod validation and normalized (trimmed/lowercased) email, default NextAuth `/api/auth/signin` page dark-themed via `theme.colorScheme` and auto-rendering the credentials form through field `label`/`type`; registration, credentials sign-in, and GitHub OAuth all verified working
+- **2026-10-17** — Auth Phase 3 complete: custom `/sign-in` (GitHub + email/password via server actions, safe callback URLs, inline errors) and `/register` (shared Zod schema in `src/lib/validations/auth.ts`, posts to `/api/auth/register`, sonner toast then redirect to sign-in) replace the NextAuth default pages; NextAuth `pages` and the proxy point at `/sign-in`; sidebar shows the logged-in user loaded from the DB (`getSidebarUser`) with a reusable `UserAvatar` (GitHub image or initials) and a dropdown with Profile and Sign out; root `Toaster` added; React Compiler enabled
