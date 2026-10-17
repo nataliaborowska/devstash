@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Star, Settings, ChevronDown, PanelLeft, PanelRight } from "lucide-react";
-import { mockUser } from "@/lib/mock-data";
+import { Star, ChevronDown, PanelLeft, PanelRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getTypeIcon } from "@/lib/icon-map";
 import { Badge } from "@/components/ui/badge";
+import { UserMenu } from "@/components/layout/user-menu";
 import type { ItemTypeWithCount } from "@/lib/db/items";
 import type { CollectionWithStats } from "@/lib/db/collections";
+import type { SidebarUser } from "@/lib/db/users";
 
 interface CollapsibleGroupProps {
   title: string;
@@ -48,6 +49,7 @@ function CollapsibleGroup({ title, isOpen, onToggle, labelClassName, children }:
 }
 
 interface SidebarContentProps {
+  user: SidebarUser;
   itemTypes: ItemTypeWithCount[];
   favoriteCollections: CollectionWithStats[];
   recentCollections: CollectionWithStats[];
@@ -55,6 +57,7 @@ interface SidebarContentProps {
 }
 
 export function SidebarContent({
+  user,
   itemTypes,
   favoriteCollections,
   recentCollections,
@@ -64,11 +67,6 @@ export function SidebarContent({
   const [collectionsOpen, setCollectionsOpen] = useState(true);
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [recentOpen, setRecentOpen] = useState(true);
-
-  const initials = mockUser.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("");
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -186,28 +184,16 @@ export function SidebarContent({
         </CollapsibleGroup>
       </div>
 
-      {/* User avatar */}
-      <div className="shrink-0 border-t border-border p-3 flex items-center gap-2">
-        <div className="h-7 w-7 rounded-full bg-violet-600 flex items-center justify-center text-white text-[11px] font-semibold shrink-0">
-          {initials}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium truncate leading-tight">
-            {mockUser.name}
-          </p>
-          <p className="text-[11px] text-muted-foreground truncate leading-tight">
-            {mockUser.email}
-          </p>
-        </div>
-        <button className="shrink-0 rounded-md p-1 hover:bg-accent transition-colors">
-          <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-        </button>
+      {/* User menu */}
+      <div className="shrink-0 border-t border-border p-2">
+        <UserMenu user={user} onNavigate={onNavigate} />
       </div>
     </div>
   );
 }
 
 interface SidebarProps {
+  user: SidebarUser;
   isOpen: boolean;
   onToggle: () => void;
   itemTypes: ItemTypeWithCount[];
@@ -217,6 +203,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
+  user,
   isOpen,
   onToggle,
   itemTypes,
@@ -245,6 +232,7 @@ export function Sidebar({
           </div>
           <div className="flex-1 overflow-hidden">
             <SidebarContent
+              user={user}
               itemTypes={itemTypes}
               favoriteCollections={favoriteCollections}
               recentCollections={recentCollections}
@@ -278,9 +266,7 @@ export function Sidebar({
             })}
           </div>
           <div className="flex-1" />
-          <div className="h-7 w-7 rounded-full bg-violet-600 flex items-center justify-center text-white text-[11px] font-semibold shrink-0">
-            {mockUser.name.split(" ").map((n) => n[0]).join("")}
-          </div>
+          <UserMenu user={user} compact />
         </div>
       )}
     </aside>

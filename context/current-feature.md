@@ -1,16 +1,32 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Auth Phase 3 - Sign In, Register & Sign Out UI
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Custom `/sign-in` page replaces the NextAuth default: email + password fields, "Sign in with GitHub" button, link to register, form validation with error display
+- Custom `/register` page: name, email, password, confirm password fields; validates email format and matching passwords; submits to `/api/auth/register`; redirects to `/sign-in` on success
+- Bottom of sidebar shows the signed-in user's avatar and name
+- Clicking the avatar opens a dropdown with two options: "Profile" (navigates to `/profile`) and "Sign out" (logs the user out and redirects)
+- Reusable avatar component: uses the GitHub `image` when present, otherwise initials from the name (e.g., "Brad Traversy" → "BT")
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Spec: `context/features/auth-phase-3-spec.md`
+- Builds on Auth Phase 1 (NextAuth v5, JWT, GitHub, proxy-protected `/dashboard/*`) and Phase 2 (Credentials provider, `POST /api/auth/register`)
+- NextAuth config must point its sign-in page at `/sign-in` so protected routes redirect there instead of the default page
+- Decision: the avatar click opens the dropdown only; `/profile` is reached through the dropdown's "Profile" option instead of a direct click
+- Decision: the avatar goes at the bottom of the sidebar, not in the top bar (overrides the spec's testing step 4)
+- Testing:
+  1. `/sign-in` renders the custom page
+  2. GitHub sign-in works
+  3. Email/password sign-in works
+  4. Avatar shows at the bottom of the sidebar (GitHub image or initials)
+  5. Clicking the avatar opens the dropdown with "Profile" and "Sign out"; "Profile" goes to `/profile`
+  6. "Sign out" logs out and redirects
+  7. `/register` creates an account and redirects to `/sign-in`
 
 ## History
 

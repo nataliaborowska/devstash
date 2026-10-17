@@ -27,3 +27,4 @@ npm run start    # start production server
 npm run lint     # run ESLint directly (next lint no longer exists)
 ```
 
+**important:** Do not add clause to any commit messages
