@@ -6,6 +6,10 @@ export default {
   theme: {
     colorScheme: "dark",
   },
+  pages: {
+    signIn: "/sign-in",
+    error: "/sign-in",
+  },
   providers: [
     GitHub,
     Credentials({

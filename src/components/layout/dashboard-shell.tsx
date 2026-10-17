@@ -6,8 +6,10 @@ import { Sidebar, SidebarContent } from "@/components/layout/sidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import type { ItemTypeWithCount } from "@/lib/db/items";
 import type { CollectionWithStats } from "@/lib/db/collections";
+import type { SidebarUser } from "@/lib/db/users";
 
 interface DashboardShellProps {
+  user: SidebarUser;
   itemTypes: ItemTypeWithCount[];
   favoriteCollections: CollectionWithStats[];
   recentCollections: CollectionWithStats[];
@@ -15,6 +17,7 @@ interface DashboardShellProps {
 }
 
 export function DashboardShell({
+  user,
   itemTypes,
   favoriteCollections,
   recentCollections,
@@ -30,6 +33,7 @@ export function DashboardShell({
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Desktop sidebar */}
         <Sidebar
+          user={user}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen((prev) => !prev)}
           className="hidden lg:flex"
@@ -42,6 +46,7 @@ export function DashboardShell({
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent side="left" className="w-64 p-0">
             <SidebarContent
+              user={user}
               itemTypes={itemTypes}
               favoriteCollections={favoriteCollections}
               recentCollections={recentCollections}

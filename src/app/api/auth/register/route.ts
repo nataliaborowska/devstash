@@ -1,19 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-
-const registerSchema = z
-  .object({
-    name: z.string().min(1, "Name is required"),
-    email: z.email("Invalid email address").transform((email) => email.trim().toLowerCase()),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+import { registerSchema } from "@/lib/validations/auth";
 
 export async function POST(request: Request) {
   let body: unknown;
