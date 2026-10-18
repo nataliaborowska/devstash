@@ -11,15 +11,18 @@ import { Button } from "@/components/ui/button";
 interface SignInFormProps {
   callbackUrl: string;
   initialError?: string;
+  initialSuccess?: string;
 }
 
-export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
+export function SignInForm({ callbackUrl, initialError, initialSuccess }: SignInFormProps) {
   const [state, formAction, isPending] = useActionState(signInWithCredentials, null);
   const error = state ? state.error : initialError;
+  const success = state ? undefined : initialSuccess;
 
   return (
     <div className="space-y-5">
       {error && <FormMessage variant="error">{error}</FormMessage>}
+      {success && <FormMessage variant="success">{success}</FormMessage>}
 
       <form action={signInWithGitHub}>
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
