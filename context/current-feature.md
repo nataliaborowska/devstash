@@ -1,26 +1,16 @@
-# Current Feature: Email Verification on Register
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Install `resend` and add a mail helper in `src/lib/` that reads `RESEND_API_KEY` from env
-- On successful `POST /api/auth/register`, create a `VerificationToken` (secure random token, ~24h expiry, identifier = normalized email) and send a verification email via Resend containing a link to the verify route
-- Add a verify route (e.g. `/verify-email?token=...`) that validates the token and expiry, sets `User.emailVerified`, deletes the token, and shows success or an "invalid/expired link" message
-- Block credentials sign-in for users whose `emailVerified` is null, with a clear "please verify your email" error on `/sign-in`
-- After registering, tell the user to check their inbox (toast + redirect to sign-in) instead of implying they can sign in immediately
-- GitHub OAuth sign-in is unaffected
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Schema already has `User.emailVerified DateTime?` and a `VerificationToken` model (`identifier`, `token`, `expires`, unique on `[identifier, token]`), so no migration should be needed
-- `RESEND_API_KEY` is already in `.env`; still need a "from" address and the app base URL for the link (e.g. `EMAIL_FROM`, `AUTH_URL`/`NEXT_PUBLIC_APP_URL`). Without a verified domain, Resend only sends from `onboarding@resend.dev` to the account owner's email
-- Delete any existing tokens for the email before creating a new one
-- Seeded `demo@devstash.io` already has `emailVerified` set; earlier test accounts registered via credentials have `emailVerified = null` and will need verifying (or updating in the DB)
-- Keep pages as server components; `'use client'` only in components that need it
-- Out of scope unless requested: "resend verification email" button, password reset
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -40,3 +30,4 @@ In Progress
 - **2026-09-13** — Auth Phase 1 complete: NextAuth v5 (`next-auth@beta`) + `@auth/prisma-adapter` installed, split edge-compatible config (`src/auth.config.ts` + `src/auth.ts`) with JWT strategy, GitHub OAuth provider, `/dashboard/*` routes protected via Next.js 16 proxy (`src/proxy.ts`) with sign-in redirect, Session type extended with `user.id` (`src/types/next-auth.d.ts`)
 - **2026-09-13** — Auth Phase 2 complete: Credentials provider added alongside GitHub (`src/auth.config.ts` placeholder + `src/auth.ts` bcrypt `authorize`, sanitized to `{ id, name, email, image }`), `POST /api/auth/register` with Zod validation and normalized (trimmed/lowercased) email, default NextAuth `/api/auth/signin` page dark-themed via `theme.colorScheme` and auto-rendering the credentials form through field `label`/`type`; registration, credentials sign-in, and GitHub OAuth all verified working
 - **2026-10-17** — Auth Phase 3 complete: custom `/sign-in` (GitHub + email/password via server actions, safe callback URLs, inline errors) and `/register` (shared Zod schema in `src/lib/validations/auth.ts`, posts to `/api/auth/register`, sonner toast then redirect to sign-in) replace the NextAuth default pages; NextAuth `pages` and the proxy point at `/sign-in`; sidebar shows the logged-in user loaded from the DB (`getSidebarUser`) with a reusable `UserAvatar` (GitHub image or initials) and a dropdown with Profile and Sign out; root `Toaster` added; React Compiler enabled
+- **2026-10-18** — Email verification complete: `resend` installed, registration creates a 24h `VerificationToken` (SHA-256 hashed) and sends a verification email via Resend (`src/lib/email.ts`, `EMAIL_FROM` defaults to `onboarding@resend.dev`; user rolled back if sending fails), `GET /api/auth/verify-email` sets `emailVerified` and redirects to `/sign-in` with success or invalid-link message, credentials sign-in blocked for unverified emails via custom `EmailNotVerifiedError` (`CredentialsSignin` code), register toast now says to check inbox; added `scripts/delete-non-demo-users.ts` (dry run by default, `--confirm` to delete)
