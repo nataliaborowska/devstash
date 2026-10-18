@@ -8,6 +8,7 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   CredentialsSignin: "Invalid email or password",
   OAuthAccountNotLinked: "This email is already linked to another sign-in method.",
   AccessDenied: "Access denied.",
+  InvalidVerificationLink: "This verification link is invalid or has expired.",
 };
 
 interface SignInPageProps {
@@ -25,10 +26,12 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const initialError = errorCode
     ? (AUTH_ERROR_MESSAGES[errorCode] ?? "Sign in failed. Please try again.")
     : undefined;
+  const initialSuccess =
+    params.verified === "1" ? "Your email is verified. You can now sign in." : undefined;
 
   return (
     <AuthCard title="Sign in to DevStash" description="Welcome back. Pick up where you left off.">
-      <SignInForm callbackUrl={callbackUrl} initialError={initialError} />
+      <SignInForm callbackUrl={callbackUrl} initialError={initialError} initialSuccess={initialSuccess} />
     </AuthCard>
   );
 }

@@ -1,16 +1,26 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Email Verification on Register
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Install `resend` and add a mail helper in `src/lib/` that reads `RESEND_API_KEY` from env
+- On successful `POST /api/auth/register`, create a `VerificationToken` (secure random token, ~24h expiry, identifier = normalized email) and send a verification email via Resend containing a link to the verify route
+- Add a verify route (e.g. `/verify-email?token=...`) that validates the token and expiry, sets `User.emailVerified`, deletes the token, and shows success or an "invalid/expired link" message
+- Block credentials sign-in for users whose `emailVerified` is null, with a clear "please verify your email" error on `/sign-in`
+- After registering, tell the user to check their inbox (toast + redirect to sign-in) instead of implying they can sign in immediately
+- GitHub OAuth sign-in is unaffected
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Schema already has `User.emailVerified DateTime?` and a `VerificationToken` model (`identifier`, `token`, `expires`, unique on `[identifier, token]`), so no migration should be needed
+- `RESEND_API_KEY` is already in `.env`; still need a "from" address and the app base URL for the link (e.g. `EMAIL_FROM`, `AUTH_URL`/`NEXT_PUBLIC_APP_URL`). Without a verified domain, Resend only sends from `onboarding@resend.dev` to the account owner's email
+- Delete any existing tokens for the email before creating a new one
+- Seeded `demo@devstash.io` already has `emailVerified` set; earlier test accounts registered via credentials have `emailVerified = null` and will need verifying (or updating in the DB)
+- Keep pages as server components; `'use client'` only in components that need it
+- Out of scope unless requested: "resend verification email" button, password reset
 
 ## History
 

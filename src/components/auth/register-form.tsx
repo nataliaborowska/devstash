@@ -64,7 +64,9 @@ export function RegisterForm() {
       setIsSubmitting(false);
       return;
     }
-    toast.success("Account created", { description: "You can now sign in with your email and password." });
+    toast.success("Check your inbox", {
+      description: `We sent a verification link to ${parsed.data.email}. Verify your email before signing in.`,
+    });
     router.push("/sign-in");
   }
 
