@@ -1,26 +1,16 @@
-# Current Feature: Email Verification Toggle
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Add an `EMAIL_VERIFICATION_ENABLED` env variable; verification is on only when it is exactly `"true"` (unset/anything else = off)
-- Read the flag in one place (e.g. `isEmailVerificationEnabled()` in `src/lib/`) so every check uses the same logic
-- When disabled: registration creates the user without creating a token or sending an email, so any email address can register
-- When disabled: credentials sign-in does not require `emailVerified`
-- When disabled: the register toast says the account was created and the user can sign in (not "check your inbox")
-- When enabled: current behavior is unchanged (token + Resend email, sign-in blocked until verified)
-- Add `EMAIL_VERIFICATION_ENABLED` to `.env` (off for now) and document it alongside `EMAIL_FROM`
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Env var chosen over a DB/admin setting: it's a deploy-time switch, needs no schema change or UI, and can be set differently in `.env` and `.env.production`. Toggling requires a server restart / redeploy
-- Opt-in (`"true"` to enable) so a missing variable never blocks registration while there's no Resend domain
-- The flag is server-only (no `NEXT_PUBLIC_` prefix); the register API response should tell the form whether verification is required (e.g. `data.verificationRequired`) so the toast text matches
-- Users registered while the flag is off keep `emailVerified = null`. If verification is turned on later, they'll be blocked from credentials sign-in until verified, and there's no "resend verification email" option yet. Revisit when a domain is added
-- `/api/auth/verify-email` stays available either way so links already sent still work
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -41,3 +31,4 @@ In Progress
 - **2026-09-13** — Auth Phase 2 complete: Credentials provider added alongside GitHub (`src/auth.config.ts` placeholder + `src/auth.ts` bcrypt `authorize`, sanitized to `{ id, name, email, image }`), `POST /api/auth/register` with Zod validation and normalized (trimmed/lowercased) email, default NextAuth `/api/auth/signin` page dark-themed via `theme.colorScheme` and auto-rendering the credentials form through field `label`/`type`; registration, credentials sign-in, and GitHub OAuth all verified working
 - **2026-10-17** — Auth Phase 3 complete: custom `/sign-in` (GitHub + email/password via server actions, safe callback URLs, inline errors) and `/register` (shared Zod schema in `src/lib/validations/auth.ts`, posts to `/api/auth/register`, sonner toast then redirect to sign-in) replace the NextAuth default pages; NextAuth `pages` and the proxy point at `/sign-in`; sidebar shows the logged-in user loaded from the DB (`getSidebarUser`) with a reusable `UserAvatar` (GitHub image or initials) and a dropdown with Profile and Sign out; root `Toaster` added; React Compiler enabled
 - **2026-10-18** — Email verification complete: `resend` installed, registration creates a 24h `VerificationToken` (SHA-256 hashed) and sends a verification email via Resend (`src/lib/email.ts`, `EMAIL_FROM` defaults to `onboarding@resend.dev`; user rolled back if sending fails), `GET /api/auth/verify-email` sets `emailVerified` and redirects to `/sign-in` with success or invalid-link message, credentials sign-in blocked for unverified emails via custom `EmailNotVerifiedError` (`CredentialsSignin` code), register toast now says to check inbox; added `scripts/delete-non-demo-users.ts` (dry run by default, `--confirm` to delete)
+- **2026-10-18** — Email verification toggle complete: `EMAIL_VERIFICATION_ENABLED` env flag read via `isEmailVerificationEnabled()` (`src/lib/feature-flags.ts`, opt-in: only `"true"` enables); when off, register skips the token/Resend email and credentials sign-in skips the `emailVerified` check; register API returns `verificationRequired` so the toast says "Check your inbox" or "Account created"; flag set to `false` in `.env`/`.env.production` until a Resend domain is verified
