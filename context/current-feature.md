@@ -1,16 +1,26 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Email Verification Toggle
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Add an `EMAIL_VERIFICATION_ENABLED` env variable; verification is on only when it is exactly `"true"` (unset/anything else = off)
+- Read the flag in one place (e.g. `isEmailVerificationEnabled()` in `src/lib/`) so every check uses the same logic
+- When disabled: registration creates the user without creating a token or sending an email, so any email address can register
+- When disabled: credentials sign-in does not require `emailVerified`
+- When disabled: the register toast says the account was created and the user can sign in (not "check your inbox")
+- When enabled: current behavior is unchanged (token + Resend email, sign-in blocked until verified)
+- Add `EMAIL_VERIFICATION_ENABLED` to `.env` (off for now) and document it alongside `EMAIL_FROM`
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Env var chosen over a DB/admin setting: it's a deploy-time switch, needs no schema change or UI, and can be set differently in `.env` and `.env.production`. Toggling requires a server restart / redeploy
+- Opt-in (`"true"` to enable) so a missing variable never blocks registration while there's no Resend domain
+- The flag is server-only (no `NEXT_PUBLIC_` prefix); the register API response should tell the form whether verification is required (e.g. `data.verificationRequired`) so the toast text matches
+- Users registered while the flag is off keep `emailVerified = null`. If verification is turned on later, they'll be blocked from credentials sign-in until verified, and there's no "resend verification email" option yet. Revisit when a domain is added
+- `/api/auth/verify-email` stays available either way so links already sent still work
 
 ## History
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/lib/email";
+import { isEmailVerificationEnabled } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
 import { createVerificationToken } from "@/lib/verification-token";
 import { registerSchema } from "@/lib/validations/auth";
@@ -38,23 +39,31 @@ export async function POST(request: Request) {
     data: { name, email, password: hashedPassword },
   });
 
-  try {
-    const token = await createVerificationToken(email);
-    const verifyUrl = new URL("/api/auth/verify-email", process.env.AUTH_URL ?? request.url);
-    verifyUrl.searchParams.set("token", token);
-    await sendVerificationEmail(email, verifyUrl.toString());
-  } catch (error) {
-    console.error(error);
-    await prisma.verificationToken.deleteMany({ where: { identifier: email } });
-    await prisma.user.delete({ where: { id: user.id } });
-    return NextResponse.json(
-      { success: false, error: "We couldn't send the verification email. Please try again." },
-      { status: 500 }
-    );
+  const verificationRequired = isEmailVerificationEnabled();
+
+  if (verificationRequired) {
+    try {
+      await sendVerification(email, request.url);
+    } catch (error) {
+      console.error(error);
+      await prisma.verificationToken.deleteMany({ where: { identifier: email } });
+      await prisma.user.delete({ where: { id: user.id } });
+      return NextResponse.json(
+        { success: false, error: "We couldn't send the verification email. Please try again." },
+        { status: 500 }
+      );
+    }
   }
 
   return NextResponse.json({
     success: true,
-    data: { id: user.id, name: user.name, email: user.email },
+    data: { id: user.id, name: user.name, email: user.email, verificationRequired },
   });
+}
+
+async function sendVerification(email: string, requestUrl: string): Promise<void> {
+  const token = await createVerificationToken(email);
+  const verifyUrl = new URL("/api/auth/verify-email", process.env.AUTH_URL ?? requestUrl);
+  verifyUrl.searchParams.set("token", token);
+  await sendVerificationEmail(email, verifyUrl.toString());
 }
