@@ -14,6 +14,7 @@ type FieldErrors = Partial<Record<keyof RegisterInput, string>>;
 
 interface RegisterResponse {
   success: boolean;
+  data?: { verificationRequired: boolean };
   error?: string;
 }
 
@@ -64,9 +65,13 @@ export function RegisterForm() {
       setIsSubmitting(false);
       return;
     }
-    toast.success("Check your inbox", {
-      description: `We sent a verification link to ${parsed.data.email}. Verify your email before signing in.`,
-    });
+    if (result.data?.verificationRequired) {
+      toast.success("Check your inbox", {
+        description: `We sent a verification link to ${parsed.data.email}. Verify your email before signing in.`,
+      });
+    } else {
+      toast.success("Account created", { description: "You can now sign in with your email and password." });
+    }
     router.push("/sign-in");
   }
 
