@@ -49,13 +49,23 @@ export function SignInForm({ callbackUrl, initialError, initialSuccess }: SignIn
           defaultValue={state?.email}
           required
         />
-        <FormField
-          id="password"
-          label="Password"
-          type="password"
-          autoComplete="current-password"
-          required
-        />
+        <div className="space-y-1.5">
+          <FormField
+            id="password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            required
+          />
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
         <Button type="submit" size="lg" className="w-full" disabled={isPending}>
           {isPending ? "Signing in..." : "Sign in"}
         </Button>

@@ -11,6 +11,12 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   InvalidVerificationLink: "This verification link is invalid or has expired.",
 };
 
+function getSuccessMessage(params: Record<string, string | string[] | undefined>): string | undefined {
+  if (params.verified === "1") return "Your email is verified. You can now sign in.";
+  if (params.reset === "1") return "Your password has been updated. You can now sign in.";
+  return undefined;
+}
+
 interface SignInPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
@@ -26,8 +32,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const initialError = errorCode
     ? (AUTH_ERROR_MESSAGES[errorCode] ?? "Sign in failed. Please try again.")
     : undefined;
-  const initialSuccess =
-    params.verified === "1" ? "Your email is verified. You can now sign in." : undefined;
+  const initialSuccess = getSuccessMessage(params);
 
   return (
     <AuthCard title="Sign in to DevStash" description="Welcome back. Pick up where you left off.">

@@ -1,16 +1,34 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Forgot Password
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- "Forgot password?" link on the `/sign-in` form (next to the password field) pointing to `/forgot-password`
+- `/forgot-password` page (server component + client form) with an email field; submitting sends a password reset email via Resend
+- Always show the same generic success message ("If an account exists for that email, we've sent a reset link") so the form doesn't reveal which emails are registered
+- Only send the email when the user exists and has a password (GitHub-only accounts get no email, but see the same message)
+- Password reset tokens stored in the existing `VerificationToken` model, with no schema change or migration: random 32-byte token, only the SHA-256 hash stored, 1 hour expiry, a new request replaces any earlier reset token for that email
+- `sendPasswordResetEmail(email, resetUrl)` in `src/lib/email.ts`, matching `sendVerificationEmail`
+- `/reset-password?token=...` page with new password + confirm password fields (same rules as register: min 8 chars, must match), sharing a Zod schema in `src/lib/validations/auth.ts`
+- On submit: check the token, hash the new password with bcrypt, update the user, delete the token (single use), then redirect to `/sign-in` with a success message ("Password updated, you can now sign in")
+- Invalid, expired or already-used tokens show a clear error with a link to request a new reset email
+- Server actions in `src/actions/auth.ts` returning the `{ success, error }` pattern, with Zod-validated input
+- `npm run build` passes
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- **Token separation:** `VerificationToken` has no type column, and its `identifier` is the plain email for email verification. Reset tokens use a namespaced identifier (`password-reset:<email>`) so that:
+  - `createVerificationToken`'s `deleteMany({ identifier: email })` doesn't delete pending reset tokens, and the reverse
+  - `consumeVerificationToken` can't verify an email with a reset token, and a verification token can't reset a password (each consume function filters on its own identifier)
+- Put the reset token helpers next to the existing ones (`src/lib/verification-token.ts`, or a sibling `src/lib/password-reset-token.ts`), reusing `hashToken`
+- A successful reset also sets `emailVerified` if it was null, because the user just proved they own the inbox
+- Reset emails are sent whatever `EMAIL_VERIFICATION_ENABLED` is set to (that flag only controls the verification flow). With the default `onboarding@resend.dev` sender, Resend only delivers to the account owner's address until a domain is verified
+- The reset URL is built from `process.env.AUTH_URL`, falling back to the request URL, the same way as the verification link in the register route
+- Pages stay server components; `'use client'` only on the form components (`forgot-password-form.tsx`, `reset-password-form.tsx`) in `src/components/auth/`, reusing `AuthCard`, `FormField`, `FormMessage`
+- Out of scope: rate limiting, signing out existing JWT sessions after a reset, changing the password from a profile page
 
 ## History
 
