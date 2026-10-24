@@ -16,7 +16,8 @@ model User {
   id                   String       @id @default(cuid())
   email                String       @unique
   password             String?
-  name                 String?
+  passwordChangedAt    DateTime?
+  name                String?
   image                String?
   emailVerified        DateTime?
   isPro                Boolean      @default(false)

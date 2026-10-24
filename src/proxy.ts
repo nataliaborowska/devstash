@@ -1,13 +1,16 @@
 import { auth } from "@/auth";
 
+const PROTECTED_PREFIXES = ["/dashboard", "/profile"];
+
 export const proxy = auth((req) => {
-  if (!req.auth && req.nextUrl.pathname.startsWith("/dashboard")) {
+  const { pathname } = req.nextUrl;
+  if (!req.auth && PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     const signInUrl = new URL("/sign-in", req.nextUrl.origin);
-    signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
+    signInUrl.searchParams.set("callbackUrl", pathname);
     return Response.redirect(signInUrl);
   }
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/profile/:path*"],
 };

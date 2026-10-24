@@ -36,3 +36,11 @@ export const resetPasswordSchema = z
     confirmPassword: z.string(),
   })
   .refine(passwordsMatch, passwordsMatchError);
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    password: newPasswordField,
+    confirmPassword: z.string(),
+  })
+  .refine(passwordsMatch, passwordsMatchError);
