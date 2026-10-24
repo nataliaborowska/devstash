@@ -5,18 +5,21 @@ import { useActionState } from "react";
 import { resetPassword } from "@/actions/auth";
 import { FormField } from "@/components/auth/form-field";
 import { FormMessage } from "@/components/auth/form-message";
+import { withRateLimitToast } from "@/components/auth/with-rate-limit-toast";
 import { Button } from "@/components/ui/button";
+
+const resetPasswordAction = withRateLimitToast(resetPassword);
 
 interface ResetPasswordFormProps {
   token: string;
 }
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
-  const [state, formAction, isPending] = useActionState(resetPassword, null);
+  const [state, formAction, isPending] = useActionState(resetPasswordAction, null);
 
   return (
     <div className="space-y-5">
-      {state?.error && (
+      {state?.error && !state.rateLimited && (
         <FormMessage variant="error">
           {state.error}
           {state.invalidToken && (

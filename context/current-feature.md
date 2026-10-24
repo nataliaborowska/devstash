@@ -1,4 +1,4 @@
-# Current Feature: Profile Page
+# Current Feature: Rate Limiting for Auth
 
 ## Status
 
@@ -6,19 +6,28 @@ In Progress
 
 ## Goals
 
-- Profile page at the `/profile` route, protected (requires authentication)
-- Display user info: email, name, avatar (GitHub or initials), account creation date
-- Show usage stats: total items, total collections, breakdown by item type (snippets, prompts, notes, commands, links, files, images)
-- Change password action, shown only for email/password users (not GitHub OAuth)
-- Delete account action with a confirmation dialog to prevent accidental deletion
-- Follow existing codebase patterns for data fetching and components
+- Reusable `src/lib/rate-limit.ts` utility using Upstash Redis + `@upstash/ratelimit` with a sliding window algorithm
+- Rate limit checks return `{ success, remaining, reset }`
+- Client IP taken from `x-forwarded-for` (Vercel) with a fallback, combined with email where applicable
+- Limits applied to auth flows:
+  - Login (credentials): 5 attempts / 15 min, keyed by IP + email
+  - Register: 3 attempts / 1 hour, keyed by IP
+  - Forgot password: 3 attempts / 1 hour, keyed by IP
+  - Reset password: 5 attempts / 15 min, keyed by IP
+  - Resend verification: 3 attempts / 15 min, keyed by IP + email
+- API routes return 429 with `{ error: "Too many attempts. Please try again in X minutes." }` and a `Retry-After` header
+- Frontend shows the rate limit error as a toast
+- Fails open (request allowed) if Upstash is unavailable or not configured
 
 ## Notes
 
-- Avatar logic: use the GitHub avatar from OAuth if available, otherwise generate initials from name/email (reuse existing `UserAvatar`)
-- Change password button must only appear for users who signed up with email/password
-- Item type breakdown shows a count for each system type
-- Spec: `context/features/profile-spec.md`
+- New env vars: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+- Spec lists everything as `/api/auth/*` routes, but in this codebase only register is a route handler (`src/app/api/auth/register/route.ts`); login (`signInWithCredentials`), forgot password (`requestPasswordReset`) and reset password (`resetPassword`) are server actions in `src/actions/auth.ts`. Server actions can't return 429/`Retry-After`, so they should return the same error message in their `{ success, error }` result and read the IP via `headers()`
+- Login: limit inside the `signInWithCredentials` action rather than the NextAuth callback route
+- No resend-verification endpoint exists yet, so that row is skipped for now (the limit can be added when the endpoint is built)
+- Upstash free tier (10k requests/day) is enough for auth limiting
+- Middleware-based limiting is a possible later cleanup, not in scope
+- Spec: `context/features/rate-limiting-spec.md`
 
 ## History
 

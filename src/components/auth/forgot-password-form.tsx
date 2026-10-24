@@ -5,14 +5,17 @@ import { useActionState } from "react";
 import { requestPasswordReset } from "@/actions/auth";
 import { FormField } from "@/components/auth/form-field";
 import { FormMessage } from "@/components/auth/form-message";
+import { withRateLimitToast } from "@/components/auth/with-rate-limit-toast";
 import { Button } from "@/components/ui/button";
 
+const forgotPasswordAction = withRateLimitToast(requestPasswordReset);
+
 export function ForgotPasswordForm() {
-  const [state, formAction, isPending] = useActionState(requestPasswordReset, null);
+  const [state, formAction, isPending] = useActionState(forgotPasswordAction, null);
 
   return (
     <div className="space-y-5">
-      {state?.error && <FormMessage variant="error">{state.error}</FormMessage>}
+      {state?.error && !state.rateLimited && <FormMessage variant="error">{state.error}</FormMessage>}
       {state?.success && (
         <FormMessage variant="success">
           If an account exists for that email, we&apos;ve sent a link to reset your password.

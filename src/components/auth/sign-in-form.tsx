@@ -6,7 +6,10 @@ import { signInWithCredentials, signInWithGitHub } from "@/actions/auth";
 import { FormField } from "@/components/auth/form-field";
 import { FormMessage } from "@/components/auth/form-message";
 import { GitHubIcon } from "@/components/auth/github-icon";
+import { withRateLimitToast } from "@/components/auth/with-rate-limit-toast";
 import { Button } from "@/components/ui/button";
+
+const signInAction = withRateLimitToast(signInWithCredentials);
 
 interface SignInFormProps {
   callbackUrl: string;
@@ -15,8 +18,8 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ callbackUrl, initialError, initialSuccess }: SignInFormProps) {
-  const [state, formAction, isPending] = useActionState(signInWithCredentials, null);
-  const error = state ? state.error : initialError;
+  const [state, formAction, isPending] = useActionState(signInAction, null);
+  const error = state ? (state.rateLimited ? undefined : state.error) : initialError;
   const success = state ? undefined : initialSuccess;
 
   return (
