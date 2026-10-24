@@ -8,6 +8,7 @@ import { signIn, signOut } from "@/auth";
 import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/auth-errors";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import { getClientIp, getRateLimitMessage, rateLimit, type RateLimitName } from "@/lib/rate-limit";
 import { getSafeCallbackUrl } from "@/lib/safe-redirect";
 import { consumePasswordResetToken, createPasswordResetToken } from "@/lib/verification-token";
 import { forgotPasswordSchema, resetPasswordSchema, signInSchema } from "@/lib/validations/auth";
@@ -16,6 +17,14 @@ export interface SignInResult {
   success: boolean;
   email?: string;
   error?: string;
+  rateLimited?: boolean;
+}
+
+/** Returns the error message when the client is over the limit, otherwise null. */
+async function checkRateLimit(name: RateLimitName, email?: string): Promise<string | null> {
+  const ip = getClientIp(await headers());
+  const { success, reset } = await rateLimit(name, email ? `${ip}:${email}` : ip);
+  return success ? null : getRateLimitMessage(reset);
 }
 
 function getSignInErrorMessage(error: AuthError): string {
@@ -41,6 +50,11 @@ export async function signInWithCredentials(
       email: submittedEmail,
       error: parsed.error.issues[0]?.message ?? "Invalid input",
     };
+  }
+
+  const rateLimitError = await checkRateLimit("login", parsed.data.email);
+  if (rateLimitError) {
+    return { success: false, email: submittedEmail, error: rateLimitError, rateLimited: true };
   }
 
   try {
@@ -69,12 +83,14 @@ export interface ForgotPasswordResult {
   success: boolean;
   email?: string;
   error?: string;
+  rateLimited?: boolean;
 }
 
 export interface ResetPasswordResult {
   success: boolean;
   error?: string;
   invalidToken?: boolean;
+  rateLimited?: boolean;
 }
 
 async function getAppUrl(): Promise<string> {
@@ -110,6 +126,11 @@ export async function requestPasswordReset(
     };
   }
 
+  const rateLimitError = await checkRateLimit("forgotPassword");
+  if (rateLimitError) {
+    return { success: false, email: submittedEmail, error: rateLimitError, rateLimited: true };
+  }
+
   try {
     const user = await prisma.user.findUnique({
       where: { email: parsed.data.email },
@@ -136,6 +157,11 @@ export async function resetPassword(
 
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const rateLimitError = await checkRateLimit("resetPassword");
+  if (rateLimitError) {
+    return { success: false, error: rateLimitError, rateLimited: true };
   }
 
   try {

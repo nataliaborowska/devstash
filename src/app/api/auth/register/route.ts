@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { sendVerificationEmail } from "@/lib/email";
 import { isEmailVerificationEnabled } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
+import { getClientIp, getRateLimitMessage, getRetryAfterSeconds, rateLimit } from "@/lib/rate-limit";
 import { createVerificationToken } from "@/lib/verification-token";
 import { registerSchema } from "@/lib/validations/auth";
 
@@ -20,6 +21,14 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { success: false, error: parsed.error.issues[0]?.message ?? "Invalid input" },
       { status: 400 }
+    );
+  }
+
+  const limit = await rateLimit("register", getClientIp(request.headers));
+  if (!limit.success) {
+    return NextResponse.json(
+      { success: false, error: getRateLimitMessage(limit.reset) },
+      { status: 429, headers: { "Retry-After": String(getRetryAfterSeconds(limit.reset)) } }
     );
   }
 

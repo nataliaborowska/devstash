@@ -16,6 +16,7 @@ interface RegisterResponse {
   success: boolean;
   data?: { verificationRequired: boolean };
   error?: string;
+  rateLimited?: boolean;
 }
 
 function getFieldErrors(error: z.ZodError): FieldErrors {
@@ -34,7 +35,8 @@ async function submitRegistration(values: RegisterInput): Promise<RegisterRespon
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
     });
-    return (await response.json()) as RegisterResponse;
+    const result = (await response.json()) as RegisterResponse;
+    return { ...result, rateLimited: response.status === 429 };
   } catch {
     return { success: false, error: "Something went wrong. Please try again." };
   }
@@ -60,6 +62,11 @@ export function RegisterForm() {
 
     setIsSubmitting(true);
     const result = await submitRegistration(values);
+    if (result.rateLimited) {
+      toast.error(result.error);
+      setIsSubmitting(false);
+      return;
+    }
     if (!result.success) {
       setFormError(result.error ?? "Registration failed. Please try again.");
       setIsSubmitting(false);
