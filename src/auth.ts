@@ -8,10 +8,36 @@ import { isEmailVerificationEnabled } from "@/lib/feature-flags";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
 
+/** The user's password-change time as a JWT-friendly value, or `undefined` if the user no longer exists. */
+async function getPasswordChangedAt(userId: string): Promise<number | null | undefined> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { passwordChangedAt: true } });
+  if (!user) return undefined;
+  return user.passwordChangedAt?.getTime() ?? null;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    // JWTs can't be revoked, so each token records the password-change time it was issued under and
+    // is rejected once that changes — a password reset or change signs out every other session.
+    async jwt({ token, user }) {
+      if (user?.id) {
+        token.id = user.id;
+        token.passwordChangedAt = (await getPasswordChangedAt(user.id)) ?? null;
+        return token;
+      }
+      if (typeof token.id !== "string") return token;
+
+      const passwordChangedAt = await getPasswordChangedAt(token.id);
+      if (passwordChangedAt === undefined || passwordChangedAt !== (token.passwordChangedAt ?? null)) {
+        return null;
+      }
+      return token;
+    },
+  },
   providers: [
     GitHub,
     Credentials({

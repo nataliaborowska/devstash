@@ -77,7 +77,10 @@ export async function consumePasswordResetToken(token: string, hashedPassword: s
     });
     if (deleted.count === 0 || record.expires < new Date()) return false;
 
-    const { count } = await tx.user.updateMany({ where: { email }, data: { password: hashedPassword } });
+    const { count } = await tx.user.updateMany({
+      where: { email },
+      data: { password: hashedPassword, passwordChangedAt: new Date() },
+    });
     await tx.user.updateMany({ where: { email, emailVerified: null }, data: { emailVerified: new Date() } });
     return count > 0;
   });

@@ -40,7 +40,9 @@ export function SignInForm({ callbackUrl, initialError, initialSuccess }: SignIn
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="callbackUrl" value={callbackUrl} />
+        {/* Keyed so a new submitted email remounts the uncontrolled input instead of changing its defaultValue. */}
         <FormField
+          key={state?.email ?? ""}
           id="email"
           label="Email"
           type="email"
