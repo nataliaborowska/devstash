@@ -1,33 +1,16 @@
-# Current Feature: Rate Limiting for Auth
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Reusable `src/lib/rate-limit.ts` utility using Upstash Redis + `@upstash/ratelimit` with a sliding window algorithm
-- Rate limit checks return `{ success, remaining, reset }`
-- Client IP taken from `x-forwarded-for` (Vercel) with a fallback, combined with email where applicable
-- Limits applied to auth flows:
-  - Login (credentials): 5 attempts / 15 min, keyed by IP + email
-  - Register: 3 attempts / 1 hour, keyed by IP
-  - Forgot password: 3 attempts / 1 hour, keyed by IP
-  - Reset password: 5 attempts / 15 min, keyed by IP
-  - Resend verification: 3 attempts / 15 min, keyed by IP + email
-- API routes return 429 with `{ error: "Too many attempts. Please try again in X minutes." }` and a `Retry-After` header
-- Frontend shows the rate limit error as a toast
-- Fails open (request allowed) if Upstash is unavailable or not configured
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- New env vars: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
-- Spec lists everything as `/api/auth/*` routes, but in this codebase only register is a route handler (`src/app/api/auth/register/route.ts`); login (`signInWithCredentials`), forgot password (`requestPasswordReset`) and reset password (`resetPassword`) are server actions in `src/actions/auth.ts`. Server actions can't return 429/`Retry-After`, so they should return the same error message in their `{ success, error }` result and read the IP via `headers()`
-- Login: limit inside the `signInWithCredentials` action rather than the NextAuth callback route
-- No resend-verification endpoint exists yet, so that row is skipped for now (the limit can be added when the endpoint is built)
-- Upstash free tier (10k requests/day) is enough for auth limiting
-- Middleware-based limiting is a possible later cleanup, not in scope
-- Spec: `context/features/rate-limiting-spec.md`
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -50,3 +33,5 @@ In Progress
 - **2026-10-18** — Email verification complete: `resend` installed, registration creates a 24h `VerificationToken` (SHA-256 hashed) and sends a verification email via Resend (`src/lib/email.ts`, `EMAIL_FROM` defaults to `onboarding@resend.dev`; user rolled back if sending fails), `GET /api/auth/verify-email` sets `emailVerified` and redirects to `/sign-in` with success or invalid-link message, credentials sign-in blocked for unverified emails via custom `EmailNotVerifiedError` (`CredentialsSignin` code), register toast now says to check inbox; added `scripts/delete-non-demo-users.ts` (dry run by default, `--confirm` to delete)
 - **2026-10-18** — Email verification toggle complete: `EMAIL_VERIFICATION_ENABLED` env flag read via `isEmailVerificationEnabled()` (`src/lib/feature-flags.ts`, opt-in: only `"true"` enables); when off, register skips the token/Resend email and credentials sign-in skips the `emailVerified` check; register API returns `verificationRequired` so the toast says "Check your inbox" or "Account created"; flag set to `false` in `.env`/`.env.production` until a Resend domain is verified
 - **2026-10-19** — Forgot password complete: "Forgot password?" link on `/sign-in`, `/forgot-password` sends a Resend reset email with a generic response (no account enumeration; GitHub-only accounts get no email), `/reset-password?token=` validates the token on load and sets a new bcrypt password via server actions (`requestPasswordReset`, `resetPassword`) then redirects to `/sign-in?reset=1`; reset tokens reuse `VerificationToken` under a `password-reset:<email>` identifier (SHA-256 hashed, 1h expiry, single use, consumed in a transaction, kept separate from email verification tokens), a successful reset also sets `emailVerified`; reset links use `AUTH_URL` and refuse to fall back to request headers in production; shared email/password Zod fields in `src/lib/validations/auth.ts`
+- **2026-10-24** — Profile page complete: protected `/profile` with user info (avatar, name, email, join date), usage stats with per-type item counts, change-password dialog (email/password users only), and delete-account confirmation dialog; a password reset or change now signs out other sessions via `passwordChangedAt` checked in the JWT callback
+- **2026-10-24** — Rate limiting for auth complete: `@upstash/ratelimit` + `@upstash/redis` installed, `src/lib/rate-limit.ts` (sliding window, `{ success, remaining, reset }`, IP from `x-forwarded-for`, fails open when Upstash is unconfigured/unreachable); login 5/15m (IP + email), register 3/1h, forgot password 3/1h, reset password 5/15m; register API returns 429 + `Retry-After`, server actions return `rateLimited` errors shown as toasts via `withRateLimitToast`; direct POSTs to `/api/auth/callback/credentials` return 404 so the login limit can't be bypassed; resend-verification limit deferred until that endpoint exists
