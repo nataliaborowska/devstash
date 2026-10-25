@@ -1,21 +1,16 @@
-# Current Feature: Items List Three Columns
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Item grid on `/items/[type]` shows 3 columns on large screens (`lg+`) instead of 2
-- Stays responsive: 1 column on mobile, 2 columns on medium screens
-- Loading skeleton (`src/app/items/[type]/loading.tsx`) uses the same column layout so nothing jumps when the page loads
-- Cards still look right at the narrower width (titles, descriptions, and tags truncate or wrap cleanly)
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Grid lives in `src/app/items/[type]/page.tsx` (`grid grid-cols-1 md:grid-cols-2 gap-3`); content is capped at `max-w-5xl`, so each card is ~330px wide at 3 columns
-- `ItemCard` (`src/components/dashboard/item-card.tsx`) is shared with the dashboard; avoid changes that affect the dashboard's list layout
-- Pure layout change — no server actions or utilities, so no new unit tests expected
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -42,3 +37,4 @@ In Progress
 - **2026-10-24** — Rate limiting for auth complete: `@upstash/ratelimit` + `@upstash/redis` installed, `src/lib/rate-limit.ts` (sliding window, `{ success, remaining, reset }`, IP from `x-forwarded-for`, fails open when Upstash is unconfigured/unreachable); login 5/15m (IP + email), register 3/1h, forgot password 3/1h, reset password 5/15m; register API returns 429 + `Retry-After`, server actions return `rateLimited` errors shown as toasts via `withRateLimitToast`; direct POSTs to `/api/auth/callback/credentials` return 404 so the login limit can't be bypassed; resend-verification limit deferred until that endpoint exists
 - **2026-10-25** — Items list view complete: dynamic `/items/[type]` route (plural slug mapped to a system type via `getSystemItemTypeBySlug`, unknown types 404) showing the signed-in user's items from `getItemsByType` (pinned first, then most recently updated) in a 1-column / 2-column (`md+`) grid of `ItemCard`s with type-colored left borders; type icon + item count header, empty state, `loading.tsx` skeleton, dashboard app shell reused via `src/app/items/layout.tsx`, and `/items/*` added to the proxy's protected routes
 - **2026-10-25** — Vitest setup complete: `vitest@5` installed (`@types/node` bumped to `^22` for its peer requirement), `vitest.config.mts` (Node environment, `@` alias, only colocated `src/**/*.test.ts` so components are excluded, mocks/env stubs reset between tests), `npm test` / `npm run test:watch` scripts; starter tests for `safe-redirect`, `feature-flags`, `rate-limit` helpers, auth Zod schemas, and the `changePassword` server action (mocked `@/auth`, Prisma, bcrypt, Next) as the reference pattern; new `/feature test` skill action; workflow, coding standards, `CLAUDE.md`, and project overview updated for unit testing; feature skill actions now target `master` instead of `main`
+- **2026-10-25** — Items list three columns complete: `/items/[type]` grid and its `loading.tsx` skeleton now use `lg:grid-cols-3` (1 column on mobile, 2 on `md`, 3 on `lg+`); `ItemCard` unchanged so the dashboard is unaffected; `/feature start` action now writes/updates unit tests for changed server actions and utilities and runs `npm test`, lint, and build
