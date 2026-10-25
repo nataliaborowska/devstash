@@ -1,20 +1,16 @@
-# Current Feature: Items List View
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Dynamic route `/items/[type]` (e.g. `/items/snippets`, `/items/notes`)
-- Fetch and display the signed-in user's items filtered by type
-- Responsive grid of `ItemCard` components — one column on mobile, two columns on medium and up
-- Each card has a left border colored by its item type
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Follow existing codebase patterns (Prisma queries in `src/lib/db/items.ts`, server components, reuse `ItemCard` from `src/components/dashboard/item-card.tsx` and `TypeIcon` from `src/lib/icon-map.tsx`)
-- Sidebar type links already point to `/items/[type]`
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -39,3 +35,4 @@ In Progress
 - **2026-10-19** — Forgot password complete: "Forgot password?" link on `/sign-in`, `/forgot-password` sends a Resend reset email with a generic response (no account enumeration; GitHub-only accounts get no email), `/reset-password?token=` validates the token on load and sets a new bcrypt password via server actions (`requestPasswordReset`, `resetPassword`) then redirects to `/sign-in?reset=1`; reset tokens reuse `VerificationToken` under a `password-reset:<email>` identifier (SHA-256 hashed, 1h expiry, single use, consumed in a transaction, kept separate from email verification tokens), a successful reset also sets `emailVerified`; reset links use `AUTH_URL` and refuse to fall back to request headers in production; shared email/password Zod fields in `src/lib/validations/auth.ts`
 - **2026-10-24** — Profile page complete: protected `/profile` with user info (avatar, name, email, join date), usage stats with per-type item counts, change-password dialog (email/password users only), and delete-account confirmation dialog; a password reset or change now signs out other sessions via `passwordChangedAt` checked in the JWT callback
 - **2026-10-24** — Rate limiting for auth complete: `@upstash/ratelimit` + `@upstash/redis` installed, `src/lib/rate-limit.ts` (sliding window, `{ success, remaining, reset }`, IP from `x-forwarded-for`, fails open when Upstash is unconfigured/unreachable); login 5/15m (IP + email), register 3/1h, forgot password 3/1h, reset password 5/15m; register API returns 429 + `Retry-After`, server actions return `rateLimited` errors shown as toasts via `withRateLimitToast`; direct POSTs to `/api/auth/callback/credentials` return 404 so the login limit can't be bypassed; resend-verification limit deferred until that endpoint exists
+- **2026-10-25** — Items list view complete: dynamic `/items/[type]` route (plural slug mapped to a system type via `getSystemItemTypeBySlug`, unknown types 404) showing the signed-in user's items from `getItemsByType` (pinned first, then most recently updated) in a 1-column / 2-column (`md+`) grid of `ItemCard`s with type-colored left borders; type icon + item count header, empty state, `loading.tsx` skeleton, dashboard app shell reused via `src/app/items/layout.tsx`, and `/items/*` added to the proxy's protected routes
