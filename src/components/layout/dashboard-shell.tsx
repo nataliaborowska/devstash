@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ItemDrawerProvider } from "@/components/items/item-drawer-provider";
 import { TopBar } from "@/components/layout/top-bar";
 import { Sidebar, SidebarContent } from "@/components/layout/sidebar";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -55,7 +56,9 @@ export function DashboardShell({
           </SheetContent>
         </Sheet>
 
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-6">
+          <ItemDrawerProvider>{children}</ItemDrawerProvider>
+        </main>
       </div>
     </div>
   );

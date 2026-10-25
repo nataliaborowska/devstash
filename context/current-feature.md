@@ -1,16 +1,28 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Item Drawer
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Clicking an `ItemCard` opens a right-side shadcn `Sheet` drawer showing that item's full details (no separate item page, no page navigation)
+- Works on both the dashboard and the `/items/[type]` list pages
+- Client wrapper component manages drawer open state and the selected item, since the pages are server components
+- Full item detail (content, collections, language, etc.) is fetched on click from `GET /api/items/[id]`, which checks auth and only returns the signed-in user's item
+- Query function for item detail lives in `src/lib/db/items.ts` and is called by the API route
+- Drawer shows a skeleton/loading state while fetching
+- Action bar with Favorite (star, yellow when active), Pin, Copy, Edit (pencil), and Delete (trash, right-aligned), matching the screenshot layout
+- Unit tests for the new query function and any new utilities; `npm test`, lint, and build pass
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Card data (title, description, tags, etc.) is still fetched by the server components as before — only the detail is fetched on click
+- Scope is the details display only: the code editor and item-type-specific extras come later (action buttons can be UI-only for now unless trivially wired)
+- Should feel snappy
+- `Sheet` component already exists in `src/components/ui/sheet.tsx`
+- Visual reference: `context/screenshots/dashboard-ui-drawer.png`
+- Spec: `context/features/item-drawer-spec.md`
 
 ## History
 

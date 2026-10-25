@@ -1,4 +1,5 @@
 import { Star, Pin, MoreHorizontal } from "lucide-react";
+import { ItemDrawerTrigger } from "@/components/items/item-drawer-provider";
 import { TypeIcon } from "@/lib/icon-map";
 import type { ItemWithType } from "@/lib/db/items";
 
@@ -17,66 +18,68 @@ export function ItemCard({ item }: ItemCardProps) {
   const date = item.lastUsedAt ?? item.createdAt;
 
   return (
-    <div
-      className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-border/80 hover:bg-accent/30 transition-colors cursor-pointer"
-      style={{
-        borderLeftWidth: "3px",
-        borderLeftColor: item.type.color ?? undefined,
-      }}
-    >
-      {/* Type icon badge */}
+    <ItemDrawerTrigger itemId={item.id}>
       <div
-        className="shrink-0 h-9 w-9 rounded-md flex items-center justify-center bg-muted mt-0.5"
-        title={item.type.name}
+        className="group flex h-full items-start gap-3 rounded-lg border border-border bg-card p-4 hover:border-border/80 hover:bg-accent/30 transition-colors cursor-pointer"
+        style={{
+          borderLeftWidth: "3px",
+          borderLeftColor: item.type.color ?? undefined,
+        }}
       >
-        <TypeIcon
-          name={item.type.icon}
-          className="h-4 w-4"
-          style={{ color: item.type.color ?? undefined }}
-        />
-      </div>
+        {/* Type icon badge */}
+        <div
+          className="shrink-0 h-9 w-9 rounded-md flex items-center justify-center bg-muted mt-0.5"
+          title={item.type.name}
+        >
+          <TypeIcon
+            name={item.type.icon}
+            className="h-4 w-4"
+            style={{ color: item.type.color ?? undefined }}
+          />
+        </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-1">
-          <h3 className="font-medium text-sm truncate">{item.title}</h3>
-          {item.isFavorite && (
-            <Star className="h-3 w-3 shrink-0 fill-yellow-400 text-yellow-400" />
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-1">
+            <h3 className="font-medium text-sm truncate">{item.title}</h3>
+            {item.isFavorite && (
+              <Star className="h-3 w-3 shrink-0 fill-yellow-400 text-yellow-400" />
+            )}
+            {item.isPinned && (
+              <Pin className="h-3 w-3 shrink-0 text-violet-400 fill-violet-400" />
+            )}
+          </div>
+
+          {item.description && (
+            <p className="text-xs text-muted-foreground truncate mb-2">
+              {item.description}
+            </p>
           )}
-          {item.isPinned && (
-            <Pin className="h-3 w-3 shrink-0 text-violet-400 fill-violet-400" />
+
+          {item.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {item.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           )}
         </div>
 
-        {item.description && (
-          <p className="text-xs text-muted-foreground truncate mb-2">
-            {item.description}
-          </p>
-        )}
-
-        {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-muted text-muted-foreground"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        {/* Right side */}
+        <div className="shrink-0 flex flex-col items-end gap-2 ml-2">
+          <button className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-muted transition-all">
+            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+          </button>
+          <span className="text-[11px] text-muted-foreground tabular-nums">
+            {formatDate(date)}
+          </span>
+        </div>
       </div>
-
-      {/* Right side */}
-      <div className="shrink-0 flex flex-col items-end gap-2 ml-2">
-        <button className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-muted transition-all">
-          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-        </button>
-        <span className="text-[11px] text-muted-foreground tabular-nums">
-          {formatDate(date)}
-        </span>
-      </div>
-    </div>
+    </ItemDrawerTrigger>
   );
 }

@@ -100,6 +100,51 @@ export async function getItemsByType(userId: string, typeId: string): Promise<It
   return items.map(mapItem)
 }
 
+export type ItemDetail = ItemWithType & {
+  contentType: "TEXT" | "FILE"
+  content: string | null
+  url: string | null
+  fileUrl: string | null
+  fileName: string | null
+  fileSize: number | null
+  language: string | null
+  updatedAt: Date
+  collection: { id: string; name: string } | null
+}
+
+// Scoped to the owner so one user can never read another user's item by id.
+export async function getItemDetail(userId: string, id: string): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id, userId },
+    select: {
+      ...ITEM_SELECT,
+      contentType: true,
+      content: true,
+      url: true,
+      fileUrl: true,
+      fileName: true,
+      fileSize: true,
+      language: true,
+      updatedAt: true,
+      collection: { select: { id: true, name: true } },
+    },
+  })
+  if (!item) return null
+
+  return {
+    ...mapItem(item),
+    contentType: item.contentType,
+    content: item.content,
+    url: item.url,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    language: item.language,
+    updatedAt: item.updatedAt,
+    collection: item.collection,
+  }
+}
+
 export async function getItemStats() {
   const [totalItems, favoriteItems, totalCollections, favoriteCollections] = await Promise.all([
     prisma.item.count(),
