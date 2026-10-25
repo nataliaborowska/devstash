@@ -1,16 +1,20 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Items List View
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Dynamic route `/items/[type]` (e.g. `/items/snippets`, `/items/notes`)
+- Fetch and display the signed-in user's items filtered by type
+- Responsive grid of `ItemCard` components — one column on mobile, two columns on medium and up
+- Each card has a left border colored by its item type
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Follow existing codebase patterns (Prisma queries in `src/lib/db/items.ts`, server components, reuse `ItemCard` from `src/components/dashboard/item-card.tsx` and `TypeIcon` from `src/lib/icon-map.tsx`)
+- Sidebar type links already point to `/items/[type]`
 
 ## History
 
