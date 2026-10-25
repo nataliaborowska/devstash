@@ -1,16 +1,20 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Vitest Setup
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Vitest configured for unit tests of server actions and utilities only (no component tests)
+- `npm test` / `npm run test:watch` scripts
+- Starter tests for existing utilities and one server action showing the mocking pattern
+- Workflow and coding-standards docs updated to include unit testing
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Vitest 5 requires `@types/node` 22+, so `@types/node` was bumped from `^20` to `^22` (matches the installed Node 22 runtime)
+- Tests are colocated as `src/**/*.test.ts`; `.tsx` is excluded so component tests aren't picked up
 
 ## History
 

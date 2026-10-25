@@ -25,6 +25,8 @@ npm run dev      # start dev server (Turbopack, outputs to .next/dev)
 npm run build    # production build (Turbopack by default)
 npm run start    # start production server
 npm run lint     # run ESLint directly (next lint no longer exists)
+npm test         # run Vitest unit tests once (server actions + utilities)
+npm run test:watch  # run Vitest in watch mode
 ```
 
 **important:** Do not add clause to any commit messages

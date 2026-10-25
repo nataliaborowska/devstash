@@ -89,6 +89,15 @@ Example v4 configuration:
 - Return `{ success, data, error }` pattern from actions
 - Display user-friendly error messages via toast
 
+## Testing
+
+- Vitest for unit tests (`npm test` runs once, `npm run test:watch` watches)
+- Test server actions (`src/actions/`) and utilities (`src/lib/`) only — no component tests
+- Colocate tests next to the source file as `*.test.ts` (`.tsx` test files are not picked up)
+- Tests run in a Node environment and never hit the real database or external services: mock `@/auth`, `@/lib/prisma`, `next/navigation`, and third-party clients with `vi.mock`
+- Use `vi.stubEnv` for environment variables and fake timers for time-dependent logic
+- Cover the happy path plus auth, validation, and error branches of server actions
+
 ## Code Quality
 
 - No commented-out code unless specified

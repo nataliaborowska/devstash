@@ -584,7 +584,8 @@ Ordered by dependency — each step unblocks the next.
 - **One branch per lesson** — students can follow along and compare diffs
 - AI-assisted development with **Cursor**, **Claude Code**, or **ChatGPT**
 - **Sentry** for runtime error tracking
-- **GitHub Actions** for CI (lint + type-check on PRs)
+- **Vitest** unit tests for server actions and utilities (`npm test`)
+- **GitHub Actions** for CI (lint + type-check + unit tests on PRs)
 
 ```bash
 # Branch naming convention
