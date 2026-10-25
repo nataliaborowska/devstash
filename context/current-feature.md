@@ -1,28 +1,16 @@
-# Current Feature: Item Drawer
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Clicking an `ItemCard` opens a right-side shadcn `Sheet` drawer showing that item's full details (no separate item page, no page navigation)
-- Works on both the dashboard and the `/items/[type]` list pages
-- Client wrapper component manages drawer open state and the selected item, since the pages are server components
-- Full item detail (content, collections, language, etc.) is fetched on click from `GET /api/items/[id]`, which checks auth and only returns the signed-in user's item
-- Query function for item detail lives in `src/lib/db/items.ts` and is called by the API route
-- Drawer shows a skeleton/loading state while fetching
-- Action bar with Favorite (star, yellow when active), Pin, Copy, Edit (pencil), and Delete (trash, right-aligned), matching the screenshot layout
-- Unit tests for the new query function and any new utilities; `npm test`, lint, and build pass
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Card data (title, description, tags, etc.) is still fetched by the server components as before — only the detail is fetched on click
-- Scope is the details display only: the code editor and item-type-specific extras come later (action buttons can be UI-only for now unless trivially wired)
-- Should feel snappy
-- `Sheet` component already exists in `src/components/ui/sheet.tsx`
-- Visual reference: `context/screenshots/dashboard-ui-drawer.png`
-- Spec: `context/features/item-drawer-spec.md`
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -50,3 +38,4 @@ In Progress
 - **2026-10-25** — Items list view complete: dynamic `/items/[type]` route (plural slug mapped to a system type via `getSystemItemTypeBySlug`, unknown types 404) showing the signed-in user's items from `getItemsByType` (pinned first, then most recently updated) in a 1-column / 2-column (`md+`) grid of `ItemCard`s with type-colored left borders; type icon + item count header, empty state, `loading.tsx` skeleton, dashboard app shell reused via `src/app/items/layout.tsx`, and `/items/*` added to the proxy's protected routes
 - **2026-10-25** — Vitest setup complete: `vitest@5` installed (`@types/node` bumped to `^22` for its peer requirement), `vitest.config.mts` (Node environment, `@` alias, only colocated `src/**/*.test.ts` so components are excluded, mocks/env stubs reset between tests), `npm test` / `npm run test:watch` scripts; starter tests for `safe-redirect`, `feature-flags`, `rate-limit` helpers, auth Zod schemas, and the `changePassword` server action (mocked `@/auth`, Prisma, bcrypt, Next) as the reference pattern; new `/feature test` skill action; workflow, coding standards, `CLAUDE.md`, and project overview updated for unit testing; feature skill actions now target `master` instead of `main`
 - **2026-10-25** — Items list three columns complete: `/items/[type]` grid and its `loading.tsx` skeleton now use `lg:grid-cols-3` (1 column on mobile, 2 on `md`, 3 on `lg+`); `ItemCard` unchanged so the dashboard is unaffected; `/feature start` action now writes/updates unit tests for changed server actions and utilities and runs `npm test`, lint, and build
+- **2026-10-25** — Item drawer complete: clicking an `ItemCard` on the dashboard or `/items/[type]` opens a right-side shadcn `Sheet` (no page navigation); `ItemDrawerProvider` in `DashboardShell` owns drawer state and fetches full detail on click from `GET /api/items/[id]` (auth check, 401/404/500, owner-scoped `getItemDetail` in `src/lib/db/items.ts`), aborting stale requests; skeleton while loading; header with type icon, title, type + language badges; action bar with Favorite/Pin (reflect state), working Copy (content or URL, toast), Edit, and right-aligned Delete (UI-only for now); body shows description, content, URL (http(s) only linked), file, tags, collection, and created/updated dates; `getItemDetail` unit tests added
