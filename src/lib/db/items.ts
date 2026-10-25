@@ -82,6 +82,24 @@ export async function getRecentItems(limit = 10): Promise<ItemWithType[]> {
   return items.map(mapItem)
 }
 
+// URL slugs are the plural of the system type name, e.g. "snippets" -> "snippet"
+export async function getSystemItemTypeBySlug(slug: string): Promise<ItemType | null> {
+  if (!slug.endsWith("s")) return null
+  return prisma.itemType.findFirst({
+    where: { name: slug.slice(0, -1), isSystem: true },
+    select: { id: true, name: true, icon: true, color: true },
+  })
+}
+
+export async function getItemsByType(userId: string, typeId: string): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, typeId },
+    select: ITEM_SELECT,
+    orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
+  })
+  return items.map(mapItem)
+}
+
 export async function getItemStats() {
   const [totalItems, favoriteItems, totalCollections, favoriteCollections] = await Promise.all([
     prisma.item.count(),
