@@ -1,20 +1,16 @@
-# Current Feature: Vitest Setup
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Vitest configured for unit tests of server actions and utilities only (no component tests)
-- `npm test` / `npm run test:watch` scripts
-- Starter tests for existing utilities and one server action showing the mocking pattern
-- Workflow and coding-standards docs updated to include unit testing
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Vitest 5 requires `@types/node` 22+, so `@types/node` was bumped from `^20` to `^22` (matches the installed Node 22 runtime)
-- Tests are colocated as `src/**/*.test.ts`; `.tsx` is excluded so component tests aren't picked up
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -40,3 +36,4 @@ In Progress
 - **2026-10-24** — Profile page complete: protected `/profile` with user info (avatar, name, email, join date), usage stats with per-type item counts, change-password dialog (email/password users only), and delete-account confirmation dialog; a password reset or change now signs out other sessions via `passwordChangedAt` checked in the JWT callback
 - **2026-10-24** — Rate limiting for auth complete: `@upstash/ratelimit` + `@upstash/redis` installed, `src/lib/rate-limit.ts` (sliding window, `{ success, remaining, reset }`, IP from `x-forwarded-for`, fails open when Upstash is unconfigured/unreachable); login 5/15m (IP + email), register 3/1h, forgot password 3/1h, reset password 5/15m; register API returns 429 + `Retry-After`, server actions return `rateLimited` errors shown as toasts via `withRateLimitToast`; direct POSTs to `/api/auth/callback/credentials` return 404 so the login limit can't be bypassed; resend-verification limit deferred until that endpoint exists
 - **2026-10-25** — Items list view complete: dynamic `/items/[type]` route (plural slug mapped to a system type via `getSystemItemTypeBySlug`, unknown types 404) showing the signed-in user's items from `getItemsByType` (pinned first, then most recently updated) in a 1-column / 2-column (`md+`) grid of `ItemCard`s with type-colored left borders; type icon + item count header, empty state, `loading.tsx` skeleton, dashboard app shell reused via `src/app/items/layout.tsx`, and `/items/*` added to the proxy's protected routes
+- **2026-10-25** — Vitest setup complete: `vitest@5` installed (`@types/node` bumped to `^22` for its peer requirement), `vitest.config.mts` (Node environment, `@` alias, only colocated `src/**/*.test.ts` so components are excluded, mocks/env stubs reset between tests), `npm test` / `npm run test:watch` scripts; starter tests for `safe-redirect`, `feature-flags`, `rate-limit` helpers, auth Zod schemas, and the `changePassword` server action (mocked `@/auth`, Prisma, bcrypt, Next) as the reference pattern; new `/feature test` skill action; workflow, coding standards, `CLAUDE.md`, and project overview updated for unit testing; feature skill actions now target `master` instead of `main`
