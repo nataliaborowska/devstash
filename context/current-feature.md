@@ -1,16 +1,21 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Items List Three Columns
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Item grid on `/items/[type]` shows 3 columns on large screens (`lg+`) instead of 2
+- Stays responsive: 1 column on mobile, 2 columns on medium screens
+- Loading skeleton (`src/app/items/[type]/loading.tsx`) uses the same column layout so nothing jumps when the page loads
+- Cards still look right at the narrower width (titles, descriptions, and tags truncate or wrap cleanly)
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Grid lives in `src/app/items/[type]/page.tsx` (`grid grid-cols-1 md:grid-cols-2 gap-3`); content is capped at `max-w-5xl`, so each card is ~330px wide at 3 columns
+- `ItemCard` (`src/components/dashboard/item-card.tsx`) is shared with the dashboard; avoid changes that affect the dashboard's list layout
+- Pure layout change — no server actions or utilities, so no new unit tests expected
 
 ## History
 
