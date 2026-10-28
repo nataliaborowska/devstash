@@ -53,7 +53,13 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
   return (
     <ItemDrawerContext.Provider value={{ openItem }}>
       {children}
-      <ItemDrawer open={open} onOpenChange={handleOpenChange} item={item} error={error} />
+      <ItemDrawer
+        open={open}
+        onOpenChange={handleOpenChange}
+        item={item}
+        error={error}
+        onItemUpdated={setItem}
+      />
     </ItemDrawerContext.Provider>
   );
 }

@@ -1,18 +1,10 @@
 "use client";
 
-import type { ReactNode } from "react";
-import {
-  Calendar,
-  Copy,
-  FolderOpen,
-  Pencil,
-  Pin,
-  Star,
-  Tag,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react";
+import { useState } from "react";
+import { Copy, Pencil, Pin, Star, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
+import { ItemEditForm } from "@/components/items/item-edit-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -32,9 +24,10 @@ interface ItemDrawerProps {
   onOpenChange: (open: boolean) => void;
   item: ItemDetailData | null;
   error: string | null;
+  onItemUpdated: (item: ItemDetailData) => void;
 }
 
-export function ItemDrawer({ open, onOpenChange, item, error }: ItemDrawerProps) {
+export function ItemDrawer({ open, onOpenChange, item, error, onItemUpdated }: ItemDrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -42,7 +35,8 @@ export function ItemDrawer({ open, onOpenChange, item, error }: ItemDrawerProps)
         className="gap-0 p-0 data-[side=right]:w-full data-[side=right]:sm:max-w-xl"
       >
         {item ? (
-          <ItemDetailView item={item} />
+          // Keyed by id so edit mode resets when a different item is opened.
+          <ItemDetailView key={item.id} item={item} onItemUpdated={onItemUpdated} />
         ) : error ? (
           <SheetHeader className="pr-12">
             <SheetTitle>Couldn&apos;t load item</SheetTitle>
@@ -56,7 +50,13 @@ export function ItemDrawer({ open, onOpenChange, item, error }: ItemDrawerProps)
   );
 }
 
-function ItemDetailView({ item }: { item: ItemDetailData }) {
+interface ItemDetailViewProps {
+  item: ItemDetailData;
+  onItemUpdated: (item: ItemDetailData) => void;
+}
+
+function ItemDetailView({ item, onItemUpdated }: ItemDetailViewProps) {
+  const [isEditing, setIsEditing] = useState(false);
   const copyText = item.content ?? item.url;
 
   async function handleCopy() {
@@ -91,6 +91,32 @@ function ItemDetailView({ item }: { item: ItemDetailData }) {
         </div>
       </SheetHeader>
 
+      {isEditing ? (
+        <ItemEditForm
+          item={item}
+          onCancel={() => setIsEditing(false)}
+          onSaved={(updated) => {
+            onItemUpdated(updated);
+            setIsEditing(false);
+          }}
+        />
+      ) : (
+        <ItemDetailBody item={item} copyText={copyText} onCopy={handleCopy} onEdit={() => setIsEditing(true)} />
+      )}
+    </>
+  );
+}
+
+interface ItemDetailBodyProps {
+  item: ItemDetailData;
+  copyText: string | null;
+  onCopy: () => void;
+  onEdit: () => void;
+}
+
+function ItemDetailBody({ item, copyText, onCopy, onEdit }: ItemDetailBodyProps) {
+  return (
+    <>
       {/* Action bar */}
       <div className="flex items-center gap-1 border-y border-border px-4 py-2">
         <Button
@@ -109,11 +135,11 @@ function ItemDetailView({ item }: { item: ItemDetailData }) {
           <Pin className={cn(item.isPinned && "fill-violet-400")} />
           Pin
         </Button>
-        <Button variant="ghost" size="sm" onClick={handleCopy} disabled={!copyText}>
+        <Button variant="ghost" size="sm" onClick={onCopy} disabled={!copyText}>
           <Copy />
           Copy
         </Button>
-        <Button variant="ghost" size="sm" className="ml-auto">
+        <Button variant="ghost" size="sm" className="ml-auto" onClick={onEdit}>
           <Pencil />
           Edit
         </Button>
@@ -181,48 +207,9 @@ function ItemDetailView({ item }: { item: ItemDetailData }) {
           )}
         </DetailSection>
 
-        <DetailSection icon={FolderOpen} label="Collections">
-          {item.collection ? (
-            <span className="inline-block rounded border border-border px-2 py-0.5 text-xs">
-              {item.collection.name}
-            </span>
-          ) : (
-            <p className="text-sm text-muted-foreground">Not in a collection</p>
-          )}
-        </DetailSection>
-
-        <DetailSection icon={Calendar} label="Details">
-          <dl className="space-y-1.5 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">Created</dt>
-              <dd>{formatLongDate(item.createdAt)}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">Updated</dt>
-              <dd>{formatLongDate(item.updatedAt)}</dd>
-            </div>
-          </dl>
-        </DetailSection>
+        <ItemMetaSections item={item} />
       </div>
     </>
-  );
-}
-
-interface DetailSectionProps {
-  label: string;
-  icon?: LucideIcon;
-  children: ReactNode;
-}
-
-function DetailSection({ label, icon: Icon, children }: DetailSectionProps) {
-  return (
-    <section className="space-y-2">
-      <h3 className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        {Icon && <Icon className="h-3.5 w-3.5" />}
-        {label}
-      </h3>
-      {children}
-    </section>
   );
 }
 
@@ -268,12 +255,4 @@ function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function formatLongDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
 }
