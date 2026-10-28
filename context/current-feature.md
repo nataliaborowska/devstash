@@ -1,25 +1,16 @@
-# Current Feature: Delete Items
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- The Delete button in the item drawer action bar (currently UI-only) deletes the item
-- Clicking Delete opens a shadcn/ui confirmation dialog (`AlertDialog`) naming the item, with Cancel and a destructive Delete button
-- Delete button shows a pending state ("Deleting...") and is disabled while the request runs
-- On success: dialog and drawer close, a success toast is shown, and `router.refresh()` removes the item from cards/counts (dashboard, `/items/[type]`, sidebar)
-- On failure: an error toast is shown and the drawer stays open
-- `deleteItem` server action in `src/actions/items.ts` (auth check, Zod-validated id, `{ success, data, error }` result) calls an owner-scoped `deleteItem` query in `src/lib/db/items.ts` so users can only delete their own items
-- Unit tests for the new server action and query (happy path, unauthenticated, invalid id, not found / not owned, DB error)
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Add the shadcn `alert-dialog` component (`npx shadcn@latest add alert-dialog`); the existing profile `DeleteAccountDialog` uses `Dialog` and can serve as a pattern reference
-- Follow the `updateItem` action/query pattern from the drawer edit feature
-- Item tags (`ItemTag`) cascade on delete; `Tag` rows themselves are left in place
-- Deleting a FILE item's R2 object is out of scope (file uploads not implemented yet)
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -49,3 +40,4 @@ In Progress
 - **2026-10-25** — Items list three columns complete: `/items/[type]` grid and its `loading.tsx` skeleton now use `lg:grid-cols-3` (1 column on mobile, 2 on `md`, 3 on `lg+`); `ItemCard` unchanged so the dashboard is unaffected; `/feature start` action now writes/updates unit tests for changed server actions and utilities and runs `npm test`, lint, and build
 - **2026-10-25** — Item drawer complete: clicking an `ItemCard` on the dashboard or `/items/[type]` opens a right-side shadcn `Sheet` (no page navigation); `ItemDrawerProvider` in `DashboardShell` owns drawer state and fetches full detail on click from `GET /api/items/[id]` (auth check, 401/404/500, owner-scoped `getItemDetail` in `src/lib/db/items.ts`), aborting stale requests; skeleton while loading; header with type icon, title, type + language badges; action bar with Favorite/Pin (reflect state), working Copy (content or URL, toast), Edit, and right-aligned Delete (UI-only for now); body shows description, content, URL (http(s) only linked), file, tags, collection, and created/updated dates; `getItemDetail` unit tests added
 - **2026-10-28** — Item drawer edit mode complete: Edit button switches the open drawer to inline edit mode with Save/Cancel replacing the action bar; editable title, description, comma-separated tags, plus type-specific content (snippet/prompt/command/note), language (snippet/command), and URL (link); type, collection, and dates stay display-only; Save disabled on empty title, toasts on success/error, drawer refreshes from the returned `ItemDetail` and `router.refresh()` updates cards; `updateItem` server action (`src/actions/items.ts`) validates with `updateItemSchema` (`src/lib/validations/items.ts`: blank strings to null, content whitespace kept, http(s)-only URLs, deduped tags) and calls owner-scoped `updateItem` in `src/lib/db/items.ts` (transaction, tags replaced via connect-or-create, hidden type fields untouched); shadcn `Textarea` added; shared `item-detail-sections.tsx` and new `item-edit-form.tsx`; unit tests for the action and query
+- **2026-10-28** — Delete items complete: the item drawer's Delete button opens a shadcn `AlertDialog` (`delete-item-dialog.tsx`) naming the item with Cancel and destructive Delete ("Deleting..." pending state, dialog locked while running); on success a toast shows, the drawer closes, and `router.refresh()` updates cards and counts; on failure an error toast keeps the drawer open; `deleteItem` server action (`src/actions/items.ts`, auth check, `itemIdSchema` in `src/lib/validations/items.ts`) calls owner-scoped `deleteItem` in `src/lib/db/items.ts` (single `deleteMany` by id + userId, `ItemTag` rows cascade); shadcn `alert-dialog` added (CLI-generated `cn` import fixed to `@/lib/utils`); unit tests for the action and query
