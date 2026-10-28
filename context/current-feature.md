@@ -1,16 +1,25 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Delete Items
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- The Delete button in the item drawer action bar (currently UI-only) deletes the item
+- Clicking Delete opens a shadcn/ui confirmation dialog (`AlertDialog`) naming the item, with Cancel and a destructive Delete button
+- Delete button shows a pending state ("Deleting...") and is disabled while the request runs
+- On success: dialog and drawer close, a success toast is shown, and `router.refresh()` removes the item from cards/counts (dashboard, `/items/[type]`, sidebar)
+- On failure: an error toast is shown and the drawer stays open
+- `deleteItem` server action in `src/actions/items.ts` (auth check, Zod-validated id, `{ success, data, error }` result) calls an owner-scoped `deleteItem` query in `src/lib/db/items.ts` so users can only delete their own items
+- Unit tests for the new server action and query (happy path, unauthenticated, invalid id, not found / not owned, DB error)
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Add the shadcn `alert-dialog` component (`npx shadcn@latest add alert-dialog`); the existing profile `DeleteAccountDialog` uses `Dialog` and can serve as a pattern reference
+- Follow the `updateItem` action/query pattern from the drawer edit feature
+- Item tags (`ItemTag`) cascade on delete; `Tag` rows themselves are left in place
+- Deleting a FILE item's R2 object is out of scope (file uploads not implemented yet)
 
 ## History
 

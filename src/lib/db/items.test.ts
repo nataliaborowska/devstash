@@ -1,15 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { getItemDetail, updateItem } from "@/lib/db/items";
+import { deleteItem, getItemDetail, updateItem } from "@/lib/db/items";
 
 vi.mock("@/lib/prisma", () => {
-  const item = { findFirst: vi.fn(), update: vi.fn() };
+  const item = { findFirst: vi.fn(), update: vi.fn(), deleteMany: vi.fn() };
   // Interactive transactions run against the same mocked client.
   return { prisma: { item, $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn({ item })) } };
 });
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
 const mockUpdate = vi.mocked(prisma.item.update);
+const mockDeleteMany = vi.mocked(prisma.item.deleteMany);
 
 const createdAt = new Date("2026-01-15T10:00:00Z");
 const updatedAt = new Date("2026-02-01T12:00:00Z");
@@ -155,5 +156,25 @@ describe("updateItem", () => {
       tags: ["react", "hooks"],
       collection: { id: "col-1", name: "React Patterns" },
     });
+  });
+});
+
+describe("deleteItem", () => {
+  beforeEach(() => {
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+  });
+
+  it("only deletes the item for its owner", async () => {
+    await deleteItem("user-1", "item-1");
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: "item-1", userId: "user-1" } });
+  });
+
+  it("returns true when the item was deleted", async () => {
+    expect(await deleteItem("user-1", "item-1")).toBe(true);
+  });
+
+  it("returns false when the item does not exist or belongs to another user", async () => {
+    mockDeleteMany.mockResolvedValue({ count: 0 });
+    expect(await deleteItem("user-2", "item-1")).toBe(false);
   });
 });

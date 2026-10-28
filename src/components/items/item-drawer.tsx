@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Pencil, Pin, Star, Tag, Trash2 } from "lucide-react";
+import { Copy, Pencil, Pin, Star, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
 import { ItemEditForm } from "@/components/items/item-edit-form";
 import { Badge } from "@/components/ui/badge";
@@ -25,9 +26,10 @@ interface ItemDrawerProps {
   item: ItemDetailData | null;
   error: string | null;
   onItemUpdated: (item: ItemDetailData) => void;
+  onItemDeleted: () => void;
 }
 
-export function ItemDrawer({ open, onOpenChange, item, error, onItemUpdated }: ItemDrawerProps) {
+export function ItemDrawer({ open, onOpenChange, item, error, onItemUpdated, onItemDeleted }: ItemDrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -36,7 +38,12 @@ export function ItemDrawer({ open, onOpenChange, item, error, onItemUpdated }: I
       >
         {item ? (
           // Keyed by id so edit mode resets when a different item is opened.
-          <ItemDetailView key={item.id} item={item} onItemUpdated={onItemUpdated} />
+          <ItemDetailView
+            key={item.id}
+            item={item}
+            onItemUpdated={onItemUpdated}
+            onItemDeleted={onItemDeleted}
+          />
         ) : error ? (
           <SheetHeader className="pr-12">
             <SheetTitle>Couldn&apos;t load item</SheetTitle>
@@ -53,9 +60,10 @@ export function ItemDrawer({ open, onOpenChange, item, error, onItemUpdated }: I
 interface ItemDetailViewProps {
   item: ItemDetailData;
   onItemUpdated: (item: ItemDetailData) => void;
+  onItemDeleted: () => void;
 }
 
-function ItemDetailView({ item, onItemUpdated }: ItemDetailViewProps) {
+function ItemDetailView({ item, onItemUpdated, onItemDeleted }: ItemDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const copyText = item.content ?? item.url;
 
@@ -101,7 +109,13 @@ function ItemDetailView({ item, onItemUpdated }: ItemDetailViewProps) {
           }}
         />
       ) : (
-        <ItemDetailBody item={item} copyText={copyText} onCopy={handleCopy} onEdit={() => setIsEditing(true)} />
+        <ItemDetailBody
+          item={item}
+          copyText={copyText}
+          onCopy={handleCopy}
+          onEdit={() => setIsEditing(true)}
+          onDeleted={onItemDeleted}
+        />
       )}
     </>
   );
@@ -112,9 +126,10 @@ interface ItemDetailBodyProps {
   copyText: string | null;
   onCopy: () => void;
   onEdit: () => void;
+  onDeleted: () => void;
 }
 
-function ItemDetailBody({ item, copyText, onCopy, onEdit }: ItemDetailBodyProps) {
+function ItemDetailBody({ item, copyText, onCopy, onEdit, onDeleted }: ItemDetailBodyProps) {
   return (
     <>
       {/* Action bar */}
@@ -143,10 +158,7 @@ function ItemDetailBody({ item, copyText, onCopy, onEdit }: ItemDetailBodyProps)
           <Pencil />
           Edit
         </Button>
-        <Button variant="ghost" size="icon-sm" className="text-destructive hover:text-destructive">
-          <Trash2 />
-          <span className="sr-only">Delete</span>
-        </Button>
+        <DeleteItemDialog itemId={item.id} itemTitle={item.title} onDeleted={onDeleted} />
       </div>
 
       {/* Body */}

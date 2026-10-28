@@ -59,6 +59,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
         item={item}
         error={error}
         onItemUpdated={setItem}
+        onItemDeleted={() => setOpen(false)}
       />
     </ItemDrawerContext.Provider>
   );
