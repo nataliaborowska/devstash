@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import type { UpdateItemData } from "@/lib/validations/items"
 
 export type ItemType = {
   id: string
@@ -112,25 +113,22 @@ export type ItemDetail = ItemWithType & {
   collection: { id: string; name: string } | null
 }
 
-// Scoped to the owner so one user can never read another user's item by id.
-export async function getItemDetail(userId: string, id: string): Promise<ItemDetail | null> {
-  const item = await prisma.item.findFirst({
-    where: { id, userId },
-    select: {
-      ...ITEM_SELECT,
-      contentType: true,
-      content: true,
-      url: true,
-      fileUrl: true,
-      fileName: true,
-      fileSize: true,
-      language: true,
-      updatedAt: true,
-      collection: { select: { id: true, name: true } },
-    },
-  })
-  if (!item) return null
+const ITEM_DETAIL_SELECT = {
+  ...ITEM_SELECT,
+  contentType: true,
+  content: true,
+  url: true,
+  fileUrl: true,
+  fileName: true,
+  fileSize: true,
+  language: true,
+  updatedAt: true,
+  collection: { select: { id: true, name: true } },
+} as const
 
+function mapItemDetail(
+  item: Parameters<typeof mapItem>[0] & Omit<ItemDetail, keyof ItemWithType>
+): ItemDetail {
   return {
     ...mapItem(item),
     contentType: item.contentType,
@@ -143,6 +141,49 @@ export async function getItemDetail(userId: string, id: string): Promise<ItemDet
     updatedAt: item.updatedAt,
     collection: item.collection,
   }
+}
+
+// Scoped to the owner so one user can never read another user's item by id.
+export async function getItemDetail(userId: string, id: string): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id, userId },
+    select: ITEM_DETAIL_SELECT,
+  })
+  return item ? mapItemDetail(item) : null
+}
+
+// Returns null when the item doesn't exist or isn't owned by the user.
+export async function updateItem(
+  userId: string,
+  id: string,
+  data: UpdateItemData
+): Promise<ItemDetail | null> {
+  const { tags, ...fields } = data
+
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.item.findFirst({ where: { id, userId }, select: { id: true } })
+    if (!existing) return null
+
+    const item = await tx.item.update({
+      where: { id },
+      data: {
+        ...fields,
+        tags: {
+          deleteMany: {},
+          create: tags.map((name) => ({
+            tag: {
+              connectOrCreate: {
+                where: { name_userId: { name, userId } },
+                create: { name, userId },
+              },
+            },
+          })),
+        },
+      },
+      select: ITEM_DETAIL_SELECT,
+    })
+    return mapItemDetail(item)
+  })
 }
 
 export async function getItemStats() {

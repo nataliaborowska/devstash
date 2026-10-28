@@ -1,16 +1,31 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Item Drawer — Edit Mode
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Edit button (pencil) in the item drawer toggles inline edit mode in the same open drawer
+- In edit mode the action bar is replaced with Save and Cancel buttons
+- Cancel discards changes and returns to view mode
+- Save persists via server action, returns to view mode, refreshes drawer data from the returned `ItemDetail`, and calls `router.refresh()` so the card list updates
+- Toast on save success or error
+- Editable for all types: Title (required text input), Description (optional textarea), Tags (comma-separated input converted to a tag array on save)
+- Type-specific editable fields: Content textarea (snippet, prompt, command, note), Language text input (snippet, command), URL text input (link)
+- Display-only in edit mode: item type, collection, created/updated dates
+- Zod schema for the update payload: `title` non-empty trimmed; `description`, `content`, `language` string or null (optional); `url` valid URL or null (optional); `tags` array of trimmed non-empty strings
+- `updateItem(itemId, data)` server action in `src/actions/items.ts`: validates with Zod, gets session via `auth()`, checks ownership, calls the query function, returns `{ success, data, error }` with Zod errors in `error`
+- `updateItem` query function in `src/lib/db/items.ts`: disconnects all existing tags, connect-or-creates the new ones, returns the updated `ItemDetail`
+- Unit tests for the `updateItem` server action and query function
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Keep it simple: no form library, controlled inputs with local state
+- Client-side guard: Save disabled when title is empty; server-side Zod is the source of truth
+- Content textarea is a plain textarea (code editor comes later)
+- Collections will be managed separately; item type cannot be changed
+- Spec: `context/features/item-drawer-edit-spec.md`
 
 ## History
 
