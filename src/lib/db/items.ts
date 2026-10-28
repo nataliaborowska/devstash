@@ -186,6 +186,12 @@ export async function updateItem(
   })
 }
 
+// Returns false when the item doesn't exist or isn't owned by the user.
+export async function deleteItem(userId: string, id: string): Promise<boolean> {
+  const { count } = await prisma.item.deleteMany({ where: { id, userId } })
+  return count > 0
+}
+
 export async function getItemStats() {
   const [totalItems, favoriteItems, totalCollections, favoriteCollections] = await Promise.all([
     prisma.item.count(),

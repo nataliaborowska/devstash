@@ -22,5 +22,7 @@ export const updateItemSchema = z.object({
     .transform((tags) => [...new Set(tags)]),
 });
 
+export const itemIdSchema = z.string().trim().min(1, "Invalid item id");
+
 export type UpdateItemInput = z.input<typeof updateItemSchema>;
 export type UpdateItemData = z.output<typeof updateItemSchema>;
