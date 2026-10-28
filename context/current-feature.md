@@ -1,31 +1,16 @@
-# Current Feature: Item Drawer — Edit Mode
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Edit button (pencil) in the item drawer toggles inline edit mode in the same open drawer
-- In edit mode the action bar is replaced with Save and Cancel buttons
-- Cancel discards changes and returns to view mode
-- Save persists via server action, returns to view mode, refreshes drawer data from the returned `ItemDetail`, and calls `router.refresh()` so the card list updates
-- Toast on save success or error
-- Editable for all types: Title (required text input), Description (optional textarea), Tags (comma-separated input converted to a tag array on save)
-- Type-specific editable fields: Content textarea (snippet, prompt, command, note), Language text input (snippet, command), URL text input (link)
-- Display-only in edit mode: item type, collection, created/updated dates
-- Zod schema for the update payload: `title` non-empty trimmed; `description`, `content`, `language` string or null (optional); `url` valid URL or null (optional); `tags` array of trimmed non-empty strings
-- `updateItem(itemId, data)` server action in `src/actions/items.ts`: validates with Zod, gets session via `auth()`, checks ownership, calls the query function, returns `{ success, data, error }` with Zod errors in `error`
-- `updateItem` query function in `src/lib/db/items.ts`: disconnects all existing tags, connect-or-creates the new ones, returns the updated `ItemDetail`
-- Unit tests for the `updateItem` server action and query function
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Keep it simple: no form library, controlled inputs with local state
-- Client-side guard: Save disabled when title is empty; server-side Zod is the source of truth
-- Content textarea is a plain textarea (code editor comes later)
-- Collections will be managed separately; item type cannot be changed
-- Spec: `context/features/item-drawer-edit-spec.md`
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -54,3 +39,4 @@ In Progress
 - **2026-10-25** — Vitest setup complete: `vitest@5` installed (`@types/node` bumped to `^22` for its peer requirement), `vitest.config.mts` (Node environment, `@` alias, only colocated `src/**/*.test.ts` so components are excluded, mocks/env stubs reset between tests), `npm test` / `npm run test:watch` scripts; starter tests for `safe-redirect`, `feature-flags`, `rate-limit` helpers, auth Zod schemas, and the `changePassword` server action (mocked `@/auth`, Prisma, bcrypt, Next) as the reference pattern; new `/feature test` skill action; workflow, coding standards, `CLAUDE.md`, and project overview updated for unit testing; feature skill actions now target `master` instead of `main`
 - **2026-10-25** — Items list three columns complete: `/items/[type]` grid and its `loading.tsx` skeleton now use `lg:grid-cols-3` (1 column on mobile, 2 on `md`, 3 on `lg+`); `ItemCard` unchanged so the dashboard is unaffected; `/feature start` action now writes/updates unit tests for changed server actions and utilities and runs `npm test`, lint, and build
 - **2026-10-25** — Item drawer complete: clicking an `ItemCard` on the dashboard or `/items/[type]` opens a right-side shadcn `Sheet` (no page navigation); `ItemDrawerProvider` in `DashboardShell` owns drawer state and fetches full detail on click from `GET /api/items/[id]` (auth check, 401/404/500, owner-scoped `getItemDetail` in `src/lib/db/items.ts`), aborting stale requests; skeleton while loading; header with type icon, title, type + language badges; action bar with Favorite/Pin (reflect state), working Copy (content or URL, toast), Edit, and right-aligned Delete (UI-only for now); body shows description, content, URL (http(s) only linked), file, tags, collection, and created/updated dates; `getItemDetail` unit tests added
+- **2026-10-28** — Item drawer edit mode complete: Edit button switches the open drawer to inline edit mode with Save/Cancel replacing the action bar; editable title, description, comma-separated tags, plus type-specific content (snippet/prompt/command/note), language (snippet/command), and URL (link); type, collection, and dates stay display-only; Save disabled on empty title, toasts on success/error, drawer refreshes from the returned `ItemDetail` and `router.refresh()` updates cards; `updateItem` server action (`src/actions/items.ts`) validates with `updateItemSchema` (`src/lib/validations/items.ts`: blank strings to null, content whitespace kept, http(s)-only URLs, deduped tags) and calls owner-scoped `updateItem` in `src/lib/db/items.ts` (transaction, tags replaced via connect-or-create, hidden type fields untouched); shadcn `Textarea` added; shared `item-detail-sections.tsx` and new `item-edit-form.tsx`; unit tests for the action and query
