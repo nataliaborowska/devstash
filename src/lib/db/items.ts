@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import type { UpdateItemData } from "@/lib/validations/items"
+import type { CreateItemData, UpdateItemData } from "@/lib/validations/items"
 
 export type ItemType = {
   id: string
@@ -152,6 +152,39 @@ export async function getItemDetail(userId: string, id: string): Promise<ItemDet
   return item ? mapItemDetail(item) : null
 }
 
+function connectOrCreateTags(userId: string, tags: string[]) {
+  return tags.map((name) => ({
+    tag: {
+      connectOrCreate: {
+        where: { name_userId: { name, userId } },
+        create: { name, userId },
+      },
+    },
+  }))
+}
+
+// Returns null when the system item type doesn't exist (e.g. unseeded database).
+export async function createItem(userId: string, data: CreateItemData): Promise<ItemDetail | null> {
+  const { type, tags, ...fields } = data
+
+  const itemType = await prisma.itemType.findFirst({
+    where: { name: type, isSystem: true },
+    select: { id: true },
+  })
+  if (!itemType) return null
+
+  const item = await prisma.item.create({
+    data: {
+      ...fields,
+      userId,
+      typeId: itemType.id,
+      tags: { create: connectOrCreateTags(userId, tags) },
+    },
+    select: ITEM_DETAIL_SELECT,
+  })
+  return mapItemDetail(item)
+}
+
 // Returns null when the item doesn't exist or isn't owned by the user.
 export async function updateItem(
   userId: string,
@@ -170,14 +203,7 @@ export async function updateItem(
         ...fields,
         tags: {
           deleteMany: {},
-          create: tags.map((name) => ({
-            tag: {
-              connectOrCreate: {
-                where: { name_userId: { name, userId } },
-                create: { name, userId },
-              },
-            },
-          })),
+          create: connectOrCreateTags(userId, tags),
         },
       },
       select: ITEM_DETAIL_SELECT,

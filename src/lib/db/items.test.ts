@@ -1,15 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { deleteItem, getItemDetail, updateItem } from "@/lib/db/items";
+import { createItem, deleteItem, getItemDetail, updateItem } from "@/lib/db/items";
 
 vi.mock("@/lib/prisma", () => {
-  const item = { findFirst: vi.fn(), update: vi.fn(), deleteMany: vi.fn() };
+  const item = { findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), deleteMany: vi.fn() };
+  const itemType = { findFirst: vi.fn() };
   // Interactive transactions run against the same mocked client.
-  return { prisma: { item, $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn({ item })) } };
+  return {
+    prisma: { item, itemType, $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn({ item })) },
+  };
 });
 
 const mockFindFirst = vi.mocked(prisma.item.findFirst);
+const mockCreate = vi.mocked(prisma.item.create);
 const mockUpdate = vi.mocked(prisma.item.update);
+const mockFindItemType = vi.mocked(prisma.itemType.findFirst);
 const mockDeleteMany = vi.mocked(prisma.item.deleteMany);
 
 const createdAt = new Date("2026-01-15T10:00:00Z");
@@ -176,5 +181,87 @@ describe("deleteItem", () => {
   it("returns false when the item does not exist or belongs to another user", async () => {
     mockDeleteMany.mockResolvedValue({ count: 0 });
     expect(await deleteItem("user-2", "item-1")).toBe(false);
+  });
+});
+
+describe("createItem", () => {
+  const data = {
+    type: "snippet" as const,
+    title: "useAuth Hook",
+    description: "Custom authentication hook",
+    content: "export function useAuth() {}",
+    language: "typescript",
+    url: null,
+    tags: ["react", "auth"],
+  };
+
+  beforeEach(() => {
+    mockFindItemType.mockResolvedValue({ id: "type-1" } as never);
+    mockCreate.mockResolvedValue(dbItem as never);
+  });
+
+  it("looks up the matching system item type", async () => {
+    await createItem("user-1", data);
+    expect(mockFindItemType).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { name: "snippet", isSystem: true } })
+    );
+  });
+
+  it("returns null without creating when the system type is missing", async () => {
+    mockFindItemType.mockResolvedValue(null);
+    expect(await createItem("user-1", data)).toBeNull();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("creates the item for the user with connect-or-create tags", async () => {
+    await createItem("user-1", data);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          title: "useAuth Hook",
+          description: "Custom authentication hook",
+          content: "export function useAuth() {}",
+          language: "typescript",
+          url: null,
+          userId: "user-1",
+          typeId: "type-1",
+          tags: {
+            create: [
+              {
+                tag: {
+                  connectOrCreate: {
+                    where: { name_userId: { name: "react", userId: "user-1" } },
+                    create: { name: "react", userId: "user-1" },
+                  },
+                },
+              },
+              {
+                tag: {
+                  connectOrCreate: {
+                    where: { name_userId: { name: "auth", userId: "user-1" } },
+                    create: { name: "auth", userId: "user-1" },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      })
+    );
+  });
+
+  it("creates no tag links when given an empty list", async () => {
+    await createItem("user-1", { ...data, tags: [] });
+    expect(mockCreate.mock.calls[0][0].data.tags).toEqual({ create: [] });
+  });
+
+  it("returns the created item detail", async () => {
+    const item = await createItem("user-1", data);
+    expect(item).toMatchObject({
+      id: "item-1",
+      title: "useAuth Hook",
+      type: { name: "snippet" },
+      tags: ["react", "auth"],
+    });
   });
 });

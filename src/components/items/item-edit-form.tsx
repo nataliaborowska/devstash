@@ -10,10 +10,11 @@ import type { ItemDetailData } from "@/components/items/item-drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-const CONTENT_TYPES = ["snippet", "prompt", "command", "note"];
-const LANGUAGE_TYPES = ["snippet", "command"];
-const URL_TYPES = ["link"];
+import {
+  CONTENT_ITEM_TYPES as CONTENT_TYPES,
+  LANGUAGE_ITEM_TYPES as LANGUAGE_TYPES,
+  URL_ITEM_TYPES as URL_TYPES,
+} from "@/lib/validations/items";
 
 interface ItemEditFormProps {
   item: ItemDetailData;

@@ -1,16 +1,29 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Item Create
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- "New Item" button in the top bar opens a shadcn `Dialog` modal for creating an item
+- Type selector with snippet, prompt, command, note, and link
+- Fields shown based on the selected type:
+  - All types: title (required), description, tags
+  - snippet/command: content, language
+  - prompt/note: content
+  - link: URL (required)
+- `createItem` server action with Zod validation
+- `createItem` query function in `src/lib/db/items.ts`
+- On success: toast, close the modal, and refresh the page data
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Spec: `context/features/item-create-spec.md`
+- File and image types are excluded from the selector (Pro / upload features come later)
+- Reuse existing patterns from item edit: `src/lib/validations/items.ts` (blank strings to null, http(s)-only URLs, deduped tags), connect-or-create tags in `src/lib/db/items.ts`, and the `{ success, data, error }` action shape in `src/actions/items.ts`
+- New item must be owner-scoped to the signed-in user and linked to the matching system `ItemType`
+- Add unit tests for the new server action and query function
 
 ## History
 
