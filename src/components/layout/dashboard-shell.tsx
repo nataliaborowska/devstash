@@ -29,7 +29,7 @@ export function DashboardShell({
 
   return (
     <div className="flex flex-col h-screen">
-      <TopBar onMobileMenuOpen={() => setMobileOpen(true)} />
+      <TopBar itemTypes={itemTypes} onMobileMenuOpen={() => setMobileOpen(true)} />
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Desktop sidebar */}
