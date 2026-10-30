@@ -1,25 +1,16 @@
-# Current Feature: Code Editor
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Create a `CodeEditor` component using Monaco Editor with a dark theme
-- Use `CodeEditor` instead of `Textarea` for snippet and command content only
-- Keep `Textarea` for notes, prompts, and other non-code types
-- macOS-style window dots (red/yellow/green) at the top of the editor
-- Quick copy button in the editor header
-- Language label in the editor header next to the copy button
-- Supports both display (readonly) and edit modes
-- Fluid editor height capped at 400px, with a themed scrollbar
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Spec: `context/features/code-editor-spec.md`
-- Overview: add a Monaco Editor component for snippets and commands, with a copy button and macOS window styling
-- Applies wherever snippet/command content is shown or edited (item drawer display, drawer edit mode, create item dialog)
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -51,3 +42,4 @@ In Progress
 - **2026-10-28** — Item drawer edit mode complete: Edit button switches the open drawer to inline edit mode with Save/Cancel replacing the action bar; editable title, description, comma-separated tags, plus type-specific content (snippet/prompt/command/note), language (snippet/command), and URL (link); type, collection, and dates stay display-only; Save disabled on empty title, toasts on success/error, drawer refreshes from the returned `ItemDetail` and `router.refresh()` updates cards; `updateItem` server action (`src/actions/items.ts`) validates with `updateItemSchema` (`src/lib/validations/items.ts`: blank strings to null, content whitespace kept, http(s)-only URLs, deduped tags) and calls owner-scoped `updateItem` in `src/lib/db/items.ts` (transaction, tags replaced via connect-or-create, hidden type fields untouched); shadcn `Textarea` added; shared `item-detail-sections.tsx` and new `item-edit-form.tsx`; unit tests for the action and query
 - **2026-10-28** — Delete items complete: the item drawer's Delete button opens a shadcn `AlertDialog` (`delete-item-dialog.tsx`) naming the item with Cancel and destructive Delete ("Deleting..." pending state, dialog locked while running); on success a toast shows, the drawer closes, and `router.refresh()` updates cards and counts; on failure an error toast keeps the drawer open; `deleteItem` server action (`src/actions/items.ts`, auth check, `itemIdSchema` in `src/lib/validations/items.ts`) calls owner-scoped `deleteItem` in `src/lib/db/items.ts` (single `deleteMany` by id + userId, `ItemTag` rows cascade); shadcn `alert-dialog` added (CLI-generated `cn` import fixed to `@/lib/utils`); unit tests for the action and query
 - **2026-10-29** — Item create complete: the top bar's "New Item" button opens a shadcn `Dialog` (`create-item-dialog.tsx`, form mounted only while open) with a shadcn `Select` type dropdown (snippet, prompt, command, note, link; seeded type icons and colors) and per-type fields (title required, description, comma-separated tags; content for snippet/prompt/command/note, language for snippet/command, required URL for link); Create disabled until required fields are filled, success toast closes the dialog and `router.refresh()` updates cards and counts, error toast keeps it open; `createItem` server action (`src/actions/items.ts`, auth check) validates with `createItemSchema` (`src/lib/validations/items.ts`: extends `updateItemSchema`, `CREATABLE_ITEM_TYPES` enum, link requires a URL, fields unused by the type are nulled) and calls `createItem` in `src/lib/db/items.ts` (looks up the system `ItemType`, owner-scoped insert, tags via shared `connectOrCreateTags` helper also used by `updateItem`); shared `CONTENT_/LANGUAGE_/URL_ITEM_TYPES` lists now drive both create and edit forms; `TopBar` receives `itemTypes` from `DashboardShell`; shadcn `select` added (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); unit tests for the schema, action, and query
+- **2026-10-30** — Code editor complete: `@monaco-editor/react` installed; shared `CodeEditor` (`src/components/shared/code-editor.tsx`) with a custom `devstash-dark` Monaco theme matching the neutral card colors, macOS red/yellow/green window dots, language label and copy button in the header, readonly and edit modes, fluid height (fits content, capped at 400px; 160px minimum when editing) and thin themed scrollbars that hand the mouse wheel back to the page; used for snippet/command content in the item drawer view, drawer edit mode, and New Item dialog while notes/prompts keep `Textarea`; `src/lib/code-language.ts` (`CODE_ITEM_TYPES`, `toMonacoLanguage` alias mapping, commands fall back to shell); Monaco loads from the jsDelivr CDN by default. Also added type-specific add buttons: the New Item dialog moved into a `CreateItemDialogProvider` in `DashboardShell` (shared `CreateItemButton`, `TopBar` no longer takes `itemTypes`), and each creatable `/items/[type]` page has a "New <type>" header button that opens the dialog with that type preselected (`isCreatableItemType` in `src/lib/validations/items.ts`; files/images get no button); unit tests for `code-language` and `isCreatableItemType`
