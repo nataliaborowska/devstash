@@ -7,9 +7,11 @@ import { toast } from "sonner";
 import { updateItem } from "@/actions/items";
 import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
 import type { ItemDetailData } from "@/components/items/item-drawer";
+import { CodeEditor } from "@/components/shared/code-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CODE_ITEM_TYPES, getFallbackCodeLanguage } from "@/lib/code-language";
 import {
   CONTENT_ITEM_TYPES as CONTENT_TYPES,
   LANGUAGE_ITEM_TYPES as LANGUAGE_TYPES,
@@ -36,6 +38,7 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
   const showContent = CONTENT_TYPES.includes(typeName);
   const showLanguage = LANGUAGE_TYPES.includes(typeName);
   const showUrl = URL_TYPES.includes(typeName);
+  const isCode = CODE_ITEM_TYPES.includes(typeName);
 
   function handleSave() {
     startSaving(async () => {
@@ -101,14 +104,24 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
         </DetailSection>
 
         {showContent && (
-          <DetailSection label="Content" htmlFor="item-content">
-            <Textarea
-              id="item-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="max-h-96 min-h-40 font-mono text-xs md:text-xs leading-relaxed"
-              spellCheck={false}
-            />
+          <DetailSection label="Content" htmlFor={isCode ? undefined : "item-content"}>
+            {isCode ? (
+              <CodeEditor
+                value={content}
+                onChange={setContent}
+                language={language}
+                fallbackLanguage={getFallbackCodeLanguage(typeName)}
+                ariaLabel="Content"
+              />
+            ) : (
+              <Textarea
+                id="item-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="max-h-96 min-h-40 font-mono text-xs md:text-xs leading-relaxed"
+                spellCheck={false}
+              />
+            )}
           </DetailSection>
         )}
 

@@ -6,9 +6,11 @@ import { toast } from "sonner";
 import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
 import { ItemEditForm } from "@/components/items/item-edit-form";
+import { CodeEditor } from "@/components/shared/code-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { CODE_ITEM_TYPES, getFallbackCodeLanguage } from "@/lib/code-language";
 import { TypeIcon } from "@/lib/icon-map";
 import { cn } from "@/lib/utils";
 import type { ItemDetail } from "@/lib/db/items";
@@ -171,9 +173,19 @@ function ItemDetailBody({ item, copyText, onCopy, onEdit, onDeleted }: ItemDetai
 
         {item.content && (
           <DetailSection label="Content">
-            <pre className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/40 p-4 font-mono text-xs leading-relaxed">
-              {item.content}
-            </pre>
+            {CODE_ITEM_TYPES.includes(item.type.name) ? (
+              <CodeEditor
+                value={item.content}
+                language={item.language}
+                fallbackLanguage={getFallbackCodeLanguage(item.type.name)}
+                ariaLabel={`${item.title} content`}
+                readOnly
+              />
+            ) : (
+              <pre className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/40 p-4 font-mono text-xs leading-relaxed">
+                {item.content}
+              </pre>
+            )}
           </DetailSection>
         )}
 
