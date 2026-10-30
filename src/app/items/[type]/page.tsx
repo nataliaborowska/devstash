@@ -1,8 +1,10 @@
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ItemCard } from "@/components/dashboard/item-card";
+import { CreateItemButton } from "@/components/items/create-item-dialog";
 import { TypeIcon } from "@/lib/icon-map";
 import { getItemsByType, getSystemItemTypeBySlug } from "@/lib/db/items";
+import { isCreatableItemType } from "@/lib/validations/items";
 
 interface ItemsByTypePageProps {
   params: Promise<{ type: string }>;
@@ -36,6 +38,14 @@ export default async function ItemsByTypePage({ params }: ItemsByTypePageProps) 
             {items.length} {items.length === 1 ? "item" : "items"}
           </p>
         </div>
+        {/* File and image types can't be created from the dialog yet. */}
+        {isCreatableItemType(itemType.name) && (
+          <CreateItemButton
+            type={itemType.name}
+            label={`New ${itemType.name}`}
+            className="ml-auto capitalize"
+          />
+        )}
       </div>
 
       {/* Items */}

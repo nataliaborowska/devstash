@@ -26,6 +26,10 @@ export const updateItemSchema = z.object({
 export const CREATABLE_ITEM_TYPES = ["snippet", "prompt", "command", "note", "link"] as const;
 export type CreatableItemType = (typeof CREATABLE_ITEM_TYPES)[number];
 
+export function isCreatableItemType(typeName: string): typeName is CreatableItemType {
+  return (CREATABLE_ITEM_TYPES as readonly string[]).includes(typeName);
+}
+
 export const CONTENT_ITEM_TYPES: readonly string[] = ["snippet", "prompt", "command", "note"];
 export const LANGUAGE_ITEM_TYPES: readonly string[] = ["snippet", "command"];
 export const URL_ITEM_TYPES: readonly string[] = ["link"];

@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { createItemSchema } from "@/lib/validations/items";
+import { createItemSchema, isCreatableItemType } from "@/lib/validations/items";
+
+describe("isCreatableItemType", () => {
+  it.each(["snippet", "prompt", "command", "note", "link"])("accepts %s", (type) => {
+    expect(isCreatableItemType(type)).toBe(true);
+  });
+
+  it.each(["file", "image", "", "Snippet"])("rejects %j", (type) => {
+    expect(isCreatableItemType(type)).toBe(false);
+  });
+});
 
 const base = {
   title: "Item",

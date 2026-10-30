@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useTransition, type SubmitEvent } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useTransition,
+  type ReactNode,
+  type SubmitEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createItem } from "@/actions/items";
 import { DetailSection } from "@/components/items/item-detail-sections";
+import { CodeEditor } from "@/components/shared/code-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +23,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,8 +33,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CODE_ITEM_TYPES, getFallbackCodeLanguage } from "@/lib/code-language";
 import type { ItemType } from "@/lib/db/items";
 import { TypeIcon } from "@/lib/icon-map";
+import { cn } from "@/lib/utils";
 import {
   CONTENT_ITEM_TYPES,
   CREATABLE_ITEM_TYPES,
@@ -52,13 +61,14 @@ function TypeOptionLabel({ name, itemType }: TypeOptionLabelProps) {
 
 interface CreateItemFormProps {
   itemTypes: ItemType[];
+  initialType: CreatableItemType;
   onCreated: () => void;
 }
 
-function CreateItemForm({ itemTypes, onCreated }: CreateItemFormProps) {
+function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormProps) {
   const router = useRouter();
   const [isCreating, startCreating] = useTransition();
-  const [type, setType] = useState<CreatableItemType>("snippet");
+  const [type, setType] = useState(initialType);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
@@ -69,6 +79,7 @@ function CreateItemForm({ itemTypes, onCreated }: CreateItemFormProps) {
   const showContent = CONTENT_ITEM_TYPES.includes(type);
   const showLanguage = LANGUAGE_ITEM_TYPES.includes(type);
   const showUrl = URL_ITEM_TYPES.includes(type);
+  const isCode = CODE_ITEM_TYPES.includes(type);
   const canSubmit = title.trim() !== "" && (!showUrl || url.trim() !== "");
 
   // The seeded types supply each option's icon and color.
@@ -142,14 +153,24 @@ function CreateItemForm({ itemTypes, onCreated }: CreateItemFormProps) {
       </DetailSection>
 
       {showContent && (
-        <DetailSection label="Content" htmlFor="new-item-content">
-          <Textarea
-            id="new-item-content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="max-h-72 min-h-32 font-mono text-xs md:text-xs leading-relaxed"
-            spellCheck={false}
-          />
+        <DetailSection label="Content" htmlFor={isCode ? undefined : "new-item-content"}>
+          {isCode ? (
+            <CodeEditor
+              value={content}
+              onChange={setContent}
+              language={language}
+              fallbackLanguage={getFallbackCodeLanguage(type)}
+              ariaLabel="Content"
+            />
+          ) : (
+            <Textarea
+              id="new-item-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="max-h-72 min-h-32 font-mono text-xs md:text-xs leading-relaxed"
+              spellCheck={false}
+            />
+          )}
         </DetailSection>
       )}
 
@@ -199,29 +220,74 @@ function CreateItemForm({ itemTypes, onCreated }: CreateItemFormProps) {
   );
 }
 
-interface CreateItemDialogProps {
-  itemTypes: ItemType[];
+interface CreateItemContextValue {
+  openCreateItem: (type?: CreatableItemType) => void;
 }
 
-export function CreateItemDialog({ itemTypes }: CreateItemDialogProps) {
+const CreateItemContext = createContext<CreateItemContextValue | null>(null);
+
+function useCreateItem() {
+  const context = useContext(CreateItemContext);
+  if (!context) throw new Error("useCreateItem must be used within CreateItemDialogProvider");
+  return context;
+}
+
+interface CreateItemDialogProviderProps {
+  itemTypes: ItemType[];
+  children: ReactNode;
+}
+
+// Owns the single New Item dialog so the top bar and type pages can open it with a preselected type.
+export function CreateItemDialogProvider({ itemTypes, children }: CreateItemDialogProviderProps) {
   const [open, setOpen] = useState(false);
+  const [initialType, setInitialType] = useState<CreatableItemType>("snippet");
+
+  function openCreateItem(type: CreatableItemType = "snippet") {
+    setInitialType(type);
+    setOpen(true);
+  }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={<Button size="sm" className="h-8 gap-1.5 text-xs" aria-label="New item" />}
-      >
-        <Plus className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline">New Item</span>
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>New item</DialogTitle>
-          <DialogDescription>Save a snippet, prompt, command, note, or link.</DialogDescription>
-        </DialogHeader>
-        {/* Mounted only while open so each new item starts from an empty form. */}
-        {open && <CreateItemForm itemTypes={itemTypes} onCreated={() => setOpen(false)} />}
-      </DialogContent>
-    </Dialog>
+    <CreateItemContext.Provider value={{ openCreateItem }}>
+      {children}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New item</DialogTitle>
+            <DialogDescription>Save a snippet, prompt, command, note, or link.</DialogDescription>
+          </DialogHeader>
+          {/* Mounted only while open so each new item starts from an empty form. */}
+          {open && (
+            <CreateItemForm
+              itemTypes={itemTypes}
+              initialType={initialType}
+              onCreated={() => setOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </CreateItemContext.Provider>
+  );
+}
+
+interface CreateItemButtonProps {
+  type?: CreatableItemType;
+  label?: string;
+  className?: string;
+}
+
+export function CreateItemButton({ type, label = "New Item", className }: CreateItemButtonProps) {
+  const { openCreateItem } = useCreateItem();
+
+  return (
+    <Button
+      size="sm"
+      className={cn("h-8 gap-1.5 text-xs", className)}
+      onClick={() => openCreateItem(type)}
+      aria-label={label}
+    >
+      <Plus className="h-3.5 w-3.5" />
+      <span className="hidden sm:inline">{label}</span>
+    </Button>
   );
 }

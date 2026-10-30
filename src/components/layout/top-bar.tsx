@@ -1,17 +1,15 @@
 "use client";
 
 import { Search, FolderPlus, Menu } from "lucide-react";
-import { CreateItemDialog } from "@/components/items/create-item-dialog";
+import { CreateItemButton } from "@/components/items/create-item-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { ItemType } from "@/lib/db/items";
 
 interface TopBarProps {
-  itemTypes: ItemType[];
   onMobileMenuOpen?: () => void;
 }
 
-export function TopBar({ itemTypes, onMobileMenuOpen }: TopBarProps) {
+export function TopBar({ onMobileMenuOpen }: TopBarProps) {
   return (
     <header className="h-12 border-b border-border flex items-center gap-3 px-3 shrink-0">
       {/* Hamburger — mobile only */}
@@ -51,7 +49,7 @@ export function TopBar({ itemTypes, onMobileMenuOpen }: TopBarProps) {
           <FolderPlus className="h-3.5 w-3.5" />
           New Collection
         </Button>
-        <CreateItemDialog itemTypes={itemTypes} />
+        <CreateItemButton />
       </div>
     </header>
   );
