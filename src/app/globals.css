@@ -128,3 +128,57 @@
     @apply font-sans;
     }
 }
+/* Thin scrollbars matching the Monaco code editor's scrollbar colors. */
+@utility scrollbar-thin {
+  &::-webkit-scrollbar { width: 8px; height: 8px; }
+  &::-webkit-scrollbar-track, &::-webkit-scrollbar-corner { background: transparent; }
+  &::-webkit-scrollbar-thumb { border-radius: 9999px; background: #ffffff1a; }
+  &::-webkit-scrollbar-thumb:hover { background: #ffffff2e; }
+  &::-webkit-scrollbar-thumb:active { background: #ffffff40; }
+
+  /* Firefox has no ::-webkit-scrollbar; setting these in Chrome would disable the rules above. */
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: #ffffff1a transparent;
+  }
+}
+
+/* Rendered Markdown for notes and prompts (MarkdownEditor preview). */
+.markdown-preview {
+  @apply text-sm leading-relaxed text-foreground break-words;
+
+  & > :first-child { @apply mt-0; }
+  & > :last-child { @apply mb-0; }
+
+  & h1, & h2, & h3, & h4, & h5, & h6 { @apply mt-5 mb-2 font-semibold leading-snug text-foreground; }
+  & h1 { @apply border-b border-border pb-1.5 text-2xl font-bold; }
+  & h2 { @apply border-b border-border pb-1 text-xl; }
+  & h3 { @apply text-lg; }
+  & h4 { @apply text-base; }
+  & h5 { @apply text-sm; }
+  & h6 { @apply text-sm text-muted-foreground; }
+
+  & p, & ul, & ol, & blockquote, & pre, & table { @apply my-3; }
+
+  & ul { @apply list-disc pl-6; }
+  & ol { @apply list-decimal pl-6; }
+  & li { @apply my-1; }
+  & li > ul, & li > ol { @apply my-1; }
+  & li:has(> input[type="checkbox"]) { @apply list-none; }
+  & input[type="checkbox"] { @apply mr-1.5 -ml-5 align-middle; }
+
+  & a { @apply text-blue-400 underline-offset-4 hover:text-blue-300 hover:underline; }
+
+  & blockquote { @apply border-l-4 border-blue-500/60 pl-4 text-muted-foreground italic; }
+
+  & code { @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em]; }
+  & pre { @apply scrollbar-thin overflow-x-auto rounded-md border border-border bg-background p-3; }
+  & pre code { @apply bg-transparent p-0 text-xs leading-relaxed; }
+
+  & table { @apply scrollbar-thin block w-max max-w-full overflow-x-auto border-collapse; }
+  & th, & td { @apply border border-border px-3 py-1.5 text-left; }
+  & th { @apply bg-muted font-semibold; }
+
+  & hr { @apply my-5 border-border; }
+  & img { @apply max-w-full rounded-md; }
+}

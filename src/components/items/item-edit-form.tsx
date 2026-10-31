@@ -8,6 +8,7 @@ import { updateItem } from "@/actions/items";
 import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
 import type { ItemDetailData } from "@/components/items/item-drawer";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { MarkdownEditor } from "@/components/shared/markdown-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -83,7 +84,7 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+      <div className="scrollbar-thin flex-1 overflow-y-auto p-5 space-y-6">
         <DetailSection label="Title" htmlFor="item-title">
           <Input
             id="item-title"
@@ -114,13 +115,7 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
                 ariaLabel="Content"
               />
             ) : (
-              <Textarea
-                id="item-content"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="max-h-96 min-h-40 font-mono text-xs md:text-xs leading-relaxed"
-                spellCheck={false}
-              />
+              <MarkdownEditor id="item-content" value={content} onChange={setContent} />
             )}
           </DetailSection>
         )}

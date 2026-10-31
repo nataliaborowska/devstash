@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { createItem } from "@/actions/items";
 import { DetailSection } from "@/components/items/item-detail-sections";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { MarkdownEditor } from "@/components/shared/markdown-editor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -163,13 +164,7 @@ function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormPro
               ariaLabel="Content"
             />
           ) : (
-            <Textarea
-              id="new-item-content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="max-h-72 min-h-32 font-mono text-xs md:text-xs leading-relaxed"
-              spellCheck={false}
-            />
+            <MarkdownEditor id="new-item-content" value={content} onChange={setContent} />
           )}
         </DetailSection>
       )}
@@ -251,7 +246,7 @@ export function CreateItemDialogProvider({ itemTypes, children }: CreateItemDial
     <CreateItemContext.Provider value={{ openCreateItem }}>
       {children}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogContent className="scrollbar-thin max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>New item</DialogTitle>
             <DialogDescription>Save a snippet, prompt, command, note, or link.</DialogDescription>
