@@ -1,28 +1,16 @@
-# Current Feature: Markdown Editor
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- New shared `MarkdownEditor` component with a tabbed Write/Preview interface
-- Replaces `Textarea` for note and prompt content only; snippets and commands keep `CodeEditor` unchanged
-- Renders GitHub Flavored Markdown via `react-markdown` + `remark-gfm`
-- Matches the existing dark theme (`bg-[#1e1e1e]` container, `bg-[#2d2d2d]` header) with a copy button in the header styled like `CodeEditor`
-- Supports readonly (Preview tab only) and edit (defaults to Write tab, Preview available) modes
-- Used in the New Item dialog (note/prompt content), item drawer edit mode (note/prompt content), and item drawer view mode (readonly)
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Preview styling via a custom `.markdown-preview` CSS class for reliable dark mode styling:
-  - Headings h1-h6 visually distinct in size and weight
-  - Code blocks with dark background and monospace font; inline code with a subtle background highlight
-  - Ordered/unordered lists with proper indentation and bullets
-  - Blockquotes with a left border accent
-  - Blue links with a hover state
-  - Tables with borders and a header background
-- Fluid height capped at 400px, matching `CodeEditor` behavior
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -55,3 +43,4 @@ In Progress
 - **2026-10-28** — Delete items complete: the item drawer's Delete button opens a shadcn `AlertDialog` (`delete-item-dialog.tsx`) naming the item with Cancel and destructive Delete ("Deleting..." pending state, dialog locked while running); on success a toast shows, the drawer closes, and `router.refresh()` updates cards and counts; on failure an error toast keeps the drawer open; `deleteItem` server action (`src/actions/items.ts`, auth check, `itemIdSchema` in `src/lib/validations/items.ts`) calls owner-scoped `deleteItem` in `src/lib/db/items.ts` (single `deleteMany` by id + userId, `ItemTag` rows cascade); shadcn `alert-dialog` added (CLI-generated `cn` import fixed to `@/lib/utils`); unit tests for the action and query
 - **2026-10-29** — Item create complete: the top bar's "New Item" button opens a shadcn `Dialog` (`create-item-dialog.tsx`, form mounted only while open) with a shadcn `Select` type dropdown (snippet, prompt, command, note, link; seeded type icons and colors) and per-type fields (title required, description, comma-separated tags; content for snippet/prompt/command/note, language for snippet/command, required URL for link); Create disabled until required fields are filled, success toast closes the dialog and `router.refresh()` updates cards and counts, error toast keeps it open; `createItem` server action (`src/actions/items.ts`, auth check) validates with `createItemSchema` (`src/lib/validations/items.ts`: extends `updateItemSchema`, `CREATABLE_ITEM_TYPES` enum, link requires a URL, fields unused by the type are nulled) and calls `createItem` in `src/lib/db/items.ts` (looks up the system `ItemType`, owner-scoped insert, tags via shared `connectOrCreateTags` helper also used by `updateItem`); shared `CONTENT_/LANGUAGE_/URL_ITEM_TYPES` lists now drive both create and edit forms; `TopBar` receives `itemTypes` from `DashboardShell`; shadcn `select` added (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); unit tests for the schema, action, and query
 - **2026-10-30** — Code editor complete: `@monaco-editor/react` installed; shared `CodeEditor` (`src/components/shared/code-editor.tsx`) with a custom `devstash-dark` Monaco theme matching the neutral card colors, macOS red/yellow/green window dots, language label and copy button in the header, readonly and edit modes, fluid height (fits content, capped at 400px; 160px minimum when editing) and thin themed scrollbars that hand the mouse wheel back to the page; used for snippet/command content in the item drawer view, drawer edit mode, and New Item dialog while notes/prompts keep `Textarea`; `src/lib/code-language.ts` (`CODE_ITEM_TYPES`, `toMonacoLanguage` alias mapping, commands fall back to shell); Monaco loads from the jsDelivr CDN by default. Also added type-specific add buttons: the New Item dialog moved into a `CreateItemDialogProvider` in `DashboardShell` (shared `CreateItemButton`, `TopBar` no longer takes `itemTypes`), and each creatable `/items/[type]` page has a "New <type>" header button that opens the dialog with that type preselected (`isCreatableItemType` in `src/lib/validations/items.ts`; files/images get no button); unit tests for `code-language` and `isCreatableItemType`
+- **2026-10-31** — Markdown editor complete: `react-markdown` + `remark-gfm` installed; shared `MarkdownEditor` (`src/components/shared/markdown-editor.tsx`) with Write/Preview tabs and a copy button, styled to match `CodeEditor` (card background, muted header); edit mode defaults to Write (auto-growing monospace textarea, 160px min, 400px max), readonly mode shows only Preview; rendered links open in a new tab, empty content shows "Nothing to preview"; used for note/prompt content in the item drawer view, drawer edit mode, and New Item dialog while snippets/commands keep `CodeEditor`; `.markdown-preview` styles in `globals.css` (distinct h1-h6, code blocks and inline code, lists and task-list checkboxes, blue-accent blockquotes, blue links with hover, bordered tables with header background, horizontally scrolling wide code/tables); new `scrollbar-thin` Tailwind utility (thin rounded thumb in Monaco's scrollbar colors, Firefox fallback) applied to the Markdown editor, item drawer bodies (view and edit), and the New Item dialog
