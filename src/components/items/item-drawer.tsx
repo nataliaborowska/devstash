@@ -7,6 +7,7 @@ import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
 import { ItemEditForm } from "@/components/items/item-edit-form";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { MarkdownEditor } from "@/components/shared/markdown-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -164,7 +165,7 @@ function ItemDetailBody({ item, copyText, onCopy, onEdit, onDeleted }: ItemDetai
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+      <div className="scrollbar-thin flex-1 overflow-y-auto p-5 space-y-6">
         {item.description && (
           <DetailSection label="Description">
             <p className="text-sm">{item.description}</p>
@@ -182,9 +183,11 @@ function ItemDetailBody({ item, copyText, onCopy, onEdit, onDeleted }: ItemDetai
                 readOnly
               />
             ) : (
-              <pre className="max-h-96 overflow-auto rounded-lg border border-border bg-muted/40 p-4 font-mono text-xs leading-relaxed">
-                {item.content}
-              </pre>
+              <MarkdownEditor
+                value={item.content}
+                ariaLabel={`${item.title} content`}
+                readOnly
+              />
             )}
           </DetailSection>
         )}
