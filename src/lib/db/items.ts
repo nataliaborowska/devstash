@@ -218,12 +218,12 @@ export async function deleteItem(userId: string, id: string): Promise<boolean> {
   return count > 0
 }
 
-export async function getItemStats() {
+export async function getItemStats(userId: string) {
   const [totalItems, favoriteItems, totalCollections, favoriteCollections] = await Promise.all([
-    prisma.item.count(),
-    prisma.item.count({ where: { isFavorite: true } }),
-    prisma.collection.count(),
-    prisma.collection.count({ where: { isFavorite: true } }),
+    prisma.item.count({ where: { userId } }),
+    prisma.item.count({ where: { userId, isFavorite: true } }),
+    prisma.collection.count({ where: { userId } }),
+    prisma.collection.count({ where: { userId, isFavorite: true } }),
   ])
   return { totalItems, favoriteItems, totalCollections, favoriteCollections }
 }

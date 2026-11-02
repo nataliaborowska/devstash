@@ -18,8 +18,8 @@ export default async function DashboardLayout({
   const [user, itemTypes, favoriteCollections, recentCollections] = await Promise.all([
     getSidebarUser(session.user.id),
     getItemTypesWithCounts(),
-    getFavoriteCollections(),
-    getNonFavoriteCollections(),
+    getFavoriteCollections(session.user.id),
+    getNonFavoriteCollections(session.user.id),
   ]);
 
   if (!user) redirect("/sign-in");

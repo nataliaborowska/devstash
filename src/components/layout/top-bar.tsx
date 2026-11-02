@@ -1,6 +1,8 @@
 "use client";
 
-import { Search, FolderPlus, Menu } from "lucide-react";
+import Link from "next/link";
+import { Search, Menu } from "lucide-react";
+import { CreateCollectionButton } from "@/components/collections/create-collection-dialog";
 import { CreateItemButton } from "@/components/items/create-item-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,12 +26,15 @@ export function TopBar({ onMobileMenuOpen }: TopBarProps) {
       </Button>
 
       {/* Logo */}
-      <div className="flex items-center gap-2 shrink-0">
+      <Link
+        href="/dashboard"
+        className="flex items-center gap-2 shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
         <div className="h-6 w-6 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
           <span className="text-[10px] font-bold text-white leading-none">DS</span>
         </div>
         <span className="text-sm font-semibold tracking-tight">DevStash</span>
-      </div>
+      </Link>
 
       {/* Search */}
       <div className="relative flex-1 max-w-sm mx-auto">
@@ -45,10 +50,7 @@ export function TopBar({ onMobileMenuOpen }: TopBarProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-2 ml-auto">
-        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs hidden sm:flex">
-          <FolderPlus className="h-3.5 w-3.5" />
-          New Collection
-        </Button>
+        <CreateCollectionButton className="hidden sm:flex" />
         <CreateItemButton />
       </div>
     </header>
