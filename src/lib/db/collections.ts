@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@/generated/prisma/client"
+import type { CreateCollectionData } from "@/lib/validations/collections"
 
 export type CollectionType = {
   id: string
@@ -75,14 +76,40 @@ async function getCollectionsWithStats(
   })
 }
 
-export async function getRecentCollections(limit = 4): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({}, limit)
+export async function getRecentCollections(
+  userId: string,
+  limit = 4
+): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ userId }, limit)
 }
 
-export async function getFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ isFavorite: true }, limit)
+export async function getFavoriteCollections(
+  userId: string,
+  limit = 10
+): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ userId, isFavorite: true }, limit)
 }
 
-export async function getNonFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ isFavorite: false }, limit)
+export async function getNonFavoriteCollections(
+  userId: string,
+  limit = 10
+): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ userId, isFavorite: false }, limit)
+}
+
+export type CollectionSummary = {
+  id: string
+  name: string
+  description: string | null
+  isFavorite: boolean
+}
+
+export async function createCollection(
+  userId: string,
+  data: CreateCollectionData
+): Promise<CollectionSummary> {
+  return prisma.collection.create({
+    data: { ...data, userId },
+    select: { id: true, name: true, description: true, isFavorite: true },
+  })
 }

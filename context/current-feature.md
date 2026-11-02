@@ -1,16 +1,30 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Collection Create
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- The existing "New Collection" button in the top bar (`src/components/layout/top-bar.tsx`, currently not wired up) opens a shadcn `Dialog` to create a collection
+- The dialog has a required name field and an optional description field; Create stays disabled until the name is filled in
+- Shows a "Creating..." pending state while saving; the dialog can't be submitted twice
+- On success: a toast shows, the dialog closes, and `router.refresh()` updates the sidebar collections, the dashboard recent collections, and the stats cards
+- On failure: an error toast shows and the dialog stays open with the input kept
+- `createCollection` server action in `src/actions/collections.ts`: auth check, validation with Zod, returns `{ success, data, error }`
+- `createCollectionSchema` in `src/lib/validations/collections.ts`: name trimmed and required, with a max length; blank description becomes null
+- Owner-scoped `createCollection` in `src/lib/db/collections.ts` that sets `userId` from the session
+- Collection reads are user-scoped: `getRecentCollections`, `getFavoriteCollections`, and `getNonFavoriteCollections` take a `userId` and filter by it (today they return every user's collections)
+- Unit tests for the schema, the server action, and the db functions
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Follow the item create patterns: `create-item-dialog.tsx` (dialog with a form that only mounts while open, plus a provider/button), `createItem` action, `createItemSchema`, and `createItem` in `lib/db/items.ts`
+- Server components fetch collections through `lib/db` functions. Client-side mutations use a server action, as items do. Any client-side data fetch goes through an API route, as `GET /api/items/[id]` does. Create needs no new API route
+- Callers of the collection query functions (`src/app/dashboard/page.tsx`, `src/app/dashboard/layout.tsx`) must pass the session user's id
+- Check that the dashboard's collection count stat is user-scoped too
+- The button is hidden below `sm` (`hidden sm:flex`); keep that as-is unless asked
+- Out of scope: editing, deleting, and favoriting collections, adding items to a collection, the collections pages
 
 ## History
 

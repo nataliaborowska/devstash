@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { getRecentCollections } from "@/lib/db/collections";
 import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
 import { StatsCards } from "@/components/dashboard/stats-cards";
@@ -6,11 +8,15 @@ import { CollectionCard } from "@/components/dashboard/collection-card";
 import { ItemCard } from "@/components/dashboard/item-card";
 
 export default async function DashboardPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/sign-in");
+  const userId = session.user.id;
+
   const [recentCollections, pinnedItems, recentItems, stats] = await Promise.all([
-    getRecentCollections(6),
+    getRecentCollections(userId, 6),
     getPinnedItems(),
     getRecentItems(10),
-    getItemStats(),
+    getItemStats(userId),
   ]);
 
   return (

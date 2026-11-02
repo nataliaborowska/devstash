@@ -1,13 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { createItem, deleteItem, getItemDetail, updateItem } from "@/lib/db/items";
+import { createItem, deleteItem, getItemDetail, getItemStats, updateItem } from "@/lib/db/items";
 
 vi.mock("@/lib/prisma", () => {
-  const item = { findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), deleteMany: vi.fn() };
+  const item = {
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    deleteMany: vi.fn(),
+    count: vi.fn(),
+  };
   const itemType = { findFirst: vi.fn() };
+  const collection = { count: vi.fn() };
   // Interactive transactions run against the same mocked client.
   return {
-    prisma: { item, itemType, $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn({ item })) },
+    prisma: {
+      item,
+      itemType,
+      collection,
+      $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn({ item })),
+    },
   };
 });
 
@@ -262,6 +274,30 @@ describe("createItem", () => {
       title: "useAuth Hook",
       type: { name: "snippet" },
       tags: ["react", "auth"],
+    });
+  });
+});
+
+describe("getItemStats", () => {
+  it("only counts the user's items and collections", async () => {
+    const mockItemCount = vi.mocked(prisma.item.count);
+    const mockCollectionCount = vi.mocked(prisma.collection.count);
+    mockItemCount.mockResolvedValueOnce(12).mockResolvedValueOnce(3);
+    mockCollectionCount.mockResolvedValueOnce(4).mockResolvedValueOnce(1);
+
+    const stats = await getItemStats("user-1");
+
+    expect(mockItemCount).toHaveBeenCalledWith({ where: { userId: "user-1" } });
+    expect(mockItemCount).toHaveBeenCalledWith({ where: { userId: "user-1", isFavorite: true } });
+    expect(mockCollectionCount).toHaveBeenCalledWith({ where: { userId: "user-1" } });
+    expect(mockCollectionCount).toHaveBeenCalledWith({
+      where: { userId: "user-1", isFavorite: true },
+    });
+    expect(stats).toEqual({
+      totalItems: 12,
+      favoriteItems: 3,
+      totalCollections: 4,
+      favoriteCollections: 1,
     });
   });
 });
