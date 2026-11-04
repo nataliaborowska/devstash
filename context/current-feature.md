@@ -1,26 +1,16 @@
-# Current Feature: Add Items to Collections
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- An item can belong to no collection or one collection
-- The New Item dialog has a collection input to select from the signed-in user's collections (or "No collection")
-- The item drawer edit mode has the same collection input, prefilled with the item's current collection
-- Saving create/edit persists the selected collection; choosing "No collection" removes the item from its collection
-- Only the signed-in user's own collections can be assigned (owner-scoped validation server-side)
-- Sidebar, dashboard collection cards, and counts reflect the change after save (`router.refresh()`)
-- Unit tests for updated schemas, `createItem`/`updateItem` actions, and DB queries
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Scope reduced to one collection per item: keeps the existing `collectionId` on `Item`, no schema change or migration. Multi-collection support (a `CollectionItem` join table + migration) is deferred
-- New lightweight owner-scoped query `getCollectionOptions(userId)` in `src/lib/db/collections.ts` returning all of the user's collections as `{ id, name }` sorted by name (no limit, no item stats — existing `get*Collections` queries are capped at 4/10 and load item types); fetched server-side in the dashboard/items layout and passed down via `DashboardShell` to the create dialog and drawer edit form
-- Validation: nullable `collectionId` added to `updateItemSchema`/`createItemSchema`; DB layer verifies the collection belongs to the user
-- Use the existing shadcn `Select` for the input
-- Don't build collection pages yet
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -55,3 +45,4 @@ In Progress
 - **2026-10-30** — Code editor complete: `@monaco-editor/react` installed; shared `CodeEditor` (`src/components/shared/code-editor.tsx`) with a custom `devstash-dark` Monaco theme matching the neutral card colors, macOS red/yellow/green window dots, language label and copy button in the header, readonly and edit modes, fluid height (fits content, capped at 400px; 160px minimum when editing) and thin themed scrollbars that hand the mouse wheel back to the page; used for snippet/command content in the item drawer view, drawer edit mode, and New Item dialog while notes/prompts keep `Textarea`; `src/lib/code-language.ts` (`CODE_ITEM_TYPES`, `toMonacoLanguage` alias mapping, commands fall back to shell); Monaco loads from the jsDelivr CDN by default. Also added type-specific add buttons: the New Item dialog moved into a `CreateItemDialogProvider` in `DashboardShell` (shared `CreateItemButton`, `TopBar` no longer takes `itemTypes`), and each creatable `/items/[type]` page has a "New <type>" header button that opens the dialog with that type preselected (`isCreatableItemType` in `src/lib/validations/items.ts`; files/images get no button); unit tests for `code-language` and `isCreatableItemType`
 - **2026-10-31** — Markdown editor complete: `react-markdown` + `remark-gfm` installed; shared `MarkdownEditor` (`src/components/shared/markdown-editor.tsx`) with Write/Preview tabs and a copy button, styled to match `CodeEditor` (card background, muted header); edit mode defaults to Write (auto-growing monospace textarea, 160px min, 400px max), readonly mode shows only Preview; rendered links open in a new tab, empty content shows "Nothing to preview"; used for note/prompt content in the item drawer view, drawer edit mode, and New Item dialog while snippets/commands keep `CodeEditor`; `.markdown-preview` styles in `globals.css` (distinct h1-h6, code blocks and inline code, lists and task-list checkboxes, blue-accent blockquotes, blue links with hover, bordered tables with header background, horizontally scrolling wide code/tables); new `scrollbar-thin` Tailwind utility (thin rounded thumb in Monaco's scrollbar colors, Firefox fallback) applied to the Markdown editor, item drawer bodies (view and edit), and the New Item dialog
 - **2026-11-02** — Collection create complete: the top bar's "New Collection" button opens a shadcn `Dialog` (`src/components/collections/create-collection-dialog.tsx`, self-contained `CreateCollectionButton`, form mounted only while open) with a required name (max 100) and optional description (max 500); Create disabled until a name is entered, "Creating..." pending state, dialog can't close mid-save; success toast closes the dialog and `router.refresh()` updates the sidebar, dashboard collections, and stats, error toast keeps it open; `createCollection` server action (`src/actions/collections.ts`, auth check) validates with `createCollectionSchema` (`src/lib/validations/collections.ts`: trimmed name, blank description to null) and calls owner-scoped `createCollection` in `src/lib/db/collections.ts`; `getRecentCollections`, `getFavoriteCollections`, `getNonFavoriteCollections`, and `getItemStats` now take a `userId` and only return the signed-in user's data (previously every user's); DevStash logo and title in the top bar link to `/dashboard`; unit tests for the schema, action, and queries
+- **2026-11-04** — Item collections complete: the New Item dialog and the item drawer's edit mode have a "Collection" shadcn `Select` (shared `CollectionSelect` in `src/components/collections/collection-select.tsx`, "No collection" option plus the user's collections sorted by name) so an item can be put in one collection, moved, or removed from it; options come from the new unlimited owner-scoped `getCollectionOptions` query (`{ id, name }`), loaded in the dashboard layout and shared via `CollectionOptionsProvider` in `DashboardShell`; `collectionId` added to `updateItemSchema`/`createItemSchema` (blank to null, null removes, undefined leaves unchanged); `createItem`/`updateItem` actions reject collections the user doesn't own via `userOwnsCollection` ("Collection not found"); drawer view label renamed to "Collection" and dates split into `ItemDatesSection`; one collection per item for now, multi-collection support (`CollectionItem` join table + migration) deferred; unit tests for the schema, actions, and queries
