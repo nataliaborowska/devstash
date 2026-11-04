@@ -88,27 +88,29 @@ describe("createItemSchema", () => {
   });
 });
 
-describe("collectionId", () => {
+describe("collectionIds", () => {
   const base = { title: "Item", tags: [] };
 
-  it("trims a selected collection id", () => {
-    expect(updateItemSchema.parse({ ...base, collectionId: " col-1 " }).collectionId).toBe("col-1");
+  it("trims and dedupes the selected collection ids", () => {
+    const result = updateItemSchema.parse({ ...base, collectionIds: [" col-1 ", "col-2", "col-1"] });
+    expect(result.collectionIds).toEqual(["col-1", "col-2"]);
   });
 
-  it("turns a blank collection id into null", () => {
-    expect(updateItemSchema.parse({ ...base, collectionId: "  " }).collectionId).toBeNull();
+  it("keeps an empty list so the item can leave every collection", () => {
+    expect(updateItemSchema.parse({ ...base, collectionIds: [] }).collectionIds).toEqual([]);
   });
 
-  it("keeps null so the item can leave its collection", () => {
-    expect(updateItemSchema.parse({ ...base, collectionId: null }).collectionId).toBeNull();
+  it("rejects blank ids", () => {
+    const result = updateItemSchema.safeParse({ ...base, collectionIds: ["col-1", " "] });
+    expect(result.success).toBe(false);
   });
 
-  it("leaves an omitted collection id undefined so it isn't changed", () => {
-    expect(updateItemSchema.parse(base).collectionId).toBeUndefined();
+  it("leaves omitted collection ids undefined so they aren't changed", () => {
+    expect(updateItemSchema.parse(base).collectionIds).toBeUndefined();
   });
 
   it("is passed through by createItemSchema", () => {
-    const result = createItemSchema.parse({ ...base, type: "note", collectionId: "col-1" });
-    expect(result.collectionId).toBe("col-1");
+    const result = createItemSchema.parse({ ...base, type: "note", collectionIds: ["col-1"] });
+    expect(result.collectionIds).toEqual(["col-1"]);
   });
 });

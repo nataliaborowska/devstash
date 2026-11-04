@@ -17,8 +17,11 @@ export const updateItemSchema = z.object({
     z.url({ protocol: /^https?$/, message: "URL must be a valid http(s) link" }).nullish()
   ),
   language: optionalText,
-  // null removes the item from its collection; undefined leaves it unchanged.
-  collectionId: optionalText,
+  // The item's full set of collections; [] removes it from all, undefined leaves them unchanged.
+  collectionIds: z
+    .array(z.string().trim().min(1, "Invalid collection"))
+    .transform((ids) => [...new Set(ids)])
+    .optional(),
   tags: z
     .array(z.string().trim().min(1, "Tags cannot be empty"))
     .transform((tags) => [...new Set(tags)]),

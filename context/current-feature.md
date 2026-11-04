@@ -1,16 +1,30 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Multi-Collection Items
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- An item can belong to zero, one, or multiple collections at the same time
+- The New Item dialog and item drawer edit mode use a multi-select collection input (prefilled with the item's current collections when editing); deselecting removes the item from that collection
+- Only the signed-in user's own collections can be assigned (every selected id verified server-side)
+- Item drawer view mode lists all collections the item belongs to
+- Dashboard collection cards (item counts, type icons, dominant color) and the sidebar count items through the new join table
+- Existing item-collection links are preserved by the migration
+- Seed script creates links through the join table
+- Unit tests for updated schemas, `createItem`/`updateItem` actions, and DB queries
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Schema: replace `Item.collectionId` with a `CollectionItem` join table (`collectionId`, `itemId`, `addedAt`, composite primary key, cascade delete on both sides, index on `itemId`)
+- Migration must be created with `prisma migrate dev` (interactive, so the user runs it): `npx prisma migrate dev --create-only --name item_collections_join_table`, then the generated SQL is edited so the join table is created and filled from `Item.collectionId` before the column is dropped, then `npx prisma migrate dev` applies it to the `development` Neon branch
+- Validation: `collectionId` replaced by a deduped `collectionIds` string array in `updateItemSchema`/`createItemSchema` (omitted = unchanged on update)
+- Ownership: replace `userOwnsCollection` with a check that every id in `collectionIds` belongs to the user
+- DB: `createItem` links the collections; `updateItem` replaces the item's links (like tags); `ItemDetail.collection` becomes `collections: { id, name }[]`
+- UI: shared `CollectionSelect` switches to Base UI `Select` with `multiple`, trigger shows the selected names (or "No collections")
+- `getCollectionOptions` and `CollectionOptionsProvider` are reused unchanged
+- Don't build collection pages yet
 
 ## History
 

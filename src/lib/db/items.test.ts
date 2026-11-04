@@ -50,7 +50,10 @@ const dbItem = {
   language: "typescript",
   type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
   tags: [{ tag: { name: "react" } }, { tag: { name: "auth" } }],
-  collection: { id: "col-1", name: "React Patterns" },
+  collections: [
+    { collection: { id: "col-1", name: "React Patterns" } },
+    { collection: { id: "col-2", name: "Interview Prep" } },
+  ],
 };
 
 describe("getItemDetail", () => {
@@ -70,7 +73,7 @@ describe("getItemDetail", () => {
     expect(await getItemDetail("user-2", "item-1")).toBeNull();
   });
 
-  it("maps the full item detail with flattened tags and its collection", async () => {
+  it("maps the full item detail with flattened tags and collections", async () => {
     expect(await getItemDetail("user-1", "item-1")).toEqual({
       id: "item-1",
       title: "useAuth Hook",
@@ -89,14 +92,17 @@ describe("getItemDetail", () => {
       language: "typescript",
       type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
       tags: ["react", "auth"],
-      collection: { id: "col-1", name: "React Patterns" },
+      collections: [
+        { id: "col-1", name: "React Patterns" },
+        { id: "col-2", name: "Interview Prep" },
+      ],
     });
   });
 
-  it("returns a null collection for items outside any collection", async () => {
-    mockFindFirst.mockResolvedValue({ ...dbItem, collection: null } as never);
+  it("returns no collections for items outside any collection", async () => {
+    mockFindFirst.mockResolvedValue({ ...dbItem, collections: [] } as never);
     const item = await getItemDetail("user-1", "item-1");
-    expect(item?.collection).toBeNull();
+    expect(item?.collections).toEqual([]);
   });
 });
 
@@ -164,14 +170,22 @@ describe("updateItem", () => {
     expect(mockUpdate.mock.calls[0][0].data.tags).toEqual({ deleteMany: {}, create: [] });
   });
 
-  it("moves the item into the given collection", async () => {
-    await updateItem("user-1", "item-1", { ...data, collectionId: "col-2" });
-    expect(mockUpdate.mock.calls[0][0].data.collectionId).toBe("col-2");
+  it("replaces the item's collections with the given ones", async () => {
+    await updateItem("user-1", "item-1", { ...data, collectionIds: ["col-1", "col-2"] });
+    expect(mockUpdate.mock.calls[0][0].data.collections).toEqual({
+      deleteMany: {},
+      create: [{ collectionId: "col-1" }, { collectionId: "col-2" }],
+    });
   });
 
-  it("removes the item from its collection when given null", async () => {
-    await updateItem("user-1", "item-1", { ...data, collectionId: null });
-    expect(mockUpdate.mock.calls[0][0].data.collectionId).toBeNull();
+  it("removes the item from every collection when given an empty list", async () => {
+    await updateItem("user-1", "item-1", { ...data, collectionIds: [] });
+    expect(mockUpdate.mock.calls[0][0].data.collections).toEqual({ deleteMany: {}, create: [] });
+  });
+
+  it("leaves collections untouched when collectionIds is omitted", async () => {
+    await updateItem("user-1", "item-1", data);
+    expect(mockUpdate.mock.calls[0][0].data).not.toHaveProperty("collections");
   });
 
   it("returns the updated item detail", async () => {
@@ -181,7 +195,10 @@ describe("updateItem", () => {
       title: "useAuth Hook v2",
       description: null,
       tags: ["react", "hooks"],
-      collection: { id: "col-1", name: "React Patterns" },
+      collections: [
+        { id: "col-1", name: "React Patterns" },
+        { id: "col-2", name: "Interview Prep" },
+      ],
     });
   });
 });
@@ -267,6 +284,7 @@ describe("createItem", () => {
               },
             ],
           },
+          collections: { create: [] },
         },
       })
     );
@@ -277,9 +295,11 @@ describe("createItem", () => {
     expect(mockCreate.mock.calls[0][0].data.tags).toEqual({ create: [] });
   });
 
-  it("creates the item in the given collection", async () => {
-    await createItem("user-1", { ...data, collectionId: "col-1" });
-    expect(mockCreate.mock.calls[0][0].data.collectionId).toBe("col-1");
+  it("links the item to the given collections", async () => {
+    await createItem("user-1", { ...data, collectionIds: ["col-1", "col-2"] });
+    expect(mockCreate.mock.calls[0][0].data.collections).toEqual({
+      create: [{ collectionId: "col-1" }, { collectionId: "col-2" }],
+    });
   });
 
   it("returns the created item detail", async () => {

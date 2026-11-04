@@ -6,18 +6,18 @@ import {
   updateItem as updateItemInDb,
   type ItemDetail,
 } from "@/lib/db/items";
-import { userOwnsCollection } from "@/lib/db/collections";
+import { userOwnsCollections } from "@/lib/db/collections";
 import { createItem, deleteItem, updateItem } from "@/actions/items";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/db/items", () => ({ createItem: vi.fn(), updateItem: vi.fn(), deleteItem: vi.fn() }));
-vi.mock("@/lib/db/collections", () => ({ userOwnsCollection: vi.fn() }));
+vi.mock("@/lib/db/collections", () => ({ userOwnsCollections: vi.fn() }));
 
 const mockAuth = vi.mocked(auth as unknown as () => Promise<{ user: { id: string } } | null>);
 const mockCreateItemInDb = vi.mocked(createItemInDb);
 const mockUpdateItemInDb = vi.mocked(updateItemInDb);
 const mockDeleteItemInDb = vi.mocked(deleteItemInDb);
-const mockUserOwnsCollection = vi.mocked(userOwnsCollection);
+const mockUserOwnsCollections = vi.mocked(userOwnsCollections);
 
 const validInput = {
   title: "  useAuth Hook  ",
@@ -100,32 +100,37 @@ describe("updateItem", () => {
     expect(result).toEqual({ success: false, error: "Could not save the item. Please try again." });
   });
 
-  it("moves the item into a collection the user owns", async () => {
-    mockUserOwnsCollection.mockResolvedValue(true);
-    await updateItem("item-1", { ...validInput, collectionId: " col-1 " });
-    expect(mockUserOwnsCollection).toHaveBeenCalledWith("user-1", "col-1");
+  it("puts the item in several collections the user owns", async () => {
+    mockUserOwnsCollections.mockResolvedValue(true);
+    await updateItem("item-1", { ...validInput, collectionIds: [" col-1 ", "col-2", "col-1"] });
+    expect(mockUserOwnsCollections).toHaveBeenCalledWith("user-1", ["col-1", "col-2"]);
     expect(mockUpdateItemInDb).toHaveBeenCalledWith(
       "user-1",
       "item-1",
-      expect.objectContaining({ collectionId: "col-1" })
+      expect.objectContaining({ collectionIds: ["col-1", "col-2"] })
     );
   });
 
-  it("rejects a collection owned by someone else", async () => {
-    mockUserOwnsCollection.mockResolvedValue(false);
-    const result = await updateItem("item-1", { ...validInput, collectionId: "col-other" });
+  it("rejects the save when any collection is owned by someone else", async () => {
+    mockUserOwnsCollections.mockResolvedValue(false);
+    const result = await updateItem("item-1", { ...validInput, collectionIds: ["col-1", "col-other"] });
     expect(result).toEqual({ success: false, error: "Collection not found" });
     expect(mockUpdateItemInDb).not.toHaveBeenCalled();
   });
 
-  it("removes the item from its collection without an ownership check", async () => {
-    await updateItem("item-1", { ...validInput, collectionId: null });
-    expect(mockUserOwnsCollection).not.toHaveBeenCalled();
+  it("removes the item from all collections when given an empty list", async () => {
+    mockUserOwnsCollections.mockResolvedValue(true);
+    await updateItem("item-1", { ...validInput, collectionIds: [] });
     expect(mockUpdateItemInDb).toHaveBeenCalledWith(
       "user-1",
       "item-1",
-      expect.objectContaining({ collectionId: null })
+      expect.objectContaining({ collectionIds: [] })
     );
+  });
+
+  it("skips the ownership check when collections are omitted", async () => {
+    await updateItem("item-1", validInput);
+    expect(mockUserOwnsCollections).not.toHaveBeenCalled();
   });
 });
 
@@ -284,29 +289,25 @@ describe("createItem", () => {
     });
   });
 
-  it("creates the item in a collection the user owns", async () => {
-    mockUserOwnsCollection.mockResolvedValue(true);
-    await createItem({ ...snippetInput, collectionId: "col-1" });
-    expect(mockUserOwnsCollection).toHaveBeenCalledWith("user-1", "col-1");
+  it("creates the item in several collections the user owns", async () => {
+    mockUserOwnsCollections.mockResolvedValue(true);
+    await createItem({ ...snippetInput, collectionIds: ["col-1", "col-2"] });
+    expect(mockUserOwnsCollections).toHaveBeenCalledWith("user-1", ["col-1", "col-2"]);
     expect(mockCreateItemInDb).toHaveBeenCalledWith(
       "user-1",
-      expect.objectContaining({ collectionId: "col-1" })
+      expect.objectContaining({ collectionIds: ["col-1", "col-2"] })
     );
   });
 
-  it("rejects a collection owned by someone else", async () => {
-    mockUserOwnsCollection.mockResolvedValue(false);
-    const result = await createItem({ ...snippetInput, collectionId: "col-other" });
+  it("rejects the item when any collection is owned by someone else", async () => {
+    mockUserOwnsCollections.mockResolvedValue(false);
+    const result = await createItem({ ...snippetInput, collectionIds: ["col-other"] });
     expect(result).toEqual({ success: false, error: "Collection not found" });
     expect(mockCreateItemInDb).not.toHaveBeenCalled();
   });
 
-  it("creates the item outside any collection when none is chosen", async () => {
-    await createItem({ ...snippetInput, collectionId: null });
-    expect(mockUserOwnsCollection).not.toHaveBeenCalled();
-    expect(mockCreateItemInDb).toHaveBeenCalledWith(
-      "user-1",
-      expect.objectContaining({ collectionId: null })
-    );
+  it("skips the ownership check when no collections are given", async () => {
+    await createItem(snippetInput);
+    expect(mockUserOwnsCollections).not.toHaveBeenCalled();
   });
 });

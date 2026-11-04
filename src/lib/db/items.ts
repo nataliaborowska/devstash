@@ -110,7 +110,7 @@ export type ItemDetail = ItemWithType & {
   fileSize: number | null
   language: string | null
   updatedAt: Date
-  collection: { id: string; name: string } | null
+  collections: { id: string; name: string }[]
 }
 
 const ITEM_DETAIL_SELECT = {
@@ -123,11 +123,17 @@ const ITEM_DETAIL_SELECT = {
   fileSize: true,
   language: true,
   updatedAt: true,
-  collection: { select: { id: true, name: true } },
+  collections: {
+    select: { collection: { select: { id: true, name: true } } },
+    orderBy: { collection: { name: "asc" } },
+  },
 } as const
 
 function mapItemDetail(
-  item: Parameters<typeof mapItem>[0] & Omit<ItemDetail, keyof ItemWithType>
+  item: Parameters<typeof mapItem>[0] &
+    Omit<ItemDetail, keyof ItemWithType | "collections"> & {
+      collections: { collection: { id: string; name: string } }[]
+    }
 ): ItemDetail {
   return {
     ...mapItem(item),
@@ -139,7 +145,7 @@ function mapItemDetail(
     fileSize: item.fileSize,
     language: item.language,
     updatedAt: item.updatedAt,
-    collection: item.collection,
+    collections: item.collections.map((link) => link.collection),
   }
 }
 
@@ -150,6 +156,10 @@ export async function getItemDetail(userId: string, id: string): Promise<ItemDet
     select: ITEM_DETAIL_SELECT,
   })
   return item ? mapItemDetail(item) : null
+}
+
+function linkCollections(collectionIds: string[]) {
+  return collectionIds.map((collectionId) => ({ collectionId }))
 }
 
 function connectOrCreateTags(userId: string, tags: string[]) {
@@ -165,7 +175,7 @@ function connectOrCreateTags(userId: string, tags: string[]) {
 
 // Returns null when the system item type doesn't exist (e.g. unseeded database).
 export async function createItem(userId: string, data: CreateItemData): Promise<ItemDetail | null> {
-  const { type, tags, ...fields } = data
+  const { type, tags, collectionIds = [], ...fields } = data
 
   const itemType = await prisma.itemType.findFirst({
     where: { name: type, isSystem: true },
@@ -179,6 +189,7 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
       userId,
       typeId: itemType.id,
       tags: { create: connectOrCreateTags(userId, tags) },
+      collections: { create: linkCollections(collectionIds) },
     },
     select: ITEM_DETAIL_SELECT,
   })
@@ -191,7 +202,7 @@ export async function updateItem(
   id: string,
   data: UpdateItemData
 ): Promise<ItemDetail | null> {
-  const { tags, ...fields } = data
+  const { tags, collectionIds, ...fields } = data
 
   return prisma.$transaction(async (tx) => {
     const existing = await tx.item.findFirst({ where: { id, userId }, select: { id: true } })
@@ -205,6 +216,10 @@ export async function updateItem(
           deleteMany: {},
           create: connectOrCreateTags(userId, tags),
         },
+        // Omitted collectionIds leave the item's collections untouched.
+        ...(collectionIds && {
+          collections: { deleteMany: {}, create: linkCollections(collectionIds) },
+        }),
       },
       select: ITEM_DETAIL_SELECT,
     })

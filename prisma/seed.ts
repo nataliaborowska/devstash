@@ -20,6 +20,14 @@ const SYSTEM_ITEM_TYPES = [
   { name: "link",    icon: "Link",       color: "#10b981" },
 ]
 
+// Adds items to a collection through the CollectionItem join table (safe to re-run).
+async function linkItems(collectionId: string, itemIds: string[]) {
+  await prisma.collectionItem.createMany({
+    skipDuplicates: true,
+    data: itemIds.map((itemId) => ({ collectionId, itemId })),
+  })
+}
+
 async function main() {
   // Remove stale system item types from previous seed versions
   const currentNames = SYSTEM_ITEM_TYPES.map((t) => t.name)
@@ -130,7 +138,6 @@ export function useOnClickOutside(ref: React.RefObject<HTMLElement>, handler: ()
         contentType: "TEXT",
         typeId: typeMap["snippet"],
         userId: user.id,
-        collectionId: reactPatterns.id,
       },
       {
         id: "seed-rp-2",
@@ -188,7 +195,6 @@ export { Accordion }`,
         contentType: "TEXT",
         typeId: typeMap["snippet"],
         userId: user.id,
-        collectionId: reactPatterns.id,
       },
       {
         id: "seed-rp-3",
@@ -236,10 +242,11 @@ export function pick<T extends object, K extends keyof T>(obj: T, keys: K[]): Pi
         contentType: "TEXT",
         typeId: typeMap["snippet"],
         userId: user.id,
-        collectionId: reactPatterns.id,
       },
     ],
   })
+
+  await linkItems(reactPatterns.id, ["seed-rp-1", "seed-rp-2", "seed-rp-3"])
 
   // --- Collection: AI Workflows ---
   const aiWorkflows = await prisma.collection.upsert({
@@ -281,7 +288,6 @@ Code to review:
         contentType: "TEXT",
         typeId: typeMap["prompt"],
         userId: user.id,
-        collectionId: aiWorkflows.id,
       },
       {
         id: "seed-ai-2",
@@ -304,7 +310,6 @@ Code:
         contentType: "TEXT",
         typeId: typeMap["prompt"],
         userId: user.id,
-        collectionId: aiWorkflows.id,
       },
       {
         id: "seed-ai-3",
@@ -331,10 +336,11 @@ Original code:
         contentType: "TEXT",
         typeId: typeMap["prompt"],
         userId: user.id,
-        collectionId: aiWorkflows.id,
       },
     ],
   })
+
+  await linkItems(aiWorkflows.id, ["seed-ai-1", "seed-ai-2", "seed-ai-3"])
 
   // --- Collection: DevOps ---
   const devops = await prisma.collection.upsert({
@@ -400,7 +406,6 @@ jobs:
         contentType: "TEXT",
         typeId: typeMap["snippet"],
         userId: user.id,
-        collectionId: devops.id,
       },
       {
         id: "seed-do-2",
@@ -409,7 +414,6 @@ jobs:
         contentType: "TEXT",
         typeId: typeMap["command"],
         userId: user.id,
-        collectionId: devops.id,
       },
       {
         id: "seed-do-3",
@@ -419,7 +423,6 @@ jobs:
         contentType: "TEXT",
         typeId: typeMap["link"],
         userId: user.id,
-        collectionId: devops.id,
       },
       {
         id: "seed-do-4",
@@ -429,10 +432,11 @@ jobs:
         contentType: "TEXT",
         typeId: typeMap["link"],
         userId: user.id,
-        collectionId: devops.id,
       },
     ],
   })
+
+  await linkItems(devops.id, ["seed-do-1", "seed-do-2", "seed-do-3", "seed-do-4"])
 
   // --- Collection: Terminal Commands ---
   const terminalCmds = await prisma.collection.upsert({
@@ -475,7 +479,6 @@ git log --follow -p -- <file>`,
         contentType: "TEXT",
         typeId: typeMap["command"],
         userId: user.id,
-        collectionId: terminalCmds.id,
       },
       {
         id: "seed-tc-2",
@@ -500,7 +503,6 @@ docker stop $(docker ps -q) && docker rm $(docker ps -aq)`,
         contentType: "TEXT",
         typeId: typeMap["command"],
         userId: user.id,
-        collectionId: terminalCmds.id,
       },
       {
         id: "seed-tc-3",
@@ -522,7 +524,6 @@ ss -tlnp`,
         contentType: "TEXT",
         typeId: typeMap["command"],
         userId: user.id,
-        collectionId: terminalCmds.id,
       },
       {
         id: "seed-tc-4",
@@ -550,10 +551,11 @@ npm cache clean --force`,
         contentType: "TEXT",
         typeId: typeMap["command"],
         userId: user.id,
-        collectionId: terminalCmds.id,
       },
     ],
   })
+
+  await linkItems(terminalCmds.id, ["seed-tc-1", "seed-tc-2", "seed-tc-3", "seed-tc-4"])
 
   // --- Collection: Design Resources ---
   const designResources = await prisma.collection.upsert({
@@ -578,7 +580,6 @@ npm cache clean --force`,
         contentType: "TEXT",
         typeId: typeMap["link"],
         userId: user.id,
-        collectionId: designResources.id,
       },
       {
         id: "seed-dr-2",
@@ -588,7 +589,6 @@ npm cache clean --force`,
         contentType: "TEXT",
         typeId: typeMap["link"],
         userId: user.id,
-        collectionId: designResources.id,
       },
       {
         id: "seed-dr-3",
@@ -598,7 +598,6 @@ npm cache clean --force`,
         contentType: "TEXT",
         typeId: typeMap["link"],
         userId: user.id,
-        collectionId: designResources.id,
       },
       {
         id: "seed-dr-4",
@@ -608,10 +607,11 @@ npm cache clean --force`,
         contentType: "TEXT",
         typeId: typeMap["link"],
         userId: user.id,
-        collectionId: designResources.id,
       },
     ],
   })
+
+  await linkItems(designResources.id, ["seed-dr-1", "seed-dr-2", "seed-dr-3", "seed-dr-4"])
 
   console.log("Seed complete.")
 }
