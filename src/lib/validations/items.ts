@@ -17,6 +17,8 @@ export const updateItemSchema = z.object({
     z.url({ protocol: /^https?$/, message: "URL must be a valid http(s) link" }).nullish()
   ),
   language: optionalText,
+  // null removes the item from its collection; undefined leaves it unchanged.
+  collectionId: optionalText,
   tags: z
     .array(z.string().trim().min(1, "Tags cannot be empty"))
     .transform((tags) => [...new Set(tags)]),

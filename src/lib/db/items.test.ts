@@ -164,6 +164,16 @@ describe("updateItem", () => {
     expect(mockUpdate.mock.calls[0][0].data.tags).toEqual({ deleteMany: {}, create: [] });
   });
 
+  it("moves the item into the given collection", async () => {
+    await updateItem("user-1", "item-1", { ...data, collectionId: "col-2" });
+    expect(mockUpdate.mock.calls[0][0].data.collectionId).toBe("col-2");
+  });
+
+  it("removes the item from its collection when given null", async () => {
+    await updateItem("user-1", "item-1", { ...data, collectionId: null });
+    expect(mockUpdate.mock.calls[0][0].data.collectionId).toBeNull();
+  });
+
   it("returns the updated item detail", async () => {
     const item = await updateItem("user-1", "item-1", data);
     expect(item).toMatchObject({
@@ -265,6 +275,11 @@ describe("createItem", () => {
   it("creates no tag links when given an empty list", async () => {
     await createItem("user-1", { ...data, tags: [] });
     expect(mockCreate.mock.calls[0][0].data.tags).toEqual({ create: [] });
+  });
+
+  it("creates the item in the given collection", async () => {
+    await createItem("user-1", { ...data, collectionId: "col-1" });
+    expect(mockCreate.mock.calls[0][0].data.collectionId).toBe("col-1");
   });
 
   it("returns the created item detail", async () => {

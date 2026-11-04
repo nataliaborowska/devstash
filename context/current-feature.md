@@ -1,16 +1,26 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Add Items to Collections
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- An item can belong to no collection or one collection
+- The New Item dialog has a collection input to select from the signed-in user's collections (or "No collection")
+- The item drawer edit mode has the same collection input, prefilled with the item's current collection
+- Saving create/edit persists the selected collection; choosing "No collection" removes the item from its collection
+- Only the signed-in user's own collections can be assigned (owner-scoped validation server-side)
+- Sidebar, dashboard collection cards, and counts reflect the change after save (`router.refresh()`)
+- Unit tests for updated schemas, `createItem`/`updateItem` actions, and DB queries
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Scope reduced to one collection per item: keeps the existing `collectionId` on `Item`, no schema change or migration. Multi-collection support (a `CollectionItem` join table + migration) is deferred
+- New lightweight owner-scoped query `getCollectionOptions(userId)` in `src/lib/db/collections.ts` returning all of the user's collections as `{ id, name }` sorted by name (no limit, no item stats — existing `get*Collections` queries are capped at 4/10 and load item types); fetched server-side in the dashboard/items layout and passed down via `DashboardShell` to the create dialog and drawer edit form
+- Validation: nullable `collectionId` added to `updateItemSchema`/`createItemSchema`; DB layer verifies the collection belongs to the user
+- Use the existing shadcn `Select` for the input
+- Don't build collection pages yet
 
 ## History
 

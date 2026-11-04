@@ -97,6 +97,25 @@ export async function getNonFavoriteCollections(
   return getCollectionsWithStats({ userId, isFavorite: false }, limit)
 }
 
+export type CollectionOption = {
+  id: string
+  name: string
+}
+
+// Every collection the user owns, for pickers. No limit and no item stats.
+export async function getCollectionOptions(userId: string): Promise<CollectionOption[]> {
+  return prisma.collection.findMany({
+    where: { userId },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  })
+}
+
+export async function userOwnsCollection(userId: string, collectionId: string): Promise<boolean> {
+  const count = await prisma.collection.count({ where: { id: collectionId, userId } })
+  return count > 0
+}
+
 export type CollectionSummary = {
   id: string
   name: string

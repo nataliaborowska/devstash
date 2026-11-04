@@ -4,7 +4,11 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getItemTypesWithCounts } from "@/lib/db/items";
-import { getFavoriteCollections, getNonFavoriteCollections } from "@/lib/db/collections";
+import {
+  getCollectionOptions,
+  getFavoriteCollections,
+  getNonFavoriteCollections,
+} from "@/lib/db/collections";
 import { getSidebarUser } from "@/lib/db/users";
 
 export default async function DashboardLayout({
@@ -15,12 +19,14 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [user, itemTypes, favoriteCollections, recentCollections] = await Promise.all([
-    getSidebarUser(session.user.id),
-    getItemTypesWithCounts(),
-    getFavoriteCollections(session.user.id),
-    getNonFavoriteCollections(session.user.id),
-  ]);
+  const [user, itemTypes, favoriteCollections, recentCollections, collectionOptions] =
+    await Promise.all([
+      getSidebarUser(session.user.id),
+      getItemTypesWithCounts(),
+      getFavoriteCollections(session.user.id),
+      getNonFavoriteCollections(session.user.id),
+      getCollectionOptions(session.user.id),
+    ]);
 
   if (!user) redirect("/sign-in");
 
@@ -30,6 +36,7 @@ export default async function DashboardLayout({
       itemTypes={itemTypes}
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
+      collectionOptions={collectionOptions}
     >
       {children}
     </DashboardShell>
