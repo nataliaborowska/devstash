@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createItemSchema, isCreatableItemType } from "@/lib/validations/items";
+import { createItemSchema, isCreatableItemType, updateItemSchema } from "@/lib/validations/items";
 
 describe("isCreatableItemType", () => {
   it.each(["snippet", "prompt", "command", "note", "link"])("accepts %s", (type) => {
@@ -85,5 +85,30 @@ describe("createItemSchema", () => {
       url: null,
       tags: [],
     });
+  });
+});
+
+describe("collectionId", () => {
+  const base = { title: "Item", tags: [] };
+
+  it("trims a selected collection id", () => {
+    expect(updateItemSchema.parse({ ...base, collectionId: " col-1 " }).collectionId).toBe("col-1");
+  });
+
+  it("turns a blank collection id into null", () => {
+    expect(updateItemSchema.parse({ ...base, collectionId: "  " }).collectionId).toBeNull();
+  });
+
+  it("keeps null so the item can leave its collection", () => {
+    expect(updateItemSchema.parse({ ...base, collectionId: null }).collectionId).toBeNull();
+  });
+
+  it("leaves an omitted collection id undefined so it isn't changed", () => {
+    expect(updateItemSchema.parse(base).collectionId).toBeUndefined();
+  });
+
+  it("is passed through by createItemSchema", () => {
+    const result = createItemSchema.parse({ ...base, type: "note", collectionId: "col-1" });
+    expect(result.collectionId).toBe("col-1");
   });
 });

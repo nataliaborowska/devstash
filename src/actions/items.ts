@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { userOwnsCollection } from "@/lib/db/collections";
 import {
   createItem as createItemInDb,
   deleteItem as deleteItemInDb,
@@ -27,6 +28,13 @@ export type DeleteItemResult =
   | { success: true; data: { id: string } }
   | { success: false; error: string };
 
+const COLLECTION_NOT_FOUND = "Collection not found";
+
+// Items may only be placed in the signed-in user's own collections.
+async function canUseCollection(userId: string, collectionId: string | null | undefined) {
+  return !collectionId || userOwnsCollection(userId, collectionId);
+}
+
 export async function createItem(data: CreateItemInput): Promise<CreateItemResult> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "You must be signed in" };
@@ -37,6 +45,9 @@ export async function createItem(data: CreateItemInput): Promise<CreateItemResul
   }
 
   try {
+    if (!(await canUseCollection(session.user.id, parsed.data.collectionId))) {
+      return { success: false, error: COLLECTION_NOT_FOUND };
+    }
     const item = await createItemInDb(session.user.id, parsed.data);
     if (!item) return { success: false, error: "Item type not found" };
     return { success: true, data: item };
@@ -56,6 +67,9 @@ export async function updateItem(itemId: string, data: UpdateItemInput): Promise
   }
 
   try {
+    if (!(await canUseCollection(session.user.id, parsed.data.collectionId))) {
+      return { success: false, error: COLLECTION_NOT_FOUND };
+    }
     const item = await updateItemInDb(session.user.id, itemId, parsed.data);
     if (!item) return { success: false, error: "Item not found" };
     return { success: true, data: item };

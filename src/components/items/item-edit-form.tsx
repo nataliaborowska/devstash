@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, X } from "lucide-react";
+import { Check, FolderOpen, X } from "lucide-react";
 import { toast } from "sonner";
 import { updateItem } from "@/actions/items";
-import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
+import { CollectionSelect } from "@/components/collections/collection-select";
+import { DetailSection, ItemDatesSection } from "@/components/items/item-detail-sections";
 import type { ItemDetailData } from "@/components/items/item-drawer";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { MarkdownEditor } from "@/components/shared/markdown-editor";
@@ -34,6 +35,7 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
   const [language, setLanguage] = useState(item.language ?? "");
   const [url, setUrl] = useState(item.url ?? "");
   const [tags, setTags] = useState(item.tags.join(", "));
+  const [collectionId, setCollectionId] = useState(item.collection?.id ?? null);
 
   const typeName = item.type.name;
   const showContent = CONTENT_TYPES.includes(typeName);
@@ -50,6 +52,7 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
         content: showContent ? content : undefined,
         language: showLanguage ? language : undefined,
         url: showUrl ? url : undefined,
+        collectionId,
         tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
       });
 
@@ -153,7 +156,16 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
           <p className="text-xs text-muted-foreground">Separate tags with commas</p>
         </DetailSection>
 
-        <ItemMetaSections item={item} />
+        <DetailSection icon={FolderOpen} label="Collection" htmlFor="item-collection">
+          <CollectionSelect
+            id="item-collection"
+            value={collectionId}
+            onChange={setCollectionId}
+            disabled={isSaving}
+          />
+        </DetailSection>
+
+        <ItemDatesSection item={item} />
       </div>
     </>
   );

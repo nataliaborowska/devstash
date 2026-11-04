@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createItem } from "@/actions/items";
+import { CollectionSelect } from "@/components/collections/collection-select";
 import { DetailSection } from "@/components/items/item-detail-sections";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { MarkdownEditor } from "@/components/shared/markdown-editor";
@@ -76,6 +77,7 @@ function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormPro
   const [language, setLanguage] = useState("");
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState("");
+  const [collectionId, setCollectionId] = useState<string | null>(null);
 
   const showContent = CONTENT_ITEM_TYPES.includes(type);
   const showLanguage = LANGUAGE_ITEM_TYPES.includes(type);
@@ -96,6 +98,7 @@ function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormPro
         content,
         language,
         url,
+        collectionId,
         tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
       });
 
@@ -201,6 +204,15 @@ function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormPro
           placeholder="react, hooks, auth"
         />
         <p className="text-xs text-muted-foreground">Separate tags with commas</p>
+      </DetailSection>
+
+      <DetailSection label="Collection" htmlFor="new-item-collection">
+        <CollectionSelect
+          id="new-item-collection"
+          value={collectionId}
+          onChange={setCollectionId}
+          disabled={isCreating}
+        />
       </DetailSection>
 
       <DialogFooter>

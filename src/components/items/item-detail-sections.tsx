@@ -25,11 +25,10 @@ export function DetailSection({ label, icon: Icon, htmlFor, children }: DetailSe
   );
 }
 
-// Collection and dates are display-only in both view and edit mode.
 export function ItemMetaSections({ item }: { item: ItemDetailData }) {
   return (
     <>
-      <DetailSection icon={FolderOpen} label="Collections">
+      <DetailSection icon={FolderOpen} label="Collection">
         {item.collection ? (
           <span className="inline-block rounded border border-border px-2 py-0.5 text-xs">
             {item.collection.name}
@@ -39,19 +38,26 @@ export function ItemMetaSections({ item }: { item: ItemDetailData }) {
         )}
       </DetailSection>
 
-      <DetailSection icon={Calendar} label="Details">
-        <dl className="space-y-1.5 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">Created</dt>
-            <dd>{formatLongDate(item.createdAt)}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">Updated</dt>
-            <dd>{formatLongDate(item.updatedAt)}</dd>
-          </div>
-        </dl>
-      </DetailSection>
+      <ItemDatesSection item={item} />
     </>
+  );
+}
+
+// Dates are display-only in both view and edit mode.
+export function ItemDatesSection({ item }: { item: ItemDetailData }) {
+  return (
+    <DetailSection icon={Calendar} label="Details">
+      <dl className="space-y-1.5 text-sm">
+        <div className="flex justify-between gap-4">
+          <dt className="text-muted-foreground">Created</dt>
+          <dd>{formatLongDate(item.createdAt)}</dd>
+        </div>
+        <div className="flex justify-between gap-4">
+          <dt className="text-muted-foreground">Updated</dt>
+          <dd>{formatLongDate(item.updatedAt)}</dd>
+        </div>
+      </dl>
+    </DetailSection>
   );
 }
 
