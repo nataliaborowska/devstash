@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { userOwnsCollection } from "@/lib/db/collections";
+import { userOwnsCollections } from "@/lib/db/collections";
 import {
   createItem as createItemInDb,
   deleteItem as deleteItemInDb,
@@ -31,8 +31,8 @@ export type DeleteItemResult =
 const COLLECTION_NOT_FOUND = "Collection not found";
 
 // Items may only be placed in the signed-in user's own collections.
-async function canUseCollection(userId: string, collectionId: string | null | undefined) {
-  return !collectionId || userOwnsCollection(userId, collectionId);
+async function canUseCollections(userId: string, collectionIds: string[] | undefined) {
+  return !collectionIds || userOwnsCollections(userId, collectionIds);
 }
 
 export async function createItem(data: CreateItemInput): Promise<CreateItemResult> {
@@ -45,7 +45,7 @@ export async function createItem(data: CreateItemInput): Promise<CreateItemResul
   }
 
   try {
-    if (!(await canUseCollection(session.user.id, parsed.data.collectionId))) {
+    if (!(await canUseCollections(session.user.id, parsed.data.collectionIds))) {
       return { success: false, error: COLLECTION_NOT_FOUND };
     }
     const item = await createItemInDb(session.user.id, parsed.data);
@@ -67,7 +67,7 @@ export async function updateItem(itemId: string, data: UpdateItemInput): Promise
   }
 
   try {
-    if (!(await canUseCollection(session.user.id, parsed.data.collectionId))) {
+    if (!(await canUseCollections(session.user.id, parsed.data.collectionIds))) {
       return { success: false, error: COLLECTION_NOT_FOUND };
     }
     const item = await updateItemInDb(session.user.id, itemId, parsed.data);

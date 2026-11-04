@@ -24,7 +24,7 @@ async function main() {
       collections: {
         include: {
           items: {
-            include: { type: true },
+            include: { item: { include: { type: true } } },
           },
         },
         orderBy: { name: "asc" },
@@ -50,7 +50,7 @@ async function main() {
   for (const col of user.collections) {
     console.log(`\n  ${col.name}`)
     console.log(`  ${col.description ?? ""}`)
-    for (const item of col.items) {
+    for (const { item } of col.items) {
       const detail = item.url ?? item.language ?? ""
       console.log(`    · [${item.type.name.padEnd(7)}] ${item.title}${detail ? `  (${detail})` : ""}`)
     }

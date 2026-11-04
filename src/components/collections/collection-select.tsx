@@ -24,33 +24,35 @@ export function CollectionOptionsProvider({ collections, children }: CollectionO
   );
 }
 
-// Base UI's Select needs a real value for the "no collection" option.
-const NO_COLLECTION = "none";
-
 interface CollectionSelectProps {
   id?: string;
-  value: string | null;
-  onChange: (collectionId: string | null) => void;
+  value: string[];
+  onChange: (collectionIds: string[]) => void;
   disabled?: boolean;
 }
 
+// Multi-select: an item can sit in any number of collections.
 export function CollectionSelect({ id, value, onChange, disabled }: CollectionSelectProps) {
   const collections = useContext(CollectionOptionsContext);
   const nameById = new Map(collections.map((c) => [c.id, c.name]));
 
+  function renderSelected(selected: string[]) {
+    const names = selected.flatMap((collectionId) => nameById.get(collectionId) ?? []);
+    if (names.length === 0) return <span className="text-muted-foreground">No collections</span>;
+    return <span className="truncate">{names.join(", ")}</span>;
+  }
+
   return (
     <Select
-      value={value ?? NO_COLLECTION}
-      onValueChange={(next) => next && onChange(next === NO_COLLECTION ? null : next)}
-      disabled={disabled}
+      multiple
+      value={value}
+      onValueChange={(next) => onChange(next ?? [])}
+      disabled={disabled || collections.length === 0}
     >
       <SelectTrigger id={id} className="w-full">
-        <SelectValue>
-          {(selected: string) => nameById.get(selected) ?? "No collection"}
-        </SelectValue>
+        <SelectValue className="min-w-0">{renderSelected}</SelectValue>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={NO_COLLECTION}>No collection</SelectItem>
         {collections.map((collection) => (
           <SelectItem key={collection.id} value={collection.id}>
             {collection.name}

@@ -34,17 +34,22 @@ async function getCollectionsWithStats(
       isFavorite: true,
       items: {
         select: {
-          typeId: true,
-          type: { select: { id: true, name: true, icon: true, color: true } },
+          item: {
+            select: {
+              typeId: true,
+              type: { select: { id: true, name: true, icon: true, color: true } },
+            },
+          },
         },
       },
     },
   })
 
   return collections.map((col) => {
-    const countByType = new Map<string, { type: (typeof col.items)[0]["type"]; count: number }>()
+    const items = col.items.map((link) => link.item)
+    const countByType = new Map<string, { type: (typeof items)[0]["type"]; count: number }>()
 
-    for (const item of col.items) {
+    for (const item of items) {
       const entry = countByType.get(item.typeId)
       if (entry) {
         entry.count++
@@ -69,7 +74,7 @@ async function getCollectionsWithStats(
       name: col.name,
       description: col.description,
       isFavorite: col.isFavorite,
-      itemCount: col.items.length,
+      itemCount: items.length,
       types,
       dominantColor,
     }
@@ -111,9 +116,14 @@ export async function getCollectionOptions(userId: string): Promise<CollectionOp
   })
 }
 
-export async function userOwnsCollection(userId: string, collectionId: string): Promise<boolean> {
-  const count = await prisma.collection.count({ where: { id: collectionId, userId } })
-  return count > 0
+// True only when every id is one of the user's collections.
+export async function userOwnsCollections(
+  userId: string,
+  collectionIds: string[]
+): Promise<boolean> {
+  if (collectionIds.length === 0) return true
+  const count = await prisma.collection.count({ where: { id: { in: collectionIds }, userId } })
+  return count === new Set(collectionIds).size
 }
 
 export type CollectionSummary = {

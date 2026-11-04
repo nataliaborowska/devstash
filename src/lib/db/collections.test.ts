@@ -6,7 +6,7 @@ import {
   getFavoriteCollections,
   getNonFavoriteCollections,
   getRecentCollections,
-  userOwnsCollection,
+  userOwnsCollections,
 } from "@/lib/db/collections";
 
 vi.mock("@/lib/prisma", () => ({
@@ -54,9 +54,9 @@ describe("collection reads", () => {
         description: null,
         isFavorite: false,
         items: [
-          { typeId: "type-2", type: linkType },
-          { typeId: "type-1", type: snippetType },
-          { typeId: "type-1", type: snippetType },
+          { item: { typeId: "type-2", type: linkType } },
+          { item: { typeId: "type-1", type: snippetType } },
+          { item: { typeId: "type-1", type: snippetType } },
         ],
       },
     ] as never);
@@ -108,15 +108,27 @@ describe("getCollectionOptions", () => {
   });
 });
 
-describe("userOwnsCollection", () => {
-  it("is true when the collection belongs to the user", async () => {
-    mockCount.mockResolvedValue(1);
-    await expect(userOwnsCollection("user-1", "col-1")).resolves.toBe(true);
-    expect(mockCount).toHaveBeenCalledWith({ where: { id: "col-1", userId: "user-1" } });
+describe("userOwnsCollections", () => {
+  it("is true when every collection belongs to the user", async () => {
+    mockCount.mockResolvedValue(2);
+    await expect(userOwnsCollections("user-1", ["col-1", "col-2"])).resolves.toBe(true);
+    expect(mockCount).toHaveBeenCalledWith({
+      where: { id: { in: ["col-1", "col-2"] }, userId: "user-1" },
+    });
   });
 
-  it("is false when the collection is missing or owned by someone else", async () => {
-    mockCount.mockResolvedValue(0);
-    await expect(userOwnsCollection("user-1", "col-other")).resolves.toBe(false);
+  it("is false when any collection is missing or owned by someone else", async () => {
+    mockCount.mockResolvedValue(1);
+    await expect(userOwnsCollections("user-1", ["col-1", "col-other"])).resolves.toBe(false);
+  });
+
+  it("ignores duplicate ids when comparing the count", async () => {
+    mockCount.mockResolvedValue(1);
+    await expect(userOwnsCollections("user-1", ["col-1", "col-1"])).resolves.toBe(true);
+  });
+
+  it("is true for an empty list without querying", async () => {
+    await expect(userOwnsCollections("user-1", [])).resolves.toBe(true);
+    expect(mockCount).not.toHaveBeenCalled();
   });
 });

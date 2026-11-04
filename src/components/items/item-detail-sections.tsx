@@ -28,11 +28,18 @@ export function DetailSection({ label, icon: Icon, htmlFor, children }: DetailSe
 export function ItemMetaSections({ item }: { item: ItemDetailData }) {
   return (
     <>
-      <DetailSection icon={FolderOpen} label="Collection">
-        {item.collection ? (
-          <span className="inline-block rounded border border-border px-2 py-0.5 text-xs">
-            {item.collection.name}
-          </span>
+      <DetailSection icon={FolderOpen} label="Collections">
+        {item.collections.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {item.collections.map((collection) => (
+              <span
+                key={collection.id}
+                className="inline-block rounded border border-border px-2 py-0.5 text-xs"
+              >
+                {collection.name}
+              </span>
+            ))}
+          </div>
         ) : (
           <p className="text-sm text-muted-foreground">Not in a collection</p>
         )}

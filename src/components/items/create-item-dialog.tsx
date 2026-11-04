@@ -77,7 +77,7 @@ function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormPro
   const [language, setLanguage] = useState("");
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState("");
-  const [collectionId, setCollectionId] = useState<string | null>(null);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
 
   const showContent = CONTENT_ITEM_TYPES.includes(type);
   const showLanguage = LANGUAGE_ITEM_TYPES.includes(type);
@@ -98,7 +98,7 @@ function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormPro
         content,
         language,
         url,
-        collectionId,
+        collectionIds,
         tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
       });
 
@@ -206,11 +206,11 @@ function CreateItemForm({ itemTypes, initialType, onCreated }: CreateItemFormPro
         <p className="text-xs text-muted-foreground">Separate tags with commas</p>
       </DetailSection>
 
-      <DetailSection label="Collection" htmlFor="new-item-collection">
+      <DetailSection label="Collections" htmlFor="new-item-collections">
         <CollectionSelect
-          id="new-item-collection"
-          value={collectionId}
-          onChange={setCollectionId}
+          id="new-item-collections"
+          value={collectionIds}
+          onChange={setCollectionIds}
           disabled={isCreating}
         />
       </DetailSection>

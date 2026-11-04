@@ -35,7 +35,7 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
   const [language, setLanguage] = useState(item.language ?? "");
   const [url, setUrl] = useState(item.url ?? "");
   const [tags, setTags] = useState(item.tags.join(", "));
-  const [collectionId, setCollectionId] = useState(item.collection?.id ?? null);
+  const [collectionIds, setCollectionIds] = useState(item.collections.map((c) => c.id));
 
   const typeName = item.type.name;
   const showContent = CONTENT_TYPES.includes(typeName);
@@ -52,7 +52,7 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
         content: showContent ? content : undefined,
         language: showLanguage ? language : undefined,
         url: showUrl ? url : undefined,
-        collectionId,
+        collectionIds,
         tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean),
       });
 
@@ -156,11 +156,11 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
           <p className="text-xs text-muted-foreground">Separate tags with commas</p>
         </DetailSection>
 
-        <DetailSection icon={FolderOpen} label="Collection" htmlFor="item-collection">
+        <DetailSection icon={FolderOpen} label="Collections" htmlFor="item-collections">
           <CollectionSelect
-            id="item-collection"
-            value={collectionId}
-            onChange={setCollectionId}
+            id="item-collections"
+            value={collectionIds}
+            onChange={setCollectionIds}
             disabled={isSaving}
           />
         </DetailSection>
