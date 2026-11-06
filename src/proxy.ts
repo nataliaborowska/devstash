@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/items"];
+const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/items", "/collections"];
 
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
@@ -12,5 +12,5 @@ export const proxy = auth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/items/:path*"],
+  matcher: ["/dashboard/:path*", "/profile/:path*", "/items/:path*", "/collections/:path*"],
 };

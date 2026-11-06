@@ -1,9 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { createItem, deleteItem, getItemDetail, getItemStats, updateItem } from "@/lib/db/items";
+import {
+  createItem,
+  deleteItem,
+  getItemDetail,
+  getItemsByCollection,
+  getItemStats,
+  updateItem,
+} from "@/lib/db/items";
 
 vi.mock("@/lib/prisma", () => {
   const item = {
+    findMany: vi.fn(),
     findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
@@ -55,6 +63,40 @@ const dbItem = {
     { collection: { id: "col-2", name: "Interview Prep" } },
   ],
 };
+
+describe("getItemsByCollection", () => {
+  it("reads the user's items in the collection, pinned first then most recently updated", async () => {
+    const mockFindMany = vi.mocked(prisma.item.findMany);
+    mockFindMany.mockResolvedValue([dbItem] as never);
+
+    const items = await getItemsByCollection("user-1", "col-1");
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-1", collections: { some: { collectionId: "col-1" } } },
+        orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
+      })
+    );
+    expect(items).toEqual([
+      {
+        id: "item-1",
+        title: "useAuth Hook",
+        description: "Custom authentication hook",
+        isFavorite: true,
+        isPinned: false,
+        createdAt,
+        lastUsedAt: null,
+        type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
+        tags: ["react", "auth"],
+      },
+    ]);
+  });
+
+  it("returns an empty list when the collection has no items", async () => {
+    vi.mocked(prisma.item.findMany).mockResolvedValue([] as never);
+    await expect(getItemsByCollection("user-1", "col-empty")).resolves.toEqual([]);
+  });
+});
 
 describe("getItemDetail", () => {
   beforeEach(() => {

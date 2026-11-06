@@ -21,7 +21,7 @@ export type CollectionWithStats = {
 
 async function getCollectionsWithStats(
   where: Prisma.CollectionWhereInput,
-  limit: number
+  limit?: number
 ): Promise<CollectionWithStats[]> {
   const collections = await prisma.collection.findMany({
     where,
@@ -102,6 +102,11 @@ export async function getNonFavoriteCollections(
   return getCollectionsWithStats({ userId, isFavorite: false }, limit)
 }
 
+// Every collection the user owns, most recently updated first, for the /collections page.
+export async function getAllCollections(userId: string): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ userId })
+}
+
 export type CollectionOption = {
   id: string
   name: string
@@ -131,6 +136,17 @@ export type CollectionSummary = {
   name: string
   description: string | null
   isFavorite: boolean
+}
+
+// Null when the collection doesn't exist or belongs to another user.
+export async function getCollectionById(
+  userId: string,
+  id: string
+): Promise<CollectionSummary | null> {
+  return prisma.collection.findFirst({
+    where: { id, userId },
+    select: { id: true, name: true, description: true, isFavorite: true },
+  })
 }
 
 export async function createCollection(

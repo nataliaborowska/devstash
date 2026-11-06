@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
   createCollection,
+  getAllCollections,
+  getCollectionById,
   getCollectionOptions,
   getFavoriteCollections,
   getNonFavoriteCollections,
@@ -10,10 +12,13 @@ import {
 } from "@/lib/db/collections";
 
 vi.mock("@/lib/prisma", () => ({
-  prisma: { collection: { findMany: vi.fn(), create: vi.fn(), count: vi.fn() } },
+  prisma: {
+    collection: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), count: vi.fn() },
+  },
 }));
 
 const mockFindMany = vi.mocked(prisma.collection.findMany);
+const mockFindFirst = vi.mocked(prisma.collection.findFirst);
 const mockCreate = vi.mocked(prisma.collection.create);
 const mockCount = vi.mocked(prisma.collection.count);
 
@@ -43,6 +48,17 @@ describe("collection reads", () => {
     await getNonFavoriteCollections("user-1");
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { userId: "user-1", isFavorite: false }, take: 10 })
+    );
+  });
+
+  it("getAllCollections reads every one of the user's collections with no limit", async () => {
+    await getAllCollections("user-1");
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-1" },
+        take: undefined,
+        orderBy: { updatedAt: "desc" },
+      })
     );
   });
 
@@ -86,6 +102,26 @@ describe("createCollection", () => {
       select: { id: true, name: true, description: true, isFavorite: true },
     });
     expect(result).toEqual(created);
+  });
+});
+
+describe("getCollectionById", () => {
+  it("returns the collection when it belongs to the user", async () => {
+    const collection = { id: "col-1", name: "React Patterns", description: null, isFavorite: true };
+    mockFindFirst.mockResolvedValue(collection as never);
+
+    const result = await getCollectionById("user-1", "col-1");
+
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { id: "col-1", userId: "user-1" },
+      select: { id: true, name: true, description: true, isFavorite: true },
+    });
+    expect(result).toEqual(collection);
+  });
+
+  it("returns null when the collection is missing or owned by someone else", async () => {
+    mockFindFirst.mockResolvedValue(null);
+    await expect(getCollectionById("user-1", "col-other")).resolves.toBeNull();
   });
 });
 
