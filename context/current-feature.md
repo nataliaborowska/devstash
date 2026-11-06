@@ -1,28 +1,16 @@
-# Current Feature: Collections Pages
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- `/collections` page lists all of the signed-in user's collections using the existing `CollectionCard`
-- `/collections/[id]` page shows the items in that collection using the existing `ItemCard` (clicking opens the item drawer)
-- Unknown collection ids, or collections owned by another user, return 404
-- Sidebar "View all collections" links to `/collections`
-- Every collection card and sidebar collection entry links to `/collections/[id]`
-- Empty states for no collections and for a collection with no items
-- `loading.tsx` skeletons for both routes
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Sidebar "View all collections" (`src/components/layout/sidebar.tsx`), sidebar collection entries, and `CollectionCard` (`src/components/dashboard/collection-card.tsx`) already link to `/collections` and `/collections/${id}`; the routes just don't exist yet (verify the links work once the pages are in)
-- Reuse the dashboard app shell the same way `src/app/items/layout.tsx` does (re-export `@/app/dashboard/layout`)
-- Add `/collections` to the proxy's protected prefixes and matcher (`src/proxy.ts`)
-- New owner-scoped queries in `src/lib/db/collections.ts`: all collections with stats (unlimited, reuse the `CollectionWithStats` mapping) and a collection by id with its items (via the `CollectionItem` join table, `ItemWithType` shape, pinned first then most recently updated, matching `getItemsByType`)
-- Grid layout matches `/items/[type]`: 1 column mobile, 2 on `md`, 3 on `lg+`
-- Collection page header: name, description, item count
-- Unit tests for the new queries
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -59,3 +47,4 @@ In Progress
 - **2026-11-02** — Collection create complete: the top bar's "New Collection" button opens a shadcn `Dialog` (`src/components/collections/create-collection-dialog.tsx`, self-contained `CreateCollectionButton`, form mounted only while open) with a required name (max 100) and optional description (max 500); Create disabled until a name is entered, "Creating..." pending state, dialog can't close mid-save; success toast closes the dialog and `router.refresh()` updates the sidebar, dashboard collections, and stats, error toast keeps it open; `createCollection` server action (`src/actions/collections.ts`, auth check) validates with `createCollectionSchema` (`src/lib/validations/collections.ts`: trimmed name, blank description to null) and calls owner-scoped `createCollection` in `src/lib/db/collections.ts`; `getRecentCollections`, `getFavoriteCollections`, `getNonFavoriteCollections`, and `getItemStats` now take a `userId` and only return the signed-in user's data (previously every user's); DevStash logo and title in the top bar link to `/dashboard`; unit tests for the schema, action, and queries
 - **2026-11-04** — Item collections complete: the New Item dialog and the item drawer's edit mode have a "Collection" shadcn `Select` (shared `CollectionSelect` in `src/components/collections/collection-select.tsx`, "No collection" option plus the user's collections sorted by name) so an item can be put in one collection, moved, or removed from it; options come from the new unlimited owner-scoped `getCollectionOptions` query (`{ id, name }`), loaded in the dashboard layout and shared via `CollectionOptionsProvider` in `DashboardShell`; `collectionId` added to `updateItemSchema`/`createItemSchema` (blank to null, null removes, undefined leaves unchanged); `createItem`/`updateItem` actions reject collections the user doesn't own via `userOwnsCollection` ("Collection not found"); drawer view label renamed to "Collection" and dates split into `ItemDatesSection`; one collection per item for now, multi-collection support (`CollectionItem` join table + migration) deferred; unit tests for the schema, actions, and queries
 - **2026-11-04** — Multi-collection items complete: `Item.collectionId` replaced by a `CollectionItem` join table (`collectionId`, `itemId`, `addedAt`, composite key, cascade delete both sides, `itemId` index); migration `20261104083034_item_collections_join_table` created with `prisma migrate dev --create-only` and hand-reordered to copy existing links into the join table before dropping the column, applied to development (`migrate dev`) and production (`migrate deploy`); shared `CollectionSelect` is now a Base UI multi-select (selected names or "No collections") in the New Item dialog and drawer edit mode, drawer view lists every collection; `collectionIds` (trimmed, deduped; `[]` removes from all, omitted leaves unchanged) replaces `collectionId` in `updateItemSchema`/`createItemSchema`; actions verify ownership with `userOwnsCollections` (single `count` with `in`); `createItem` links collections, `updateItem` replaces them like tags; `ItemDetail.collections` sorted by name; collection stats, seed (`linkItems` helper), and `scripts/test-db.ts` read through the join table; note: Prisma 7 `migrate dev` no longer runs `prisma generate`, and pushing `master` auto-deploys to Vercel production, so production migrations must be applied around the push; unit tests for the schema, actions, and queries
+- **2026-11-06** — Collections pages complete: protected `/collections` lists every one of the user's collections (most recently updated first) as `CollectionCard`s in a 1/2/3-column grid with a count, "New Collection" button, and empty state; `/collections/[id]` shows the collection's name, favorite star, description, and item count with its items as `ItemCard`s (pinned first, then most recently updated; clicking opens the item drawer), 404 for unknown or other users' collections, and an empty state; both reuse the dashboard app shell (`src/app/collections/layout.tsx`) and have `loading.tsx` skeletons; `/collections/*` added to the proxy's protected routes; existing sidebar "View all collections", sidebar collection entries, and `CollectionCard` links now resolve; new owner-scoped queries `getAllCollections` (unlimited; `getCollectionsWithStats` limit now optional), `getCollectionById` in `src/lib/db/collections.ts`, and `getItemsByCollection` (via the `CollectionItem` join table) in `src/lib/db/items.ts`; unit tests for the queries
