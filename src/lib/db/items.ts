@@ -101,6 +101,18 @@ export async function getItemsByType(userId: string, typeId: string): Promise<It
   return items.map(mapItem)
 }
 
+export async function getItemsByCollection(
+  userId: string,
+  collectionId: string
+): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, collections: { some: { collectionId } } },
+    select: ITEM_SELECT,
+    orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
+  })
+  return items.map(mapItem)
+}
+
 export type ItemDetail = ItemWithType & {
   contentType: "TEXT" | "FILE"
   content: string | null

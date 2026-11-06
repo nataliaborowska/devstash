@@ -1,16 +1,28 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Collections Pages
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- `/collections` page lists all of the signed-in user's collections using the existing `CollectionCard`
+- `/collections/[id]` page shows the items in that collection using the existing `ItemCard` (clicking opens the item drawer)
+- Unknown collection ids, or collections owned by another user, return 404
+- Sidebar "View all collections" links to `/collections`
+- Every collection card and sidebar collection entry links to `/collections/[id]`
+- Empty states for no collections and for a collection with no items
+- `loading.tsx` skeletons for both routes
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Sidebar "View all collections" (`src/components/layout/sidebar.tsx`), sidebar collection entries, and `CollectionCard` (`src/components/dashboard/collection-card.tsx`) already link to `/collections` and `/collections/${id}`; the routes just don't exist yet (verify the links work once the pages are in)
+- Reuse the dashboard app shell the same way `src/app/items/layout.tsx` does (re-export `@/app/dashboard/layout`)
+- Add `/collections` to the proxy's protected prefixes and matcher (`src/proxy.ts`)
+- New owner-scoped queries in `src/lib/db/collections.ts`: all collections with stats (unlimited, reuse the `CollectionWithStats` mapping) and a collection by id with its items (via the `CollectionItem` join table, `ItemWithType` shape, pinned first then most recently updated, matching `getItemsByType`)
+- Grid layout matches `/items/[type]`: 1 column mobile, 2 on `md`, 3 on `lg+`
+- Collection page header: name, description, item count
+- Unit tests for the new queries
 
 ## History
 
