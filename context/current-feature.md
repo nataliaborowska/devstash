@@ -1,16 +1,32 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Collection Actions (Edit, Delete, Favorite)
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- `/collections/[id]` header has Edit, Delete, and Favorite buttons
+- Favorite is UI-only for now: star icon/button reflects `isFavorite` but does not toggle or persist
+- Edit opens a shadcn `Dialog` to edit collection metadata (name required, max 100; description optional, max 500), prefilled with current values; Save disabled on empty name, pending state, dialog locked mid-save; success toast closes it and `router.refresh()` updates the page, sidebar, and dashboard; error toast keeps it open
+- Delete opens a shadcn `AlertDialog` naming the collection with Cancel and destructive Delete ("Deleting..." pending state, locked while running); explains items are kept
+- Deleting a collection removes only the collection and its `CollectionItem` links — items themselves are NOT deleted
+- After deleting from `/collections/[id]`, redirect to `/collections` with a success toast; deleting from a card stays on the page and refreshes
+- Redirect fix: the moment a collection is deleted while viewing its own page, the user is sent straight to `/collections` (no lingering on the deleted collection's page, no "not found" flash); the sidebar, dashboard, and `/collections` list no longer show the deleted collection
+- `CollectionCard` (on `/collections` and the dashboard): the 3-dots button opens a shadcn `DropdownMenu` with Edit, Delete, and Favorite (Favorite UI-only); Edit/Delete open the same dialogs used on the detail page
+- Clicking anywhere else on the card navigates to `/collections/[id]`; opening the menu or its dialogs must not trigger navigation
+- `updateCollection` and `deleteCollection` server actions (`src/actions/collections.ts`) with auth check, Zod validation, `{ success, data, error }` pattern, owner-scoped queries in `src/lib/db/collections.ts`
+- Unit tests for the new schema, actions, and queries
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Reuse `createCollectionSchema` fields for an `updateCollectionSchema` (plus collection id) in `src/lib/validations/collections.ts`
+- Owner-scoped writes: update/delete by `id` + `userId` (e.g. `updateMany`/`deleteMany`), return "Collection not found" when nothing matched
+- `CollectionItem` already cascades on collection delete, so a plain collection delete leaves items intact — verify no item cascade
+- `CollectionCard` currently is a single `<Link>` wrapping a `<button>` that only calls `preventDefault`; restructure so the dropdown trigger and dialogs live outside/stop propagation from the link (avoid nesting interactive elements inside `<a>`)
+- Share the edit and delete dialogs between the detail page and the card (e.g. `src/components/collections/edit-collection-dialog.tsx`, `delete-collection-dialog.tsx`); the detail page header becomes a small client component for the action buttons
+- Favorite toggling (persisting `isFavorite`) is out of scope for this feature
+- Redirect fix: the current `DeleteCollectionDialog` calls `router.replace(redirectTo)` then `router.refresh()` inside an async `startTransition` after the action resolves, so the navigation waits on the transition and the refresh can re-render the now-deleted page first. Navigate immediately on success (e.g. `router.replace` outside the transition, or a server-side `redirect("/collections")` from the action when deleting from the detail page) and make sure the shared `/collections` layout (sidebar) is refreshed too. Client-side `router.replace` + `router.refresh()` still left the user on the deleted page, so the fix uses `deleteCollection(id, { redirectToCollections: true })`, which calls `revalidatePath("/", "layout")` and `redirect("/collections")` on the server after a successful delete; the dialog treats Next's redirect rejection as success for the toast
 
 ## History
 

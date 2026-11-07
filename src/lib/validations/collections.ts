@@ -27,5 +27,12 @@ export const createCollectionSchema = z.object({
   ),
 });
 
+// Editing replaces the same metadata fields that creating sets.
+export const updateCollectionSchema = createCollectionSchema;
+
+export const collectionIdSchema = z.string().trim().min(1, "Invalid collection id");
+
 export type CreateCollectionInput = z.input<typeof createCollectionSchema>;
 export type CreateCollectionData = z.output<typeof createCollectionSchema>;
+export type UpdateCollectionInput = z.input<typeof updateCollectionSchema>;
+export type UpdateCollectionData = z.output<typeof updateCollectionSchema>;

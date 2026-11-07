@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@/generated/prisma/client"
-import type { CreateCollectionData } from "@/lib/validations/collections"
+import type {
+  CreateCollectionData,
+  UpdateCollectionData,
+} from "@/lib/validations/collections"
 
 export type CollectionType = {
   id: string
@@ -157,4 +160,26 @@ export async function createCollection(
     data: { ...data, userId },
     select: { id: true, name: true, description: true, isFavorite: true },
   })
+}
+
+// Null when the collection doesn't exist or belongs to another user.
+export async function updateCollection(
+  userId: string,
+  id: string,
+  data: UpdateCollectionData
+): Promise<CollectionSummary | null> {
+  return prisma.$transaction(async (tx) => {
+    const { count } = await tx.collection.updateMany({ where: { id, userId }, data })
+    if (count === 0) return null
+    return tx.collection.findFirst({
+      where: { id, userId },
+      select: { id: true, name: true, description: true, isFavorite: true },
+    })
+  })
+}
+
+// Removes only the collection; its CollectionItem links cascade, the items themselves are kept.
+export async function deleteCollection(userId: string, id: string): Promise<boolean> {
+  const { count } = await prisma.collection.deleteMany({ where: { id, userId } })
+  return count > 0
 }

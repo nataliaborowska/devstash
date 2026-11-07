@@ -2,18 +2,28 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import {
   createCollection,
+  deleteCollection,
   getAllCollections,
   getCollectionById,
   getCollectionOptions,
   getFavoriteCollections,
   getNonFavoriteCollections,
   getRecentCollections,
+  updateCollection,
   userOwnsCollections,
 } from "@/lib/db/collections";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    collection: { findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), count: vi.fn() },
+    collection: {
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      count: vi.fn(),
+      updateMany: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    $transaction: vi.fn(),
   },
 }));
 
@@ -21,6 +31,9 @@ const mockFindMany = vi.mocked(prisma.collection.findMany);
 const mockFindFirst = vi.mocked(prisma.collection.findFirst);
 const mockCreate = vi.mocked(prisma.collection.create);
 const mockCount = vi.mocked(prisma.collection.count);
+const mockUpdateMany = vi.mocked(prisma.collection.updateMany);
+const mockDeleteMany = vi.mocked(prisma.collection.deleteMany);
+const mockTransaction = vi.mocked(prisma.$transaction);
 
 const snippetType = { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" };
 const linkType = { id: "type-2", name: "link", icon: "Link", color: "#10b981" };
@@ -166,5 +179,53 @@ describe("userOwnsCollections", () => {
   it("is true for an empty list without querying", async () => {
     await expect(userOwnsCollections("user-1", [])).resolves.toBe(true);
     expect(mockCount).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateCollection", () => {
+  beforeEach(() => {
+    // Run the transaction callback against the mocked client.
+    mockTransaction.mockImplementation(((fn: (tx: typeof prisma) => unknown) => fn(prisma)) as never);
+  });
+
+  it("updates only the user's collection and returns the saved summary", async () => {
+    const updated = { id: "col-1", name: "Notes", description: null, isFavorite: false };
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+    mockFindFirst.mockResolvedValue(updated as never);
+
+    const result = await updateCollection("user-1", "col-1", { name: "Notes", description: null });
+
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: "col-1", userId: "user-1" },
+      data: { name: "Notes", description: null },
+    });
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { id: "col-1", userId: "user-1" },
+      select: { id: true, name: true, description: true, isFavorite: true },
+    });
+    expect(result).toEqual(updated);
+  });
+
+  it("returns null when the collection is missing or owned by someone else", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      updateCollection("user-1", "col-x", { name: "Notes", description: null })
+    ).resolves.toBeNull();
+    expect(mockFindFirst).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteCollection", () => {
+  it("deletes only the user's collection, leaving items untouched", async () => {
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+
+    await expect(deleteCollection("user-1", "col-1")).resolves.toBe(true);
+    expect(mockDeleteMany).toHaveBeenCalledWith({ where: { id: "col-1", userId: "user-1" } });
+  });
+
+  it("returns false when nothing matched", async () => {
+    mockDeleteMany.mockResolvedValue({ count: 0 });
+    await expect(deleteCollection("user-1", "col-x")).resolves.toBe(false);
   });
 });
