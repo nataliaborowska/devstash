@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   COLLECTION_DESCRIPTION_MAX_LENGTH,
   COLLECTION_NAME_MAX_LENGTH,
+  collectionIdSchema,
   createCollectionSchema,
+  updateCollectionSchema,
 } from "@/lib/validations/collections";
 
 describe("createCollectionSchema", () => {
@@ -52,5 +54,30 @@ describe("createCollectionSchema", () => {
     expect(result.error?.issues[0]?.message).toBe(
       `Description must be ${COLLECTION_DESCRIPTION_MAX_LENGTH} characters or less`
     );
+  });
+});
+
+describe("updateCollectionSchema", () => {
+  it("normalizes the same fields as creating", () => {
+    expect(updateCollectionSchema.parse({ name: "  Notes ", description: "  " })).toEqual({
+      name: "Notes",
+      description: null,
+    });
+  });
+
+  it("rejects a blank name", () => {
+    expect(updateCollectionSchema.safeParse({ name: " " }).success).toBe(false);
+  });
+});
+
+describe("collectionIdSchema", () => {
+  it("trims a valid id", () => {
+    expect(collectionIdSchema.parse(" col-1 ")).toBe("col-1");
+  });
+
+  it("rejects a blank id", () => {
+    const result = collectionIdSchema.safeParse("  ");
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Invalid collection id");
   });
 });

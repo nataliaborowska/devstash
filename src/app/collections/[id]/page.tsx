@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
-import { Folder, Star } from "lucide-react";
+import { Folder } from "lucide-react";
 import { auth } from "@/auth";
+import { CollectionActions } from "@/components/collections/collection-actions";
 import { ItemCard } from "@/components/dashboard/item-card";
 import { getCollectionById } from "@/lib/db/collections";
 import { getItemsByCollection } from "@/lib/db/items";
@@ -29,13 +30,8 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
         <div className="h-10 w-10 shrink-0 rounded-md flex items-center justify-center bg-muted">
           <Folder className="h-5 w-5 text-muted-foreground" />
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold truncate">{collection.name}</h1>
-            {collection.isFavorite && (
-              <Star className="h-4 w-4 shrink-0 fill-yellow-400 text-yellow-400" />
-            )}
-          </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold truncate">{collection.name}</h1>
           {collection.description && (
             <p className="text-sm text-muted-foreground mt-1">{collection.description}</p>
           )}
@@ -43,6 +39,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
             {items.length} {items.length === 1 ? "item" : "items"}
           </p>
         </div>
+        <CollectionActions collection={collection} className="shrink-0" />
       </div>
 
       {/* Items */}
