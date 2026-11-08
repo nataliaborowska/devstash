@@ -4,36 +4,22 @@ import { useState } from "react";
 import Editor, { type BeforeMount, type OnMount } from "@monaco-editor/react";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
+import { useEditorPreferences } from "@/components/settings/editor-preferences-context";
 import { Button } from "@/components/ui/button";
 import { toMonacoLanguage } from "@/lib/code-language";
+import { EDITOR_THEME_DATA, toMonacoThemeName } from "@/lib/editor-themes";
 import { cn } from "@/lib/utils";
+import type { EditorTheme } from "@/lib/validations/editor-preferences";
 
-const THEME_NAME = "devstash-dark";
 const MAX_HEIGHT = 400;
 const READ_ONLY_MIN_HEIGHT = 40;
 const EDIT_MIN_HEIGHT = 160;
+const LINE_HEIGHT_RATIO = 1.5;
 
-// Hex equivalents of the dark theme's neutral oklch tokens in globals.css.
-const defineTheme: BeforeMount = (monaco) => {
-  monaco.editor.defineTheme(THEME_NAME, {
-    base: "vs-dark",
-    inherit: true,
-    rules: [],
-    colors: {
-      "editor.background": "#171717",
-      "editor.lineHighlightBackground": "#262626",
-      "editor.lineHighlightBorder": "#00000000",
-      "editorLineNumber.foreground": "#525252",
-      "editorLineNumber.activeForeground": "#a3a3a3",
-      "editorGutter.background": "#171717",
-      "editorWidget.background": "#171717",
-      "editorWidget.border": "#2e2e2e",
-      "scrollbar.shadow": "#00000000",
-      "scrollbarSlider.background": "#ffffff1a",
-      "scrollbarSlider.hoverBackground": "#ffffff2e",
-      "scrollbarSlider.activeBackground": "#ffffff40",
-    },
-  });
+const defineThemes: BeforeMount = (monaco) => {
+  for (const [theme, data] of Object.entries(EDITOR_THEME_DATA)) {
+    monaco.editor.defineTheme(toMonacoThemeName(theme as EditorTheme), data);
+  }
 };
 
 interface CodeEditorProps {
@@ -56,6 +42,7 @@ export function CodeEditor({
   ariaLabel = "Code editor",
   className,
 }: CodeEditorProps) {
+  const { preferences } = useEditorPreferences();
   const minHeight = readOnly ? READ_ONLY_MIN_HEIGHT : EDIT_MIN_HEIGHT;
   const [height, setHeight] = useState(minHeight);
   const monacoLanguage = toMonacoLanguage(language, fallbackLanguage);
@@ -107,8 +94,8 @@ export function CodeEditor({
         height={height}
         value={value}
         language={monacoLanguage}
-        theme={THEME_NAME}
-        beforeMount={defineTheme}
+        theme={toMonacoThemeName(preferences.theme)}
+        beforeMount={defineThemes}
         onMount={handleMount}
         onChange={(next) => onChange?.(next ?? "")}
         loading={<div className="h-full w-full animate-pulse bg-muted/40" />}
@@ -119,11 +106,12 @@ export function CodeEditor({
           automaticLayout: true,
           fixedOverflowWidgets: true,
           fontFamily: "var(--font-mono), monospace",
-          fontSize: 13,
-          lineHeight: 20,
-          tabSize: 2,
+          fontSize: preferences.fontSize,
+          lineHeight: Math.round(preferences.fontSize * LINE_HEIGHT_RATIO),
+          tabSize: preferences.tabSize,
+          wordWrap: preferences.wordWrap ? "on" : "off",
           padding: { top: 10, bottom: 10 },
-          minimap: { enabled: false },
+          minimap: { enabled: preferences.minimap },
           scrollBeyondLastLine: false,
           overviewRulerLanes: 0,
           overviewRulerBorder: false,

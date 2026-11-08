@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ChangePasswordDialog } from "@/components/settings/change-password-dialog";
 import { DeleteAccountDialog } from "@/components/settings/delete-account-dialog";
+import { EditorPreferencesForm } from "@/components/settings/editor-preferences-form";
 import { getProfileUser } from "@/lib/db/users";
 
 export default async function SettingsPage() {
@@ -15,8 +16,16 @@ export default async function SettingsPage() {
     <div className="max-w-3xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage your account</p>
+        <p className="text-sm text-muted-foreground mt-1">Manage your editor and account</p>
       </div>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-base font-semibold">Editor Preferences</h2>
+          <p className="text-xs text-muted-foreground mt-1">Changes are saved automatically.</p>
+        </div>
+        <EditorPreferencesForm />
+      </section>
 
       <section className="space-y-4">
         <h2 className="text-base font-semibold">Account</h2>
