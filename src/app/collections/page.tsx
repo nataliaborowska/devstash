@@ -2,13 +2,33 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CollectionCard } from "@/components/dashboard/collection-card";
 import { CreateCollectionButton } from "@/components/collections/create-collection-dialog";
-import { getAllCollections } from "@/lib/db/collections";
+import { Pagination } from "@/components/shared/pagination";
+import { getCollectionsPage } from "@/lib/db/collections";
+import {
+  COLLECTIONS_PER_PAGE,
+  getPageHref,
+  getTotalPages,
+  parsePageParam,
+} from "@/lib/pagination";
 
-export default async function CollectionsPage() {
+const BASE_PATH = "/collections";
+
+interface CollectionsPageProps {
+  searchParams: Promise<{ page?: string | string[] }>;
+}
+
+export default async function CollectionsPage({ searchParams }: CollectionsPageProps) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/sign-in?callbackUrl=/collections");
+  if (!session?.user?.id) redirect(`/sign-in?callbackUrl=${BASE_PATH}`);
 
-  const collections = await getAllCollections(session.user.id);
+  const page = parsePageParam((await searchParams).page);
+  const { data: collections, total } = await getCollectionsPage(session.user.id, {
+    page,
+    perPage: COLLECTIONS_PER_PAGE,
+  });
+
+  const totalPages = getTotalPages(total, COLLECTIONS_PER_PAGE);
+  if (page > totalPages) redirect(getPageHref(BASE_PATH, totalPages));
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -17,7 +37,7 @@ export default async function CollectionsPage() {
         <div>
           <h1 className="text-2xl font-bold">Collections</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {collections.length} {collections.length === 1 ? "collection" : "collections"}
+            {total} {total === 1 ? "collection" : "collections"}
           </p>
         </div>
         <CreateCollectionButton className="ml-auto" />
@@ -35,6 +55,13 @@ export default async function CollectionsPage() {
           <p className="text-sm text-muted-foreground">No collections yet.</p>
         </div>
       )}
+
+      <Pagination
+        basePath={BASE_PATH}
+        currentPage={page}
+        total={total}
+        perPage={COLLECTIONS_PER_PAGE}
+      />
     </div>
   );
 }

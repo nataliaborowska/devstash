@@ -3,25 +3,33 @@ import { Folder } from "lucide-react";
 import { auth } from "@/auth";
 import { CollectionActions } from "@/components/collections/collection-actions";
 import { ItemCard } from "@/components/dashboard/item-card";
+import { Pagination } from "@/components/shared/pagination";
 import { getCollectionById } from "@/lib/db/collections";
 import { getItemsByCollection } from "@/lib/db/items";
+import { getPageHref, getTotalPages, ITEMS_PER_PAGE, parsePageParam } from "@/lib/pagination";
 
 interface CollectionPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string | string[] }>;
 }
 
-export default async function CollectionPage({ params }: CollectionPageProps) {
-  const { id } = await params;
+export default async function CollectionPage({ params, searchParams }: CollectionPageProps) {
+  const [{ id }, { page: pageParam }] = await Promise.all([params, searchParams]);
+  const basePath = `/collections/${encodeURIComponent(id)}`;
 
   const session = await auth();
-  if (!session?.user?.id) redirect(`/sign-in?callbackUrl=/collections/${encodeURIComponent(id)}`);
+  if (!session?.user?.id) redirect(`/sign-in?callbackUrl=${basePath}`);
   const userId = session.user.id;
 
-  const [collection, items] = await Promise.all([
+  const page = parsePageParam(pageParam);
+  const [collection, { data: items, total }] = await Promise.all([
     getCollectionById(userId, id),
-    getItemsByCollection(userId, id),
+    getItemsByCollection(userId, id, { page, perPage: ITEMS_PER_PAGE }),
   ]);
   if (!collection) notFound();
+
+  const totalPages = getTotalPages(total, ITEMS_PER_PAGE);
+  if (page > totalPages) redirect(getPageHref(basePath, totalPages));
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -36,7 +44,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
             <p className="text-sm text-muted-foreground mt-1">{collection.description}</p>
           )}
           <p className="text-sm text-muted-foreground mt-1">
-            {items.length} {items.length === 1 ? "item" : "items"}
+            {total} {total === 1 ? "item" : "items"}
           </p>
         </div>
         <CollectionActions collection={collection} className="shrink-0" />
@@ -54,6 +62,8 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
           <p className="text-sm text-muted-foreground">No items in this collection yet.</p>
         </div>
       )}
+
+      <Pagination basePath={basePath} currentPage={page} total={total} perPage={ITEMS_PER_PAGE} />
     </div>
   );
 }

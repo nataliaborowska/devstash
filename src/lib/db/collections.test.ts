@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma";
 import {
   createCollection,
   deleteCollection,
-  getAllCollections,
   getCollectionById,
+  getCollectionsPage,
   getCollectionOptions,
   getFavoriteCollections,
   getNonFavoriteCollections,
@@ -12,6 +12,7 @@ import {
   updateCollection,
   userOwnsCollections,
 } from "@/lib/db/collections";
+import { DASHBOARD_COLLECTIONS_LIMIT } from "@/lib/pagination";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -64,15 +65,31 @@ describe("collection reads", () => {
     );
   });
 
-  it("getAllCollections reads every one of the user's collections with no limit", async () => {
-    await getAllCollections("user-1");
+  it("getRecentCollections defaults to the dashboard limit", async () => {
+    await getRecentCollections("user-1");
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: DASHBOARD_COLLECTIONS_LIMIT })
+    );
+  });
+
+  it("getCollectionsPage reads only the requested page, most recently updated first", async () => {
+    mockCount.mockResolvedValue(45 as never);
+    await getCollectionsPage("user-1", { page: 3, perPage: 21 });
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { userId: "user-1" },
-        take: undefined,
-        orderBy: { updatedAt: "desc" },
+        skip: 42,
+        take: 21,
+        orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
       })
     );
+  });
+
+  it("getCollectionsPage returns the page with the user's total collection count", async () => {
+    mockCount.mockResolvedValue(45 as never);
+    const result = await getCollectionsPage("user-1", { page: 1, perPage: 21 });
+    expect(mockCount).toHaveBeenCalledWith({ where: { userId: "user-1" } });
+    expect(result).toEqual({ data: [], total: 45 });
   });
 
   it("maps item counts, types by frequency, and the dominant color", async () => {

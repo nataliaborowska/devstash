@@ -5,6 +5,7 @@ import {
   deleteItem,
   getItemDetail,
   getItemsByCollection,
+  getItemsByType,
   getItemStats,
   getSearchItems,
   updateItem,
@@ -65,37 +66,60 @@ const dbItem = {
   ],
 };
 
+const mappedItem = {
+  id: "item-1",
+  title: "useAuth Hook",
+  description: "Custom authentication hook",
+  isFavorite: true,
+  isPinned: false,
+  createdAt,
+  lastUsedAt: null,
+  type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
+  tags: ["react", "auth"],
+};
+
+const ITEM_PAGE_ORDER = [{ isPinned: "desc" }, { updatedAt: "desc" }, { id: "asc" }];
+
 describe("getItemsByCollection", () => {
-  it("reads the user's items in the collection, pinned first then most recently updated", async () => {
+  const where = { userId: "user-1", collections: { some: { collectionId: "col-1" } } };
+
+  it("reads one page of the user's items in the collection, pinned first then most recently updated", async () => {
     const mockFindMany = vi.mocked(prisma.item.findMany);
     mockFindMany.mockResolvedValue([dbItem] as never);
+    vi.mocked(prisma.item.count).mockResolvedValue(30 as never);
 
-    const items = await getItemsByCollection("user-1", "col-1");
+    const result = await getItemsByCollection("user-1", "col-1", { page: 2, perPage: 21 });
 
     expect(mockFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { userId: "user-1", collections: { some: { collectionId: "col-1" } } },
-        orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
-      })
+      expect.objectContaining({ where, skip: 21, take: 21, orderBy: ITEM_PAGE_ORDER })
     );
-    expect(items).toEqual([
-      {
-        id: "item-1",
-        title: "useAuth Hook",
-        description: "Custom authentication hook",
-        isFavorite: true,
-        isPinned: false,
-        createdAt,
-        lastUsedAt: null,
-        type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
-        tags: ["react", "auth"],
-      },
-    ]);
+    expect(prisma.item.count).toHaveBeenCalledWith({ where });
+    expect(result).toEqual({ data: [mappedItem], total: 30 });
   });
 
-  it("returns an empty list when the collection has no items", async () => {
+  it("returns an empty page when the collection has no items", async () => {
     vi.mocked(prisma.item.findMany).mockResolvedValue([] as never);
-    await expect(getItemsByCollection("user-1", "col-empty")).resolves.toEqual([]);
+    vi.mocked(prisma.item.count).mockResolvedValue(0 as never);
+    await expect(
+      getItemsByCollection("user-1", "col-empty", { page: 1, perPage: 21 })
+    ).resolves.toEqual({ data: [], total: 0 });
+  });
+});
+
+describe("getItemsByType", () => {
+  it("reads one page of the user's items of the type with the total count", async () => {
+    const mockFindMany = vi.mocked(prisma.item.findMany);
+    mockFindMany.mockResolvedValue([dbItem] as never);
+    vi.mocked(prisma.item.count).mockResolvedValue(1 as never);
+
+    const result = await getItemsByType("user-1", "type-1", { page: 1, perPage: 21 });
+
+    const where = { userId: "user-1", typeId: "type-1" };
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where, skip: 0, take: 21, orderBy: ITEM_PAGE_ORDER })
+    );
+    expect(prisma.item.count).toHaveBeenCalledWith({ where });
+    expect(result).toEqual({ data: [mappedItem], total: 1 });
   });
 });
 

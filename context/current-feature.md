@@ -1,16 +1,29 @@
-# Current Feature
+# Current Feature: Pagination
 
-<!-- Describe the current feature being worked on -->
+Add pagination for items and collections listings with numbered page links.
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- `/items/[type]` and `/collections/[id]` are paginated (`ITEMS_PER_PAGE = 21`)
+- `/collections` listing is paginated (`COLLECTIONS_PER_PAGE = 21`)
+- Pagination controls at the bottom of the list with numbered page links plus Previous/Next links
+- Previous/Next are disabled (greyed out) when there is no previous/next page
+- Dashboard uses named constants: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
+- Queries fetch only the rows a page needs (`skip`/`take` plus a `count` for the total), never every resource at once
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Spec: `context/features/pagination-spec.md`
+- The spec defines `COLLECTIONS_PER_PAGE` but only names `/items/[type]` and `/collections/[id]` (both item lists); `COLLECTIONS_PER_PAGE` is assumed to apply to the `/collections` listing page
+- Current page should come from a URL search param (e.g. `?page=2`) so pages are linkable and server components fetch directly; invalid or out-of-range pages should be handled gracefully
+- Existing queries to adapt: `getItemsByType`, `getItemsByCollection` (`src/lib/db/items.ts`), `getAllCollections` (`src/lib/db/collections.ts`); keep current ordering (pinned first, then most recently updated, for items; most recently updated for collections)
+- Header counts (e.g. item count on `/items/[type]` and `/collections/[id]`) should show the total, not the page size
+- Update `loading.tsx` skeletons only if layout changes
+- Add/update unit tests for changed queries and any pagination utility
 
 ## History
 
