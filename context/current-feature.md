@@ -1,27 +1,16 @@
-# Current Feature: Global Search / Command Palette
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Global command palette opens with Cmd+K (Mac) / Ctrl+K (Windows)
-- Fuzzy search across all of the user's items and collections
-- Results grouped into an Items section and a Collections section
-- Keyboard navigation (arrow keys, Enter to select)
-- Items show their type icon; collections show their item count
-- Selecting an item opens the item drawer; selecting a collection navigates to `/collections/[id]`
-- Clicking the TopBar search input opens the palette
-- Search input placeholder shows a ⌘K hint
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Use the shadcn `Command` component (`cmdk`)
-- Client-side fuzzy search only, no server round-trips while typing
-- Pre-fetch searchable data on app load (dashboard shell layout)
-- Search data: items (`id`, `title`, type, content preview) and collections (`id`, `name`, `itemCount`)
-- Reuse existing data fetching functions where possible (`src/lib/db/items.ts`, `src/lib/db/collections.ts`), keeping queries owner-scoped
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -60,3 +49,4 @@ In Progress
 - **2026-11-04** — Multi-collection items complete: `Item.collectionId` replaced by a `CollectionItem` join table (`collectionId`, `itemId`, `addedAt`, composite key, cascade delete both sides, `itemId` index); migration `20261104083034_item_collections_join_table` created with `prisma migrate dev --create-only` and hand-reordered to copy existing links into the join table before dropping the column, applied to development (`migrate dev`) and production (`migrate deploy`); shared `CollectionSelect` is now a Base UI multi-select (selected names or "No collections") in the New Item dialog and drawer edit mode, drawer view lists every collection; `collectionIds` (trimmed, deduped; `[]` removes from all, omitted leaves unchanged) replaces `collectionId` in `updateItemSchema`/`createItemSchema`; actions verify ownership with `userOwnsCollections` (single `count` with `in`); `createItem` links collections, `updateItem` replaces them like tags; `ItemDetail.collections` sorted by name; collection stats, seed (`linkItems` helper), and `scripts/test-db.ts` read through the join table; note: Prisma 7 `migrate dev` no longer runs `prisma generate`, and pushing `master` auto-deploys to Vercel production, so production migrations must be applied around the push; unit tests for the schema, actions, and queries
 - **2026-11-06** — Collections pages complete: protected `/collections` lists every one of the user's collections (most recently updated first) as `CollectionCard`s in a 1/2/3-column grid with a count, "New Collection" button, and empty state; `/collections/[id]` shows the collection's name, favorite star, description, and item count with its items as `ItemCard`s (pinned first, then most recently updated; clicking opens the item drawer), 404 for unknown or other users' collections, and an empty state; both reuse the dashboard app shell (`src/app/collections/layout.tsx`) and have `loading.tsx` skeletons; `/collections/*` added to the proxy's protected routes; existing sidebar "View all collections", sidebar collection entries, and `CollectionCard` links now resolve; new owner-scoped queries `getAllCollections` (unlimited; `getCollectionsWithStats` limit now optional), `getCollectionById` in `src/lib/db/collections.ts`, and `getItemsByCollection` (via the `CollectionItem` join table) in `src/lib/db/items.ts`; unit tests for the queries
 - **2026-11-07** — Collection actions complete: `/collections/[id]` header has Favorite (UI-only star reflecting `isFavorite`), Edit, and Delete buttons (`CollectionActions`); `CollectionCard` on `/collections` and the dashboard has a 3-dots shadcn `DropdownMenu` (`CollectionActionsMenu`) with Edit, Favorite (UI-only), and Delete, while the rest of the card navigates via a sibling full-card overlay `Link` so the menu and its portaled dialogs never trigger navigation; shared `EditCollectionDialog` (prefilled name/description, form mounted only while open, locked mid-save) and `DeleteCollectionDialog` (`AlertDialog`, explains items are kept); `updateCollection`/`deleteCollection` server actions (`src/actions/collections.ts`, auth check, `updateCollectionSchema`/`collectionIdSchema` in `src/lib/validations/collections.ts`, "Collection not found" for missing or other users' collections) call owner-scoped `updateCollection` (transactional `updateMany` + `findFirst`) and `deleteCollection` (`deleteMany`) in `src/lib/db/collections.ts`; deleting removes only the collection and its `CollectionItem` links, items are kept; deleting from the collection's own page passes `redirectToCollections` so the action calls `revalidatePath("/", "layout")` and `redirect("/collections")` server-side (client `router.replace` + `router.refresh()` left the user on the deleted page), and the dialog treats Next's redirect rejection as success for the toast; unit tests for the schemas, actions, and queries
+- **2026-11-08** — Global search complete: Cmd+K / Ctrl+K command palette (`src/components/layout/global-search.tsx`, shadcn `Command` / `cmdk` in a `CommandDialog`) searching the user's items and collections client-side, with Items and Collections groups, arrow-key/Enter navigation, colored type icons with a one-line preview for items, item counts for collections; selecting an item opens the item drawer (`ItemDrawerProvider` now wraps the whole `DashboardShell` and exports `useItemDrawer`), selecting a collection navigates to `/collections/[id]`; the TopBar search input is now a button that opens the palette, showing "Search items and collections..." with a ⌘K hint; search state lives in an inner component mounted only while open so each open starts empty; data pre-fetched in the dashboard layout via new owner-scoped `getSearchItems` (`src/lib/db/items.ts`, preview from content, then URL, then description via `toSearchPreview` in `src/lib/search.ts`) and `getCollectionOptions` extended with `itemCount` (reused from `CollectionOptionsProvider`, exposed as `useCollectionOptions`); cmdk filtering disabled in favor of `rankBySearch`/`scoreSearchMatch` (`src/lib/search-ranking.ts`, separate because cmdk is `"use client"`): substring matches on title/type/collection name first, then fuzzy matches scoring at least `MIN_FUZZY_SCORE` (0.1), then exact substring matches in previews, since plain fuzzy matching over previews matched almost everything; shadcn `command` + `input-group` added (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); unit tests for the preview, ranking, and queries
