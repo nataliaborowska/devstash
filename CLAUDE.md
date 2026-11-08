@@ -1,6 +1,6 @@
 # DevStash
 
-A developer knowledeg hub for snippets, prompts, notes, commands, files, images, links and custom types.
+A developer knowledge hub for snippets, prompts, notes, commands, files, images, links and custom types.
 
 ## Context files
 

@@ -1,5 +1,11 @@
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@/generated/prisma/client"
+import {
+  DASHBOARD_COLLECTIONS_LIMIT,
+  toSkipTake,
+  type PageParams,
+  type PaginatedResult,
+} from "@/lib/pagination"
 import type {
   CreateCollectionData,
   UpdateCollectionData,
@@ -24,12 +30,13 @@ export type CollectionWithStats = {
 
 async function getCollectionsWithStats(
   where: Prisma.CollectionWhereInput,
-  limit?: number
+  { skip, take }: { skip?: number; take: number }
 ): Promise<CollectionWithStats[]> {
   const collections = await prisma.collection.findMany({
     where,
-    take: limit,
-    orderBy: { updatedAt: "desc" },
+    skip,
+    take,
+    orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
     select: {
       id: true,
       name: true,
@@ -86,28 +93,36 @@ async function getCollectionsWithStats(
 
 export async function getRecentCollections(
   userId: string,
-  limit = 4
+  limit = DASHBOARD_COLLECTIONS_LIMIT
 ): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ userId }, limit)
+  return getCollectionsWithStats({ userId }, { take: limit })
 }
 
 export async function getFavoriteCollections(
   userId: string,
   limit = 10
 ): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ userId, isFavorite: true }, limit)
+  return getCollectionsWithStats({ userId, isFavorite: true }, { take: limit })
 }
 
 export async function getNonFavoriteCollections(
   userId: string,
   limit = 10
 ): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ userId, isFavorite: false }, limit)
+  return getCollectionsWithStats({ userId, isFavorite: false }, { take: limit })
 }
 
-// Every collection the user owns, most recently updated first, for the /collections page.
-export async function getAllCollections(userId: string): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ userId })
+// One page of the user's collections, most recently updated first, for the /collections page.
+export async function getCollectionsPage(
+  userId: string,
+  pageParams: PageParams
+): Promise<PaginatedResult<CollectionWithStats>> {
+  const where = { userId }
+  const [collections, total] = await Promise.all([
+    getCollectionsWithStats(where, toSkipTake(pageParams)),
+    prisma.collection.count({ where }),
+  ])
+  return { data: collections, total }
 }
 
 export type CollectionOption = {

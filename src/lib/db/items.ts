@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma"
+import type { Prisma } from "@/generated/prisma/client"
+import { toSkipTake, type PageParams, type PaginatedResult } from "@/lib/pagination"
 import { toSearchPreview } from "@/lib/search"
 import type { CreateItemData, UpdateItemData } from "@/lib/validations/items"
 
@@ -93,25 +95,37 @@ export async function getSystemItemTypeBySlug(slug: string): Promise<ItemType | 
   })
 }
 
-export async function getItemsByType(userId: string, typeId: string): Promise<ItemWithType[]> {
-  const items = await prisma.item.findMany({
-    where: { userId, typeId },
-    select: ITEM_SELECT,
-    orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
-  })
-  return items.map(mapItem)
+// One page of items, pinned first then most recently updated, plus the total for page links.
+async function getItemsPage(
+  where: Prisma.ItemWhereInput,
+  pageParams: PageParams
+): Promise<PaginatedResult<ItemWithType>> {
+  const [items, total] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      ...toSkipTake(pageParams),
+      select: ITEM_SELECT,
+      orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }, { id: "asc" }],
+    }),
+    prisma.item.count({ where }),
+  ])
+  return { data: items.map(mapItem), total }
+}
+
+export async function getItemsByType(
+  userId: string,
+  typeId: string,
+  pageParams: PageParams
+): Promise<PaginatedResult<ItemWithType>> {
+  return getItemsPage({ userId, typeId }, pageParams)
 }
 
 export async function getItemsByCollection(
   userId: string,
-  collectionId: string
-): Promise<ItemWithType[]> {
-  const items = await prisma.item.findMany({
-    where: { userId, collections: { some: { collectionId } } },
-    select: ITEM_SELECT,
-    orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
-  })
-  return items.map(mapItem)
+  collectionId: string,
+  pageParams: PageParams
+): Promise<PaginatedResult<ItemWithType>> {
+  return getItemsPage({ userId, collections: { some: { collectionId } } }, pageParams)
 }
 
 export type SearchItem = {

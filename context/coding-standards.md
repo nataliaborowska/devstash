@@ -49,7 +49,7 @@ Example v4 configuration:
 
 ## File Organization
 
-- Components: `src/components/[feature]/ComponentName.tsx`
+- Components: `src/components/[feature]/component-name.tsx`
 - Pages: `src/app/[route]/page.tsx`
 - Server Actions: `src/actions/[feature].ts`
 - Types: `src/types/[feature].ts`
@@ -57,8 +57,8 @@ Example v4 configuration:
 
 ## Naming
 
-- Components: PascalCase (`ItemCard.tsx`)
-- Files: Match component name or kebab-case
+- Components: PascalCase (`ItemCard`)
+- Files: kebab-case (`item-card.tsx`)
 - Functions: camelCase
 - Constants: SCREAMING_SNAKE_CASE
 - Types/Interfaces: PascalCase (no prefix)

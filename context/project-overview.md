@@ -165,8 +165,7 @@ model Item {
   typeId       String
   type         ItemType    @relation(fields: [typeId], references: [id])
 
-  collectionId String?
-  collection   Collection? @relation(fields: [collectionId], references: [id])
+  collections  CollectionItem[]
 
   tags         ItemTag[]
 
@@ -198,10 +197,22 @@ model Collection {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  items       Item[]
+  items       CollectionItem[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// Links items and collections: an item can sit in many collections.
+model CollectionItem {
+  collectionId String
+  itemId       String
+  addedAt      DateTime   @default(now())
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  item         Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([collectionId, itemId])
+  @@index([itemId])
 }
 
 model Tag {
@@ -228,7 +239,7 @@ model ItemTag {
 > - `onDelete: Cascade` ensures orphaned records are cleaned up automatically.
 > - `lastUsedAt` on `Item` enables the "Recently Used" view without a separate table.
 > - `@@unique([name, userId])` on `Tag` and `ItemType` prevents duplicates scoped per user.
-> - An item currently belongs to one collection. If multi-collection support is needed later, replace `collectionId` on `Item` with a `CollectionItem` join table.
+> - Items and collections are many-to-many through the `CollectionItem` join table. Deleting a collection removes only its links, never the items.
 
 ---
 
@@ -476,12 +487,12 @@ devstash/
 ## Roadmap
 
 ### MVP
-- [ ] Auth (email + GitHub)
-- [ ] Items CRUD (all 7 built-in types)
-- [ ] Collections
-- [ ] Full-text search
-- [ ] Tags
-- [ ] Favorites & pinned
+- [x] Auth (email + GitHub)
+- [x] Items CRUD (snippet, prompt, command, note, link; file and image wait on file uploads)
+- [x] Collections
+- [x] Search (Cmd+K command palette)
+- [ ] Tags _(partial: added and edited on items; no tag browsing or filtering yet)_
+- [ ] Favorites & pinned _(partial: shown on cards, drawer, and dashboard; toggling not wired up yet)_
 - [ ] Recently used
 - [ ] Free tier limits enforced
 
@@ -491,7 +502,7 @@ devstash/
 - [ ] Custom item types
 - [ ] File uploads (Cloudflare R2)
 - [ ] Export (JSON / ZIP)
-- [ ] Markdown editor
+- [x] Markdown editor
 
 ### Future
 - [ ] Shared / public collections
@@ -599,4 +610,4 @@ git switch -c lesson-03-items-crud
 
 ## Status
 
-> 🟢 **In Development** — dashboard UI, database schema, and live sidebar/stats are in place; auth, items CRUD, and collections pages are next.
+> 🟢 **In Development** — auth (email + GitHub, email verification, password reset, rate limiting), items CRUD for text types, collections with multi-collection items, the code and Markdown editors, and global search are in place; favorite/pin toggles, tags, file uploads, and free tier limits are next.
