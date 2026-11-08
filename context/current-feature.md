@@ -1,31 +1,16 @@
-# Current Feature: Editor Preferences Settings
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- `/settings` has an "Editor Preferences" section with:
-  - Font size dropdown
-  - Tab size dropdown
-  - Word wrap toggle (default: on)
-  - Minimap toggle (default: off)
-  - Theme dropdown: `vs-dark`, `monokai`, `github-dark` (default: `vs-dark`)
-- Preferences stored in a JSON column `editorPreferences` on the `User` model
-- Migration created and applied with `prisma migrate dev` (never `db push`)
-- Server action to update preferences (auth check, Zod validation, `{ success, data, error }`)
-- Changes auto-save on change (no save button) and show a success toast
-- `EditorPreferencesContext` provides preferences to client components
-- Monaco `CodeEditor` applies font size, tab size, word wrap, minimap, and theme
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Source spec: `context/features/editor-settings-spec.md`
-- `CodeEditor` (`src/components/shared/code-editor.tsx`) currently uses a custom `devstash-dark` theme; `monokai` and `github-dark` aren't built into Monaco, so they need custom `defineTheme` definitions (`vs-dark` is built in)
-- Settings page lives at `src/app/settings/page.tsx`; dashboard-shell providers (e.g. `CollectionOptionsProvider`) are the pattern for the new context
-- Pushing `master` auto-deploys to Vercel production, so the production migration (`migrate deploy`) must be applied around the push; Prisma 7 `migrate dev` doesn't run `prisma generate`
-- Add unit tests for the new server action and Zod schema
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -67,3 +52,4 @@ In Progress
 - **2026-11-08** — Global search complete: Cmd+K / Ctrl+K command palette (`src/components/layout/global-search.tsx`, shadcn `Command` / `cmdk` in a `CommandDialog`) searching the user's items and collections client-side, with Items and Collections groups, arrow-key/Enter navigation, colored type icons with a one-line preview for items, item counts for collections; selecting an item opens the item drawer (`ItemDrawerProvider` now wraps the whole `DashboardShell` and exports `useItemDrawer`), selecting a collection navigates to `/collections/[id]`; the TopBar search input is now a button that opens the palette, showing "Search items and collections..." with a ⌘K hint; search state lives in an inner component mounted only while open so each open starts empty; data pre-fetched in the dashboard layout via new owner-scoped `getSearchItems` (`src/lib/db/items.ts`, preview from content, then URL, then description via `toSearchPreview` in `src/lib/search.ts`) and `getCollectionOptions` extended with `itemCount` (reused from `CollectionOptionsProvider`, exposed as `useCollectionOptions`); cmdk filtering disabled in favor of `rankBySearch`/`scoreSearchMatch` (`src/lib/search-ranking.ts`, separate because cmdk is `"use client"`): substring matches on title/type/collection name first, then fuzzy matches scoring at least `MIN_FUZZY_SCORE` (0.1), then exact substring matches in previews, since plain fuzzy matching over previews matched almost everything; shadcn `command` + `input-group` added (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); unit tests for the preview, ranking, and queries
 - **2026-11-08** — Pagination complete: `/items/[type]` and `/collections/[id]` show 21 items per page (`ITEMS_PER_PAGE`) and `/collections` shows 21 collections per page (`COLLECTIONS_PER_PAGE`), with the page read from `?page=N` (page 1 is the bare URL; invalid values fall back to page 1, out-of-range pages redirect to the last page); shared server `Pagination` component (`src/components/shared/pagination.tsx`) renders numbered page links with ellipses around the current page plus Previous/Next links that grey out at the ends, and hides itself when everything fits on one page; `src/lib/pagination.ts` holds the constants plus `parsePageParam`, `getTotalPages`, `toSkipTake`, `getPageHref`, and `getPageLinks`; `getItemsByType`/`getItemsByCollection` take `{ page, perPage }` and return `{ data, total }` from a shared `getItemsPage` (`skip`/`take` + `count`, `id` tiebreaker for stable ordering), `getCollectionsPage` replaces `getAllCollections`; header counts show totals; dashboard uses `DASHBOARD_COLLECTIONS_LIMIT` (6) and `DASHBOARD_RECENT_ITEMS_LIMIT` (10); unit tests for the helpers and queries
 - **2026-11-08** — Settings page complete: protected `/settings` (dashboard app shell via `src/app/settings/layout.tsx`, `loading.tsx` skeleton, `/settings/*` added to the proxy's protected routes) now holds the Account section moved from `/profile`: change password (email/password users only, via `getProfileUser().hasPassword`) and delete account; `ChangePasswordDialog` and `DeleteAccountDialog` moved to `src/components/settings/`, server actions unchanged in `src/actions/profile.ts`; `/profile` now shows only user info and usage stats; sidebar user dropdown has a "Settings" link between Profile and Sign out
+- **2026-11-08** — Editor preferences complete: `/settings` has an auto-saving "Editor Preferences" section (`EditorPreferencesForm`) with font size (12-20px, default 13), tab size (2/4/8, default 2), theme (`vs-dark` default, `monokai`, `github-dark`), word wrap (default on), and minimap (default off) toggles via a new shadcn `switch` (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); each change applies instantly and saves with a success toast, reverting with an error toast on failure (only the newest save updates state); stored in a new `User.editorPreferences` JSON column (migration `20261108183719_editor_preferences`); `editorPreferencesSchema`, `DEFAULT_EDITOR_PREFERENCES`, and lenient per-field `parseEditorPreferences` in `src/lib/validations/editor-preferences.ts`; `updateEditorPreferences` server action (`src/actions/settings.ts`, auth check, Zod validation) calls `updateEditorPreferences` in `src/lib/db/users.ts`, and `getEditorPreferences` is loaded in the dashboard layout; `EditorPreferencesContext` / `EditorPreferencesProvider` (`src/components/settings/editor-preferences-context.tsx`) wraps `DashboardShell`; `CodeEditor` applies font size (line height scales 1.5x), tab size, word wrap, minimap, and theme, with all three themes registered as prefixed `devstash-*` Monaco themes in `src/lib/editor-themes.ts` (custom Monokai and GitHub Dark definitions; the old `devstash-dark` theme is replaced by `vs-dark`); unit tests for the schema, parser, queries, action, and theme helpers
