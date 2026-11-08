@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { getItemTypesWithCounts } from "@/lib/db/items";
+import { getItemTypesWithCounts, getSearchItems } from "@/lib/db/items";
 import {
   getCollectionOptions,
   getFavoriteCollections,
@@ -19,13 +19,14 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const [user, itemTypes, favoriteCollections, recentCollections, collectionOptions] =
+  const [user, itemTypes, favoriteCollections, recentCollections, collectionOptions, searchItems] =
     await Promise.all([
       getSidebarUser(session.user.id),
       getItemTypesWithCounts(),
       getFavoriteCollections(session.user.id),
       getNonFavoriteCollections(session.user.id),
       getCollectionOptions(session.user.id),
+      getSearchItems(session.user.id),
     ]);
 
   if (!user) redirect("/sign-in");
@@ -37,6 +38,7 @@ export default async function DashboardLayout({
       favoriteCollections={favoriteCollections}
       recentCollections={recentCollections}
       collectionOptions={collectionOptions}
+      searchItems={searchItems}
     >
       {children}
     </DashboardShell>

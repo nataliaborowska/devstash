@@ -24,6 +24,10 @@ export function CollectionOptionsProvider({ collections, children }: CollectionO
   );
 }
 
+export function useCollectionOptions() {
+  return useContext(CollectionOptionsContext);
+}
+
 interface CollectionSelectProps {
   id?: string;
   value: string[];
@@ -33,7 +37,7 @@ interface CollectionSelectProps {
 
 // Multi-select: an item can sit in any number of collections.
 export function CollectionSelect({ id, value, onChange, disabled }: CollectionSelectProps) {
-  const collections = useContext(CollectionOptionsContext);
+  const collections = useCollectionOptions();
   const nameById = new Map(collections.map((c) => [c.id, c.name]));
 
   function renderSelected(selected: string[]) {

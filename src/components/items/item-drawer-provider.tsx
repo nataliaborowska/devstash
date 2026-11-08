@@ -13,13 +13,13 @@ interface ItemDrawerContextValue {
 
 const ItemDrawerContext = createContext<ItemDrawerContextValue | null>(null);
 
-function useItemDrawer() {
+export function useItemDrawer() {
   const context = useContext(ItemDrawerContext);
   if (!context) throw new Error("useItemDrawer must be used within ItemDrawerProvider");
   return context;
 }
 
-// Owns the drawer state so server-rendered item cards can open it without page navigation.
+// Owns the drawer state so server-rendered item cards and the command palette can open it without page navigation.
 export function ItemDrawerProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [item, setItem] = useState<ItemDetailData | null>(null);

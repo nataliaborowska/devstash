@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { CreateCollectionButton } from "@/components/collections/create-collection-dialog";
 import { CreateItemButton } from "@/components/items/create-item-dialog";
+import { GlobalSearch } from "@/components/layout/global-search";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import type { SearchItem } from "@/lib/db/items";
 
 interface TopBarProps {
+  searchItems: SearchItem[];
   onMobileMenuOpen?: () => void;
 }
 
-export function TopBar({ onMobileMenuOpen }: TopBarProps) {
+export function TopBar({ searchItems, onMobileMenuOpen }: TopBarProps) {
   return (
     <header className="h-12 border-b border-border flex items-center gap-3 px-3 shrink-0">
       {/* Hamburger — mobile only */}
@@ -37,15 +39,8 @@ export function TopBar({ onMobileMenuOpen }: TopBarProps) {
       </Link>
 
       {/* Search */}
-      <div className="relative flex-1 max-w-sm mx-auto">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
-          placeholder="Search items..."
-          className="pl-9 h-8 text-sm bg-muted border-0 focus-visible:ring-1"
-        />
-        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground">
-          ⌘K
-        </kbd>
+      <div className="flex-1 max-w-sm mx-auto">
+        <GlobalSearch items={searchItems} />
       </div>
 
       {/* Actions */}

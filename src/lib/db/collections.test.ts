@@ -139,21 +139,23 @@ describe("getCollectionById", () => {
 });
 
 describe("getCollectionOptions", () => {
-  it("returns all of the user's collections as id and name, sorted by name, with no limit", async () => {
-    const options = [
-      { id: "col-2", name: "AI Workflows" },
-      { id: "col-1", name: "React Patterns" },
-    ];
-    mockFindMany.mockResolvedValue(options as never);
+  it("returns all of the user's collections with item counts, sorted by name, with no limit", async () => {
+    mockFindMany.mockResolvedValue([
+      { id: "col-2", name: "AI Workflows", _count: { items: 0 } },
+      { id: "col-1", name: "React Patterns", _count: { items: 4 } },
+    ] as never);
 
     const result = await getCollectionOptions("user-1");
 
     expect(mockFindMany).toHaveBeenCalledWith({
       where: { userId: "user-1" },
       orderBy: { name: "asc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, _count: { select: { items: true } } },
     });
-    expect(result).toEqual(options);
+    expect(result).toEqual([
+      { id: "col-2", name: "AI Workflows", itemCount: 0 },
+      { id: "col-1", name: "React Patterns", itemCount: 4 },
+    ]);
   });
 });
 
