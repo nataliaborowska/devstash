@@ -1,29 +1,16 @@
-# Current Feature: Pagination
+# Current Feature
 
-Add pagination for items and collections listings with numbered page links.
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- `/items/[type]` and `/collections/[id]` are paginated (`ITEMS_PER_PAGE = 21`)
-- `/collections` listing is paginated (`COLLECTIONS_PER_PAGE = 21`)
-- Pagination controls at the bottom of the list with numbered page links plus Previous/Next links
-- Previous/Next are disabled (greyed out) when there is no previous/next page
-- Dashboard uses named constants: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
-- Queries fetch only the rows a page needs (`skip`/`take` plus a `count` for the total), never every resource at once
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Spec: `context/features/pagination-spec.md`
-- The spec defines `COLLECTIONS_PER_PAGE` but only names `/items/[type]` and `/collections/[id]` (both item lists); `COLLECTIONS_PER_PAGE` is assumed to apply to the `/collections` listing page
-- Current page should come from a URL search param (e.g. `?page=2`) so pages are linkable and server components fetch directly; invalid or out-of-range pages should be handled gracefully
-- Existing queries to adapt: `getItemsByType`, `getItemsByCollection` (`src/lib/db/items.ts`), `getAllCollections` (`src/lib/db/collections.ts`); keep current ordering (pinned first, then most recently updated, for items; most recently updated for collections)
-- Header counts (e.g. item count on `/items/[type]` and `/collections/[id]`) should show the total, not the page size
-- Update `loading.tsx` skeletons only if layout changes
-- Add/update unit tests for changed queries and any pagination utility
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -63,3 +50,4 @@ In Progress
 - **2026-11-06** — Collections pages complete: protected `/collections` lists every one of the user's collections (most recently updated first) as `CollectionCard`s in a 1/2/3-column grid with a count, "New Collection" button, and empty state; `/collections/[id]` shows the collection's name, favorite star, description, and item count with its items as `ItemCard`s (pinned first, then most recently updated; clicking opens the item drawer), 404 for unknown or other users' collections, and an empty state; both reuse the dashboard app shell (`src/app/collections/layout.tsx`) and have `loading.tsx` skeletons; `/collections/*` added to the proxy's protected routes; existing sidebar "View all collections", sidebar collection entries, and `CollectionCard` links now resolve; new owner-scoped queries `getAllCollections` (unlimited; `getCollectionsWithStats` limit now optional), `getCollectionById` in `src/lib/db/collections.ts`, and `getItemsByCollection` (via the `CollectionItem` join table) in `src/lib/db/items.ts`; unit tests for the queries
 - **2026-11-07** — Collection actions complete: `/collections/[id]` header has Favorite (UI-only star reflecting `isFavorite`), Edit, and Delete buttons (`CollectionActions`); `CollectionCard` on `/collections` and the dashboard has a 3-dots shadcn `DropdownMenu` (`CollectionActionsMenu`) with Edit, Favorite (UI-only), and Delete, while the rest of the card navigates via a sibling full-card overlay `Link` so the menu and its portaled dialogs never trigger navigation; shared `EditCollectionDialog` (prefilled name/description, form mounted only while open, locked mid-save) and `DeleteCollectionDialog` (`AlertDialog`, explains items are kept); `updateCollection`/`deleteCollection` server actions (`src/actions/collections.ts`, auth check, `updateCollectionSchema`/`collectionIdSchema` in `src/lib/validations/collections.ts`, "Collection not found" for missing or other users' collections) call owner-scoped `updateCollection` (transactional `updateMany` + `findFirst`) and `deleteCollection` (`deleteMany`) in `src/lib/db/collections.ts`; deleting removes only the collection and its `CollectionItem` links, items are kept; deleting from the collection's own page passes `redirectToCollections` so the action calls `revalidatePath("/", "layout")` and `redirect("/collections")` server-side (client `router.replace` + `router.refresh()` left the user on the deleted page), and the dialog treats Next's redirect rejection as success for the toast; unit tests for the schemas, actions, and queries
 - **2026-11-08** — Global search complete: Cmd+K / Ctrl+K command palette (`src/components/layout/global-search.tsx`, shadcn `Command` / `cmdk` in a `CommandDialog`) searching the user's items and collections client-side, with Items and Collections groups, arrow-key/Enter navigation, colored type icons with a one-line preview for items, item counts for collections; selecting an item opens the item drawer (`ItemDrawerProvider` now wraps the whole `DashboardShell` and exports `useItemDrawer`), selecting a collection navigates to `/collections/[id]`; the TopBar search input is now a button that opens the palette, showing "Search items and collections..." with a ⌘K hint; search state lives in an inner component mounted only while open so each open starts empty; data pre-fetched in the dashboard layout via new owner-scoped `getSearchItems` (`src/lib/db/items.ts`, preview from content, then URL, then description via `toSearchPreview` in `src/lib/search.ts`) and `getCollectionOptions` extended with `itemCount` (reused from `CollectionOptionsProvider`, exposed as `useCollectionOptions`); cmdk filtering disabled in favor of `rankBySearch`/`scoreSearchMatch` (`src/lib/search-ranking.ts`, separate because cmdk is `"use client"`): substring matches on title/type/collection name first, then fuzzy matches scoring at least `MIN_FUZZY_SCORE` (0.1), then exact substring matches in previews, since plain fuzzy matching over previews matched almost everything; shadcn `command` + `input-group` added (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); unit tests for the preview, ranking, and queries
+- **2026-11-08** — Pagination complete: `/items/[type]` and `/collections/[id]` show 21 items per page (`ITEMS_PER_PAGE`) and `/collections` shows 21 collections per page (`COLLECTIONS_PER_PAGE`), with the page read from `?page=N` (page 1 is the bare URL; invalid values fall back to page 1, out-of-range pages redirect to the last page); shared server `Pagination` component (`src/components/shared/pagination.tsx`) renders numbered page links with ellipses around the current page plus Previous/Next links that grey out at the ends, and hides itself when everything fits on one page; `src/lib/pagination.ts` holds the constants plus `parsePageParam`, `getTotalPages`, `toSkipTake`, `getPageHref`, and `getPageLinks`; `getItemsByType`/`getItemsByCollection` take `{ page, perPage }` and return `{ data, total }` from a shared `getItemsPage` (`skip`/`take` + `count`, `id` tiebreaker for stable ordering), `getCollectionsPage` replaces `getAllCollections`; header counts show totals; dashboard uses `DASHBOARD_COLLECTIONS_LIMIT` (6) and `DASHBOARD_RECENT_ITEMS_LIMIT` (10); unit tests for the helpers and queries
