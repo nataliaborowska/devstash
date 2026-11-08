@@ -1,16 +1,26 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Settings Page
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- New protected `/settings` page rendered inside the dashboard app shell (sidebar + top bar), like `/profile`
+- `/settings` added to the proxy's protected routes (`PROTECTED_PREFIXES` and `matcher` in `src/proxy.ts`); unauthenticated visits redirect to `/sign-in?callbackUrl=/settings`
+- "Settings" link added to the user dropdown at the bottom of the sidebar (`src/components/layout/user-menu.tsx`), alongside Profile and Sign out
+- The Account section moves from `/profile` to `/settings`:
+  - Change password row with `ChangePasswordDialog` (only for email/password users, `hasPassword`)
+  - Delete account row with `DeleteAccountDialog`
+- `/profile` keeps only user info and usage stats; its Account section is removed
+- `loading.tsx` skeleton for `/settings`
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- The spec says "forgot password", but the profile's Account section holds **change password** (forgot password lives on `/sign-in`), so change password is what moves
+- Reuse the existing dialogs and server actions (`changePassword`, `deleteAccount` in `src/actions/profile.ts`) as-is; no new server actions or queries needed. `getProfileUser` can supply `hasPassword` for the settings page
+- Dialog components can stay in `src/components/profile/` or move to `src/components/settings/`; keep the change minimal
+- Reuse the profile layout pattern (`src/app/profile/layout.tsx`) for `src/app/settings/layout.tsx`
 
 ## History
 
