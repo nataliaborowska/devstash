@@ -1,16 +1,31 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Editor Preferences Settings
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- `/settings` has an "Editor Preferences" section with:
+  - Font size dropdown
+  - Tab size dropdown
+  - Word wrap toggle (default: on)
+  - Minimap toggle (default: off)
+  - Theme dropdown: `vs-dark`, `monokai`, `github-dark` (default: `vs-dark`)
+- Preferences stored in a JSON column `editorPreferences` on the `User` model
+- Migration created and applied with `prisma migrate dev` (never `db push`)
+- Server action to update preferences (auth check, Zod validation, `{ success, data, error }`)
+- Changes auto-save on change (no save button) and show a success toast
+- `EditorPreferencesContext` provides preferences to client components
+- Monaco `CodeEditor` applies font size, tab size, word wrap, minimap, and theme
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Source spec: `context/features/editor-settings-spec.md`
+- `CodeEditor` (`src/components/shared/code-editor.tsx`) currently uses a custom `devstash-dark` theme; `monokai` and `github-dark` aren't built into Monaco, so they need custom `defineTheme` definitions (`vs-dark` is built in)
+- Settings page lives at `src/app/settings/page.tsx`; dashboard-shell providers (e.g. `CollectionOptionsProvider`) are the pattern for the new context
+- Pushing `master` auto-deploys to Vercel production, so the production migration (`migrate deploy`) must be applied around the push; Prisma 7 `migrate dev` doesn't run `prisma generate`
+- Add unit tests for the new server action and Zod schema
 
 ## History
 

@@ -23,6 +23,7 @@ model User {
   isPro                Boolean      @default(false)
   stripeCustomerId     String?      @unique
   stripeSubscriptionId String?      @unique
+  editorPreferences    Json?
   items                Item[]
   itemTypes            ItemType[]
   collections          Collection[]
