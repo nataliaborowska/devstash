@@ -113,15 +113,20 @@ export async function getAllCollections(userId: string): Promise<CollectionWithS
 export type CollectionOption = {
   id: string
   name: string
+  itemCount: number
 }
 
-// Every collection the user owns, for pickers. No limit and no item stats.
+// Every collection the user owns, for pickers and global search. No limit, only an item count.
 export async function getCollectionOptions(userId: string): Promise<CollectionOption[]> {
-  return prisma.collection.findMany({
+  const collections = await prisma.collection.findMany({
     where: { userId },
     orderBy: { name: "asc" },
-    select: { id: true, name: true },
+    select: { id: true, name: true, _count: { select: { items: true } } },
   })
+  return collections.map(({ _count, ...collection }) => ({
+    ...collection,
+    itemCount: _count.items,
+  }))
 }
 
 // True only when every id is one of the user's collections.

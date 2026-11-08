@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { toSearchPreview } from "@/lib/search"
 import type { CreateItemData, UpdateItemData } from "@/lib/validations/items"
 
 export type ItemType = {
@@ -111,6 +112,36 @@ export async function getItemsByCollection(
     orderBy: [{ isPinned: "desc" }, { updatedAt: "desc" }],
   })
   return items.map(mapItem)
+}
+
+export type SearchItem = {
+  id: string
+  title: string
+  type: ItemType
+  preview: string | null
+}
+
+// Every item the user owns in a lightweight shape for the client-side command palette.
+// The preview comes from content, then URL, then description.
+export async function getSearchItems(userId: string): Promise<SearchItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      url: true,
+      description: true,
+      type: { select: { id: true, name: true, icon: true, color: true } },
+    },
+    orderBy: { updatedAt: "desc" },
+  })
+  return items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    type: item.type,
+    preview: toSearchPreview(item.content) ?? toSearchPreview(item.url) ?? toSearchPreview(item.description),
+  }))
 }
 
 export type ItemDetail = ItemWithType & {

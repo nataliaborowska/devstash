@@ -6,6 +6,7 @@ import {
   getItemDetail,
   getItemsByCollection,
   getItemStats,
+  getSearchItems,
   updateItem,
 } from "@/lib/db/items";
 
@@ -95,6 +96,54 @@ describe("getItemsByCollection", () => {
   it("returns an empty list when the collection has no items", async () => {
     vi.mocked(prisma.item.findMany).mockResolvedValue([] as never);
     await expect(getItemsByCollection("user-1", "col-empty")).resolves.toEqual([]);
+  });
+});
+
+describe("getSearchItems", () => {
+  const snippetType = { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" };
+  const linkType = { id: "type-7", name: "link", icon: "Link", color: "#10b981" };
+
+  it("reads only the user's items, most recently updated first", async () => {
+    const mockFindMany = vi.mocked(prisma.item.findMany);
+    mockFindMany.mockResolvedValue([] as never);
+
+    await getSearchItems("user-1");
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: "user-1" }, orderBy: { updatedAt: "desc" } })
+    );
+  });
+
+  it("builds a preview from content, falling back to URL then description", async () => {
+    vi.mocked(prisma.item.findMany).mockResolvedValue([
+      {
+        id: "item-1",
+        title: "useAuth Hook",
+        content: "export function\n  useAuth() {}",
+        url: null,
+        description: "Hook",
+        type: snippetType,
+      },
+      {
+        id: "item-2",
+        title: "Docs",
+        content: null,
+        url: "https://nextjs.org/docs",
+        description: "Next docs",
+        type: linkType,
+      },
+      { id: "item-3", title: "Bare", content: "   ", url: null, description: "Only a description", type: snippetType },
+      { id: "item-4", title: "Empty", content: null, url: null, description: null, type: snippetType },
+    ] as never);
+
+    const items = await getSearchItems("user-1");
+
+    expect(items).toEqual([
+      { id: "item-1", title: "useAuth Hook", type: snippetType, preview: "export function useAuth() {}" },
+      { id: "item-2", title: "Docs", type: linkType, preview: "https://nextjs.org/docs" },
+      { id: "item-3", title: "Bare", type: snippetType, preview: "Only a description" },
+      { id: "item-4", title: "Empty", type: snippetType, preview: null },
+    ]);
   });
 });
 
