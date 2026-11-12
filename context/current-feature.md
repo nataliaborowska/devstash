@@ -1,27 +1,16 @@
-# Current Feature: Pinned Items
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- `toggleItemPin` server action (items only, not collections): auth check, Zod validation, owner-scoped update, `{ success, data, error }` result, "Item not found" for missing or other users' items
-- The Pin button in the item drawer (`src/components/items/item-drawer.tsx`, currently no `onClick`) toggles the pin
-- Optimistic UI: the Pin button flips instantly and reverts on failure
-- Toast on success and on error
-- Pinned items sort to the top of listings (`/items/[type]`, `/collections/[id]`) and appear in the dashboard's Pinned section
-- Follows the favorite toggle pattern (`useFavoriteToggle`, `toggleItemFavorite`, `setItemFavorite`)
-- The Pin icon on `ItemCard` stays a static indicator (no button)
-- Unit tests for the new schema, action, and query
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Favorite pattern to mirror: `src/hooks/use-favorite-toggle.ts` (`useOptimistic`, explicit new value, `router.refresh()` + `onSaved` inside a transition), `toggleItemFavorite` in `src/actions/items.ts`, `setItemFavorite` (`updateMany` by id + userId) in `src/lib/db/items.ts`, `isFavoriteSchema` in `src/lib/validations/items.ts`; consider generalizing the hook (e.g. a shared boolean-toggle hook) rather than duplicating it
-- Listings already order `isPinned desc` first via `getItemsPage` (`/items/[type]`, `/collections/[id]`), so they should only need the `router.refresh()`
-- Pinning bumps `updatedAt` through Prisma's `@updatedAt`, same as favorites (known side effect)
-- **Existing bug to fix as part of this feature:** `getPinnedItems` (dashboard Pinned section) and `getRecentItems` in `src/lib/db/items.ts` are not scoped by `userId`, so the dashboard shows every user's pinned/recent items; they should take a `userId` like the other dashboard queries
-- Pin toggle lives in the drawer only; no pin button on cards, no pin for collections
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -67,3 +56,4 @@ In Progress
 - **2026-11-12** — Favorites page complete: star icon button in the `TopBar` links to a protected `/favorites` (dashboard app shell via `src/app/favorites/layout.tsx`, `loading.tsx` skeleton, `/favorites/*` added to the proxy's protected routes) listing the signed-in user's favorited items and collections in a compact monospace list (`src/components/favorites/favorites-list.tsx`: no cards, thin dividers, subtle hover) with separate Items and Collections sections and counts; each row shows a colored type icon (folder for collections), title, type badge (item count for collections), and date; items open the item drawer via `ItemDrawerTrigger`, collections link to `/collections/[id]`; empty state when there are no favorites; new owner-scoped queries `getFavoriteItems` (`src/lib/db/items.ts`) and `getAllFavoriteCollections` (`src/lib/db/collections.ts`), both sorted by `updatedAt` desc with an `id` tiebreaker since there is no `favoritedAt` column; favorite toggling is still UI-only; unit tests for the queries
 - **2026-11-12** — Favorite toggle complete: the item drawer's Favorite button, a new star button on `ItemCard` (`src/components/items/item-favorite-button.tsx`; filled when favorited, outline on hover/focus otherwise; click and key events stop propagation so the drawer doesn't open), the `/collections/[id]` header star, and the `CollectionCard` 3-dots menu entry now toggle favorites; shared `useFavoriteToggle` hook (`src/hooks/use-favorite-toggle.ts`) flips the star optimistically via `useOptimistic`, saves the explicit new value, reverts with an error toast on failure, and on success runs `router.refresh()` (plus `onSaved` so the drawer's client-held item updates) inside a transition so the optimistic state holds until refreshed props arrive; `toggleItemFavorite` (`src/actions/items.ts`) and `toggleCollectionFavorite` (`src/actions/collections.ts`) server actions (auth check, `itemIdSchema`/`collectionIdSchema` + new `isFavoriteSchema` in `src/lib/validations/items.ts`, "Item not found" / "Collection not found") call owner-scoped `setItemFavorite` / `setCollectionFavorite` (`updateMany` by id + userId); Prisma's `@updatedAt` bumps on toggle, so favorited records move to the top of "recently updated" lists (a `favoritedAt` column would fix it later); pin toggling still UI-only; unit tests for the schema, actions, and queries
 - **2026-11-12** — Favorites sorting complete: `/favorites` sorts client-side with no new queries; the Items and Collections section headers each have a compact monospace segmented control (`aria-pressed` buttons in `src/components/favorites/favorites-view.tsx`, a new `"use client"` wrapper holding separate sort state; `FavoritesSection` and both lists gained an optional header `action` slot); Items sort by Date (newest first, default), Name (case-insensitive A–Z), or Type (type name, then name), Collections by Date or Name; `src/lib/favorites-sort.ts` holds `FAVORITES_SORT_OPTIONS`, `FAVORITE_COLLECTIONS_SORT_OPTIONS`, `DEFAULT_FAVORITES_SORT`, `sortFavoriteItems`, and `sortFavoriteCollections` (non-mutating, string-or-`Date` safe, `id` tiebreaker); sort choice is not persisted; unit tests for the sort helpers
+- **2026-11-12** — Pinned items complete: the item drawer's Pin button toggles the pin optimistically (`aria-pressed`, violet fill), with "Item pinned" / "Item unpinned" success toasts and an error toast that reverts; `toggleItemPin` server action (`src/actions/items.ts`, auth check, `itemIdSchema` + new `isPinnedSchema` in `src/lib/validations/items.ts`, "Item not found") calls owner-scoped `setItemPinned` (`updateMany` by id + userId) in `src/lib/db/items.ts`; `useFavoriteToggle` generalized into `useOptimisticToggle` (`src/hooks/use-optimistic-toggle.ts`, optional `successMessage`), with `useFavoriteToggle` kept as a thin wrapper so its callers are unchanged; the drawer's `onItemUpdated` is now the provider's state setter so favorite/pin saves merge into the latest item (back-to-back toggles no longer overwrite each other); listings already order pinned first, so `router.refresh()` updates `/items/[type]`, `/collections/[id]`, and the dashboard Pinned section; fixed `getPinnedItems` and `getRecentItems` to take a `userId` (the dashboard previously showed every user's pinned and recent items), with an `id` tiebreaker on pinned; `ItemCard` pin icon stays a static indicator, collections can't be pinned; roadmap "Favorites & pinned" checked off; unit tests for the schema, action, and queries
