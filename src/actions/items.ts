@@ -6,12 +6,14 @@ import {
   createItem as createItemInDb,
   deleteItem as deleteItemInDb,
   setItemFavorite,
+  setItemPinned,
   updateItem as updateItemInDb,
   type ItemDetail,
 } from "@/lib/db/items";
 import {
   createItemSchema,
   isFavoriteSchema,
+  isPinnedSchema,
   itemIdSchema,
   updateItemSchema,
   type CreateItemInput,
@@ -32,6 +34,10 @@ export type DeleteItemResult =
 
 export type ToggleItemFavoriteResult =
   | { success: true; data: { id: string; isFavorite: boolean } }
+  | { success: false; error: string };
+
+export type ToggleItemPinResult =
+  | { success: true; data: { id: string; isPinned: boolean } }
   | { success: false; error: string };
 
 const COLLECTION_NOT_FOUND = "Collection not found";
@@ -129,5 +135,30 @@ export async function toggleItemFavorite(
   } catch (error) {
     console.error(error);
     return { success: false, error: "Could not update the favorite. Please try again." };
+  }
+}
+
+// Like toggleItemFavorite, takes the desired value so repeat clicks are idempotent.
+export async function toggleItemPin(itemId: string, isPinned: boolean): Promise<ToggleItemPinResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "You must be signed in" };
+
+  const parsedId = itemIdSchema.safeParse(itemId);
+  if (!parsedId.success) {
+    return { success: false, error: parsedId.error.issues[0]?.message ?? "Invalid item id" };
+  }
+
+  const parsedPinned = isPinnedSchema.safeParse(isPinned);
+  if (!parsedPinned.success) {
+    return { success: false, error: parsedPinned.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  try {
+    const updated = await setItemPinned(session.user.id, parsedId.data, parsedPinned.data);
+    if (!updated) return { success: false, error: "Item not found" };
+    return { success: true, data: { id: parsedId.data, isPinned: parsedPinned.data } };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Could not update the pin. Please try again." };
   }
 }

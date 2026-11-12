@@ -1,16 +1,27 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Pinned Items
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- `toggleItemPin` server action (items only, not collections): auth check, Zod validation, owner-scoped update, `{ success, data, error }` result, "Item not found" for missing or other users' items
+- The Pin button in the item drawer (`src/components/items/item-drawer.tsx`, currently no `onClick`) toggles the pin
+- Optimistic UI: the Pin button flips instantly and reverts on failure
+- Toast on success and on error
+- Pinned items sort to the top of listings (`/items/[type]`, `/collections/[id]`) and appear in the dashboard's Pinned section
+- Follows the favorite toggle pattern (`useFavoriteToggle`, `toggleItemFavorite`, `setItemFavorite`)
+- The Pin icon on `ItemCard` stays a static indicator (no button)
+- Unit tests for the new schema, action, and query
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Favorite pattern to mirror: `src/hooks/use-favorite-toggle.ts` (`useOptimistic`, explicit new value, `router.refresh()` + `onSaved` inside a transition), `toggleItemFavorite` in `src/actions/items.ts`, `setItemFavorite` (`updateMany` by id + userId) in `src/lib/db/items.ts`, `isFavoriteSchema` in `src/lib/validations/items.ts`; consider generalizing the hook (e.g. a shared boolean-toggle hook) rather than duplicating it
+- Listings already order `isPinned desc` first via `getItemsPage` (`/items/[type]`, `/collections/[id]`), so they should only need the `router.refresh()`
+- Pinning bumps `updatedAt` through Prisma's `@updatedAt`, same as favorites (known side effect)
+- **Existing bug to fix as part of this feature:** `getPinnedItems` (dashboard Pinned section) and `getRecentItems` in `src/lib/db/items.ts` are not scoped by `userId`, so the dashboard shows every user's pinned/recent items; they should take a `userId` like the other dashboard queries
+- Pin toggle lives in the drawer only; no pin button on cards, no pin for collections
 
 ## History
 
