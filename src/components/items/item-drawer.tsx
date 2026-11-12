@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Copy, Pencil, Pin, Star, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { toggleItemFavorite } from "@/actions/items";
 import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
 import { ItemEditForm } from "@/components/items/item-edit-form";
@@ -11,6 +12,7 @@ import { MarkdownEditor } from "@/components/shared/markdown-editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useFavoriteToggle } from "@/hooks/use-favorite-toggle";
 import { CODE_ITEM_TYPES, getFallbackCodeLanguage } from "@/lib/code-language";
 import { TypeIcon } from "@/lib/icon-map";
 import { cn } from "@/lib/utils";
@@ -118,6 +120,7 @@ function ItemDetailView({ item, onItemUpdated, onItemDeleted }: ItemDetailViewPr
           onCopy={handleCopy}
           onEdit={() => setIsEditing(true)}
           onDeleted={onItemDeleted}
+          onFavoriteSaved={(isFavorite) => onItemUpdated({ ...item, isFavorite })}
         />
       )}
     </>
@@ -130,9 +133,23 @@ interface ItemDetailBodyProps {
   onCopy: () => void;
   onEdit: () => void;
   onDeleted: () => void;
+  onFavoriteSaved: (isFavorite: boolean) => void;
 }
 
-function ItemDetailBody({ item, copyText, onCopy, onEdit, onDeleted }: ItemDetailBodyProps) {
+function ItemDetailBody({
+  item,
+  copyText,
+  onCopy,
+  onEdit,
+  onDeleted,
+  onFavoriteSaved,
+}: ItemDetailBodyProps) {
+  const favorite = useFavoriteToggle({
+    isFavorite: item.isFavorite,
+    save: (isFavorite) => toggleItemFavorite(item.id, isFavorite),
+    onSaved: onFavoriteSaved,
+  });
+
   return (
     <>
       {/* Action bar */}
@@ -140,9 +157,11 @@ function ItemDetailBody({ item, copyText, onCopy, onEdit, onDeleted }: ItemDetai
         <Button
           variant="ghost"
           size="sm"
-          className={cn(item.isFavorite && "text-yellow-400 hover:text-yellow-400")}
+          aria-pressed={favorite.isFavorite}
+          onClick={favorite.toggle}
+          className={cn(favorite.isFavorite && "text-yellow-400 hover:text-yellow-400")}
         >
-          <Star className={cn(item.isFavorite && "fill-yellow-400")} />
+          <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
           Favorite
         </Button>
         <Button

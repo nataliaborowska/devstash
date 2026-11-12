@@ -3,14 +3,20 @@ import { auth } from "@/auth";
 import {
   createItem as createItemInDb,
   deleteItem as deleteItemInDb,
+  setItemFavorite,
   updateItem as updateItemInDb,
   type ItemDetail,
 } from "@/lib/db/items";
 import { userOwnsCollections } from "@/lib/db/collections";
-import { createItem, deleteItem, updateItem } from "@/actions/items";
+import { createItem, deleteItem, toggleItemFavorite, updateItem } from "@/actions/items";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
-vi.mock("@/lib/db/items", () => ({ createItem: vi.fn(), updateItem: vi.fn(), deleteItem: vi.fn() }));
+vi.mock("@/lib/db/items", () => ({
+  createItem: vi.fn(),
+  updateItem: vi.fn(),
+  deleteItem: vi.fn(),
+  setItemFavorite: vi.fn(),
+}));
 vi.mock("@/lib/db/collections", () => ({ userOwnsCollections: vi.fn() }));
 
 const mockAuth = vi.mocked(auth as unknown as () => Promise<{ user: { id: string } } | null>);
@@ -18,6 +24,7 @@ const mockCreateItemInDb = vi.mocked(createItemInDb);
 const mockUpdateItemInDb = vi.mocked(updateItemInDb);
 const mockDeleteItemInDb = vi.mocked(deleteItemInDb);
 const mockUserOwnsCollections = vi.mocked(userOwnsCollections);
+const mockSetItemFavorite = vi.mocked(setItemFavorite);
 
 const validInput = {
   title: "  useAuth Hook  ",
@@ -309,5 +316,53 @@ describe("createItem", () => {
   it("skips the ownership check when no collections are given", async () => {
     await createItem(snippetInput);
     expect(mockUserOwnsCollections).not.toHaveBeenCalled();
+  });
+});
+
+describe("toggleItemFavorite", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockSetItemFavorite.mockResolvedValue(true);
+  });
+
+  it("requires a signed-in user", async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await toggleItemFavorite("item-1", true);
+    expect(result).toEqual({ success: false, error: "You must be signed in" });
+    expect(mockSetItemFavorite).not.toHaveBeenCalled();
+  });
+
+  it("rejects a blank item id", async () => {
+    const result = await toggleItemFavorite("  ", true);
+    expect(result).toEqual({ success: false, error: "Invalid item id" });
+    expect(mockSetItemFavorite).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-boolean favorite value", async () => {
+    const result = await toggleItemFavorite("item-1", "yes" as unknown as boolean);
+    expect(result).toEqual({ success: false, error: "Invalid favorite value" });
+    expect(mockSetItemFavorite).not.toHaveBeenCalled();
+  });
+
+  it.each([true, false])("sets the user's item favorite to %s", async (isFavorite) => {
+    const result = await toggleItemFavorite(" item-1 ", isFavorite);
+    expect(mockSetItemFavorite).toHaveBeenCalledWith("user-1", "item-1", isFavorite);
+    expect(result).toEqual({ success: true, data: { id: "item-1", isFavorite } });
+  });
+
+  it("returns not found when the item isn't the user's", async () => {
+    mockSetItemFavorite.mockResolvedValue(false);
+    const result = await toggleItemFavorite("item-x", true);
+    expect(result).toEqual({ success: false, error: "Item not found" });
+  });
+
+  it("returns a friendly error when the database call fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSetItemFavorite.mockRejectedValue(new Error("db down"));
+    const result = await toggleItemFavorite("item-1", true);
+    expect(result).toEqual({
+      success: false,
+      error: "Could not update the favorite. Please try again.",
+    });
   });
 });

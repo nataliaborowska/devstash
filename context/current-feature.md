@@ -1,16 +1,29 @@
-# Current Feature
+# Current Feature: Favorite Toggle
 
-<!-- Describe the current feature being worked on -->
+Wire up the currently UI-only favorite buttons so items and collections can be favorited/unfavorited from the item drawer, the collection page, and cards.
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Item drawer: the existing Favorite button toggles `Item.isFavorite`; the star fills/unfills immediately (optimistic) and reverts with an error toast on failure
+- Collection page (`/collections/[id]`): the header Favorite star in `CollectionActions` toggles `Collection.isFavorite`
+- Collection cards: the Favorite / Unfavorite entry in the `CollectionActionsMenu` 3-dots dropdown toggles the collection
+- Item cards: a star toggle on `ItemCard` (dashboard, `/items/[type]`, `/collections/[id]`) favorites/unfavorites the item without opening the drawer (click doesn't bubble to the card)
+- New `toggleItemFavorite` server action (`src/actions/items.ts`) and `toggleCollectionFavorite` server action (`src/actions/collections.ts`): auth check, Zod-validated id + desired `isFavorite` value, owner-scoped update, `{ success, data, error }` result, "Item not found" / "Collection not found" for missing or other users' records
+- Owner-scoped `setItemFavorite` / `setCollectionFavorite` queries in `src/lib/db/items.ts` / `src/lib/db/collections.ts` (`updateMany` by id + userId)
+- After a successful toggle, `router.refresh()` so the sidebar favorite collections, stats card, `/favorites` page, and card stars stay in sync; the open drawer reflects the new state
+- Unit tests for the new actions, schemas, and queries; `npm test`, lint, and build pass
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Setting an explicit `isFavorite` value (rather than flipping server-side) keeps rapid double-clicks idempotent
+- Favoriting shouldn't bump `updatedAt` ordering unexpectedly if avoidable; acceptable if Prisma's `@updatedAt` does (note it if so, since `/favorites` sorts by `updatedAt`)
+- Confirmed: Prisma's `@updatedAt` bumps on `updateMany`, so toggling a favorite moves the item/collection to the top of "most recently updated" lists (including `/favorites`); accepted for now, a `favoritedAt` column would fix it later
+- Pin toggling stays UI-only; out of scope
+- Existing UI-only favorite spots: `item-drawer.tsx`, `collection-actions.tsx`, `collection-actions-menu.tsx`; `item-card.tsx` and `collection-card.tsx` currently only show a static star
 
 ## History
 

@@ -9,6 +9,7 @@ import {
   getFavoriteItems,
   getItemStats,
   getSearchItems,
+  setItemFavorite,
   updateItem,
 } from "@/lib/db/items";
 
@@ -18,6 +19,7 @@ vi.mock("@/lib/prisma", () => {
     findFirst: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
     deleteMany: vi.fn(),
     count: vi.fn(),
   };
@@ -39,6 +41,7 @@ const mockCreate = vi.mocked(prisma.item.create);
 const mockUpdate = vi.mocked(prisma.item.update);
 const mockFindItemType = vi.mocked(prisma.itemType.findFirst);
 const mockDeleteMany = vi.mocked(prisma.item.deleteMany);
+const mockUpdateMany = vi.mocked(prisma.item.updateMany);
 
 const createdAt = new Date("2026-01-15T10:00:00Z");
 const updatedAt = new Date("2026-02-01T12:00:00Z");
@@ -481,5 +484,22 @@ describe("getFavoriteItems", () => {
     vi.mocked(prisma.item.findMany).mockResolvedValue([] as never);
 
     expect(await getFavoriteItems("user-1")).toEqual([]);
+  });
+});
+
+describe("setItemFavorite", () => {
+  it.each([true, false])("sets isFavorite to %s on the user's item", async (isFavorite) => {
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+
+    await expect(setItemFavorite("user-1", "item-1", isFavorite)).resolves.toBe(true);
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: "item-1", userId: "user-1" },
+      data: { isFavorite },
+    });
+  });
+
+  it("returns false when the item is missing or another user's", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 0 });
+    await expect(setItemFavorite("user-1", "item-x", true)).resolves.toBe(false);
   });
 });

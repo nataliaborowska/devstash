@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { MoreHorizontal, Pencil, Star, Trash2 } from "lucide-react";
+import { toggleCollectionFavorite } from "@/actions/collections";
+import { useFavoriteToggle } from "@/hooks/use-favorite-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +27,10 @@ interface CollectionActionsMenuProps {
 export function CollectionActionsMenu({ collection, className }: CollectionActionsMenuProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const favorite = useFavoriteToggle({
+    isFavorite: collection.isFavorite,
+    save: (isFavorite) => toggleCollectionFavorite(collection.id, isFavorite),
+  });
 
   return (
     <>
@@ -43,10 +49,9 @@ export function CollectionActionsMenu({ collection, className }: CollectionActio
             <Pencil />
             Edit
           </DropdownMenuItem>
-          {/* Favorite toggling isn't implemented yet. */}
-          <DropdownMenuItem>
-            <Star className={cn(collection.isFavorite && "fill-yellow-400 text-yellow-400")} />
-            {collection.isFavorite ? "Unfavorite" : "Favorite"}
+          <DropdownMenuItem onClick={favorite.toggle}>
+            <Star className={cn(favorite.isFavorite && "fill-yellow-400 text-yellow-400")} />
+            {favorite.isFavorite ? "Unfavorite" : "Favorite"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>

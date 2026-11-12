@@ -218,6 +218,20 @@ export async function updateCollection(
   })
 }
 
+// Sets an explicit value so repeated clicks are idempotent. Returns false when the collection
+// doesn't exist or belongs to another user.
+export async function setCollectionFavorite(
+  userId: string,
+  id: string,
+  isFavorite: boolean
+): Promise<boolean> {
+  const { count } = await prisma.collection.updateMany({
+    where: { id, userId },
+    data: { isFavorite },
+  })
+  return count > 0
+}
+
 // Removes only the collection; its CollectionItem links cascade, the items themselves are kept.
 export async function deleteCollection(userId: string, id: string): Promise<boolean> {
   const { count } = await prisma.collection.deleteMany({ where: { id, userId } })
