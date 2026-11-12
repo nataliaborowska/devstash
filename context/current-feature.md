@@ -1,29 +1,16 @@
-# Current Feature: Favorites Sorting
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- `/favorites` has a sort control that lets the user sort by **Name**, **Date**, or **Item type**
-- Sorting is fully client-side: no new queries, no refetch, no URL changes required
-- Items and Collections each have their own sort control in their section header: Items sort by Date / Name / Type, Collections by Date / Name
-- Name sort: case-insensitive alphabetical (A–Z) on item title / collection name
-- Date sort: most recently updated first (matches the current default order)
-- Type sort: grouped by item type name, then by name within each type; collections (all one type) fall back to name
-- Default sort is Date, so the page looks the same as today until the user changes it
-- Control matches the compact monospace look of the favorites list (e.g. small segmented buttons or a shadcn `Select` in the header)
-- Sort logic lives in a pure utility in `src/lib/` with unit tests
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Data is already loaded server-side in `src/app/favorites/page.tsx` via `getFavoriteItems` and `getAllFavoriteCollections` (sorted `updatedAt` desc with `id` tiebreaker); keep that as-is
-- `src/components/favorites/favorites-list.tsx` is currently a server component; the sorting wrapper needs `"use client"` and holds sort state, rendering the existing lists (which use `ItemDrawerTrigger` and `Link`, both client-safe)
-- Dates arrive as `Date` objects across the server/client boundary; compare via `new Date(x).getTime()`
-- Use stable tiebreakers (e.g. `id`) so rows don't jump between renders
-- Toggling a favorite bumps `updatedAt`, so Date order reflects that (known, not in scope to fix)
-- Persisting the sort choice (localStorage/URL) is out of scope unless requested
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -68,3 +55,4 @@ In Progress
 - **2026-11-08** — Editor preferences complete: `/settings` has an auto-saving "Editor Preferences" section (`EditorPreferencesForm`) with font size (12-20px, default 13), tab size (2/4/8, default 2), theme (`vs-dark` default, `monokai`, `github-dark`), word wrap (default on), and minimap (default off) toggles via a new shadcn `switch` (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); each change applies instantly and saves with a success toast, reverting with an error toast on failure (only the newest save updates state); stored in a new `User.editorPreferences` JSON column (migration `20261108183719_editor_preferences`); `editorPreferencesSchema`, `DEFAULT_EDITOR_PREFERENCES`, and lenient per-field `parseEditorPreferences` in `src/lib/validations/editor-preferences.ts`; `updateEditorPreferences` server action (`src/actions/settings.ts`, auth check, Zod validation) calls `updateEditorPreferences` in `src/lib/db/users.ts`, and `getEditorPreferences` is loaded in the dashboard layout; `EditorPreferencesContext` / `EditorPreferencesProvider` (`src/components/settings/editor-preferences-context.tsx`) wraps `DashboardShell`; `CodeEditor` applies font size (line height scales 1.5x), tab size, word wrap, minimap, and theme, with all three themes registered as prefixed `devstash-*` Monaco themes in `src/lib/editor-themes.ts` (custom Monokai and GitHub Dark definitions; the old `devstash-dark` theme is replaced by `vs-dark`); unit tests for the schema, parser, queries, action, and theme helpers
 - **2026-11-12** — Favorites page complete: star icon button in the `TopBar` links to a protected `/favorites` (dashboard app shell via `src/app/favorites/layout.tsx`, `loading.tsx` skeleton, `/favorites/*` added to the proxy's protected routes) listing the signed-in user's favorited items and collections in a compact monospace list (`src/components/favorites/favorites-list.tsx`: no cards, thin dividers, subtle hover) with separate Items and Collections sections and counts; each row shows a colored type icon (folder for collections), title, type badge (item count for collections), and date; items open the item drawer via `ItemDrawerTrigger`, collections link to `/collections/[id]`; empty state when there are no favorites; new owner-scoped queries `getFavoriteItems` (`src/lib/db/items.ts`) and `getAllFavoriteCollections` (`src/lib/db/collections.ts`), both sorted by `updatedAt` desc with an `id` tiebreaker since there is no `favoritedAt` column; favorite toggling is still UI-only; unit tests for the queries
 - **2026-11-12** — Favorite toggle complete: the item drawer's Favorite button, a new star button on `ItemCard` (`src/components/items/item-favorite-button.tsx`; filled when favorited, outline on hover/focus otherwise; click and key events stop propagation so the drawer doesn't open), the `/collections/[id]` header star, and the `CollectionCard` 3-dots menu entry now toggle favorites; shared `useFavoriteToggle` hook (`src/hooks/use-favorite-toggle.ts`) flips the star optimistically via `useOptimistic`, saves the explicit new value, reverts with an error toast on failure, and on success runs `router.refresh()` (plus `onSaved` so the drawer's client-held item updates) inside a transition so the optimistic state holds until refreshed props arrive; `toggleItemFavorite` (`src/actions/items.ts`) and `toggleCollectionFavorite` (`src/actions/collections.ts`) server actions (auth check, `itemIdSchema`/`collectionIdSchema` + new `isFavoriteSchema` in `src/lib/validations/items.ts`, "Item not found" / "Collection not found") call owner-scoped `setItemFavorite` / `setCollectionFavorite` (`updateMany` by id + userId); Prisma's `@updatedAt` bumps on toggle, so favorited records move to the top of "recently updated" lists (a `favoritedAt` column would fix it later); pin toggling still UI-only; unit tests for the schema, actions, and queries
+- **2026-11-12** — Favorites sorting complete: `/favorites` sorts client-side with no new queries; the Items and Collections section headers each have a compact monospace segmented control (`aria-pressed` buttons in `src/components/favorites/favorites-view.tsx`, a new `"use client"` wrapper holding separate sort state; `FavoritesSection` and both lists gained an optional header `action` slot); Items sort by Date (newest first, default), Name (case-insensitive A–Z), or Type (type name, then name), Collections by Date or Name; `src/lib/favorites-sort.ts` holds `FAVORITES_SORT_OPTIONS`, `FAVORITE_COLLECTIONS_SORT_OPTIONS`, `DEFAULT_FAVORITES_SORT`, `sortFavoriteItems`, and `sortFavoriteCollections` (non-mutating, string-or-`Date` safe, `id` tiebreaker); sort choice is not persisted; unit tests for the sort helpers
