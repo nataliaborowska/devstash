@@ -5,6 +5,7 @@ import {
   deleteCollection,
   getCollectionById,
   getCollectionsPage,
+  getAllFavoriteCollections,
   getCollectionOptions,
   getFavoriteCollections,
   getNonFavoriteCollections,
@@ -246,5 +247,27 @@ describe("deleteCollection", () => {
   it("returns false when nothing matched", async () => {
     mockDeleteMany.mockResolvedValue({ count: 0 });
     await expect(deleteCollection("user-1", "col-x")).resolves.toBe(false);
+  });
+});
+
+describe("getAllFavoriteCollections", () => {
+  it("returns the user's favorited collections with item counts, most recently updated first", async () => {
+    const updatedAt = new Date("2026-11-10T00:00:00Z");
+    mockFindMany.mockResolvedValue([
+      { id: "col-1", name: "React Patterns", updatedAt, _count: { items: 4 } },
+      { id: "col-2", name: "AI Workflows", updatedAt, _count: { items: 0 } },
+    ] as never);
+
+    const result = await getAllFavoriteCollections("user-1");
+
+    expect(mockFindMany).toHaveBeenCalledWith({
+      where: { userId: "user-1", isFavorite: true },
+      orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
+      select: { id: true, name: true, updatedAt: true, _count: { select: { items: true } } },
+    });
+    expect(result).toEqual([
+      { id: "col-1", name: "React Patterns", updatedAt, itemCount: 4 },
+      { id: "col-2", name: "AI Workflows", updatedAt, itemCount: 0 },
+    ]);
   });
 });

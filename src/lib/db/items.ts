@@ -128,6 +128,27 @@ export async function getItemsByCollection(
   return getItemsPage({ userId, collections: { some: { collectionId } } }, pageParams)
 }
 
+export type FavoriteItem = {
+  id: string
+  title: string
+  type: ItemType
+  updatedAt: Date
+}
+
+// Every item the user has favorited, most recently updated first, for the /favorites list.
+export async function getFavoriteItems(userId: string): Promise<FavoriteItem[]> {
+  return prisma.item.findMany({
+    where: { userId, isFavorite: true },
+    select: {
+      id: true,
+      title: true,
+      updatedAt: true,
+      type: { select: { id: true, name: true, icon: true, color: true } },
+    },
+    orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
+  })
+}
+
 export type SearchItem = {
   id: string
   title: string

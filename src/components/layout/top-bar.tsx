@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { Menu, Star } from "lucide-react";
 import { CreateCollectionButton } from "@/components/collections/create-collection-dialog";
 import { CreateItemButton } from "@/components/items/create-item-dialog";
 import { GlobalSearch } from "@/components/layout/global-search";
@@ -45,6 +45,15 @@ export function TopBar({ searchItems, onMobileMenuOpen }: TopBarProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-2 ml-auto">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          nativeButton={false}
+          render={<Link href="/favorites" aria-label="Favorites" title="Favorites" />}
+        >
+          <Star className="h-4 w-4" />
+        </Button>
         <CreateCollectionButton className="hidden sm:flex" />
         <CreateItemButton />
       </div>

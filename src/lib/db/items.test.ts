@@ -6,6 +6,7 @@ import {
   getItemDetail,
   getItemsByCollection,
   getItemsByType,
+  getFavoriteItems,
   getItemStats,
   getSearchItems,
   updateItem,
@@ -449,5 +450,36 @@ describe("getItemStats", () => {
       totalCollections: 4,
       favoriteCollections: 1,
     });
+  });
+});
+
+describe("getFavoriteItems", () => {
+  const snippetType = { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" };
+
+  it("reads only the user's favorited items, most recently updated first", async () => {
+    const updatedAt = new Date("2026-11-10T00:00:00Z");
+    const rows = [{ id: "item-1", title: "useAuth Hook", updatedAt, type: snippetType }];
+    const mockFindMany = vi.mocked(prisma.item.findMany);
+    mockFindMany.mockResolvedValue(rows as never);
+
+    const result = await getFavoriteItems("user-1");
+
+    expect(mockFindMany).toHaveBeenCalledWith({
+      where: { userId: "user-1", isFavorite: true },
+      select: {
+        id: true,
+        title: true,
+        updatedAt: true,
+        type: { select: { id: true, name: true, icon: true, color: true } },
+      },
+      orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
+    });
+    expect(result).toEqual(rows);
+  });
+
+  it("returns an empty list when nothing is favorited", async () => {
+    vi.mocked(prisma.item.findMany).mockResolvedValue([] as never);
+
+    expect(await getFavoriteItems("user-1")).toEqual([]);
   });
 });
