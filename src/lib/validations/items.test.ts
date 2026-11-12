@@ -3,6 +3,7 @@ import {
   createItemSchema,
   isCreatableItemType,
   isFavoriteSchema,
+  isPinnedSchema,
   updateItemSchema,
 } from "@/lib/validations/items";
 
@@ -129,5 +130,17 @@ describe("isFavoriteSchema", () => {
     const result = isFavoriteSchema.safeParse(value);
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]?.message).toBe("Invalid favorite value");
+  });
+});
+
+describe("isPinnedSchema", () => {
+  it.each([true, false])("accepts %s", (value) => {
+    expect(isPinnedSchema.parse(value)).toBe(value);
+  });
+
+  it.each(["true", 1, null, undefined])("rejects %s", (value) => {
+    const result = isPinnedSchema.safeParse(value);
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Invalid pin value");
   });
 });

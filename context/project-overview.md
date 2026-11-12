@@ -492,7 +492,7 @@ devstash/
 - [x] Collections
 - [x] Search (Cmd+K command palette)
 - [ ] Tags _(partial: added and edited on items; no tag browsing or filtering yet)_
-- [ ] Favorites & pinned _(partial: shown on cards, drawer, and dashboard; toggling not wired up yet)_
+- [x] Favorites & pinned
 - [ ] Recently used
 - [ ] Free tier limits enforced
 
@@ -610,4 +610,4 @@ git switch -c lesson-03-items-crud
 
 ## Status
 
-> 🟢 **In Development** — auth (email + GitHub, email verification, password reset, rate limiting), items CRUD for text types, collections with multi-collection items, the code and Markdown editors, and global search are in place; favorite/pin toggles, tags, file uploads, and free tier limits are next.
+> 🟢 **In Development** — auth (email + GitHub, email verification, password reset, rate limiting), items CRUD for text types, collections with multi-collection items, the code and Markdown editors, global search, and favorites/pins are in place; tags, file uploads, and free tier limits are next.

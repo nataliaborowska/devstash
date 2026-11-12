@@ -4,11 +4,18 @@ import {
   createItem as createItemInDb,
   deleteItem as deleteItemInDb,
   setItemFavorite,
+  setItemPinned,
   updateItem as updateItemInDb,
   type ItemDetail,
 } from "@/lib/db/items";
 import { userOwnsCollections } from "@/lib/db/collections";
-import { createItem, deleteItem, toggleItemFavorite, updateItem } from "@/actions/items";
+import {
+  createItem,
+  deleteItem,
+  toggleItemFavorite,
+  toggleItemPin,
+  updateItem,
+} from "@/actions/items";
 
 vi.mock("@/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/db/items", () => ({
@@ -16,6 +23,7 @@ vi.mock("@/lib/db/items", () => ({
   updateItem: vi.fn(),
   deleteItem: vi.fn(),
   setItemFavorite: vi.fn(),
+  setItemPinned: vi.fn(),
 }));
 vi.mock("@/lib/db/collections", () => ({ userOwnsCollections: vi.fn() }));
 
@@ -25,6 +33,7 @@ const mockUpdateItemInDb = vi.mocked(updateItemInDb);
 const mockDeleteItemInDb = vi.mocked(deleteItemInDb);
 const mockUserOwnsCollections = vi.mocked(userOwnsCollections);
 const mockSetItemFavorite = vi.mocked(setItemFavorite);
+const mockSetItemPinned = vi.mocked(setItemPinned);
 
 const validInput = {
   title: "  useAuth Hook  ",
@@ -363,6 +372,54 @@ describe("toggleItemFavorite", () => {
     expect(result).toEqual({
       success: false,
       error: "Could not update the favorite. Please try again.",
+    });
+  });
+});
+
+describe("toggleItemPin", () => {
+  beforeEach(() => {
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } });
+    mockSetItemPinned.mockResolvedValue(true);
+  });
+
+  it("requires a signed-in user", async () => {
+    mockAuth.mockResolvedValue(null);
+    const result = await toggleItemPin("item-1", true);
+    expect(result).toEqual({ success: false, error: "You must be signed in" });
+    expect(mockSetItemPinned).not.toHaveBeenCalled();
+  });
+
+  it("rejects a blank item id", async () => {
+    const result = await toggleItemPin("  ", true);
+    expect(result).toEqual({ success: false, error: "Invalid item id" });
+    expect(mockSetItemPinned).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-boolean pin value", async () => {
+    const result = await toggleItemPin("item-1", "yes" as unknown as boolean);
+    expect(result).toEqual({ success: false, error: "Invalid pin value" });
+    expect(mockSetItemPinned).not.toHaveBeenCalled();
+  });
+
+  it.each([true, false])("sets the user's item pin to %s", async (isPinned) => {
+    const result = await toggleItemPin(" item-1 ", isPinned);
+    expect(mockSetItemPinned).toHaveBeenCalledWith("user-1", "item-1", isPinned);
+    expect(result).toEqual({ success: true, data: { id: "item-1", isPinned } });
+  });
+
+  it("returns not found when the item isn't the user's", async () => {
+    mockSetItemPinned.mockResolvedValue(false);
+    const result = await toggleItemPin("item-x", true);
+    expect(result).toEqual({ success: false, error: "Item not found" });
+  });
+
+  it("returns a friendly error when the database call fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    mockSetItemPinned.mockRejectedValue(new Error("db down"));
+    const result = await toggleItemPin("item-1", true);
+    expect(result).toEqual({
+      success: false,
+      error: "Could not update the pin. Please try again.",
     });
   });
 });

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { Copy, Pencil, Pin, Star, Tag } from "lucide-react";
 import { toast } from "sonner";
-import { toggleItemFavorite } from "@/actions/items";
+import { toggleItemFavorite, toggleItemPin } from "@/actions/items";
 import { DeleteItemDialog } from "@/components/items/delete-item-dialog";
 import { DetailSection, ItemMetaSections } from "@/components/items/item-detail-sections";
 import { ItemEditForm } from "@/components/items/item-edit-form";
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useFavoriteToggle } from "@/hooks/use-favorite-toggle";
+import { useOptimisticToggle } from "@/hooks/use-optimistic-toggle";
 import { CODE_ITEM_TYPES, getFallbackCodeLanguage } from "@/lib/code-language";
 import { TypeIcon } from "@/lib/icon-map";
 import { cn } from "@/lib/utils";
@@ -25,12 +26,15 @@ export type ItemDetailData = Omit<ItemDetail, "createdAt" | "updatedAt" | "lastU
   lastUsedAt: string | null;
 };
 
+// The provider's state setter: accepts a full item or an updater function.
+type ItemUpdater = Dispatch<SetStateAction<ItemDetailData | null>>;
+
 interface ItemDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: ItemDetailData | null;
   error: string | null;
-  onItemUpdated: (item: ItemDetailData) => void;
+  onItemUpdated: ItemUpdater;
   onItemDeleted: () => void;
 }
 
@@ -64,12 +68,18 @@ export function ItemDrawer({ open, onOpenChange, item, error, onItemUpdated, onI
 
 interface ItemDetailViewProps {
   item: ItemDetailData;
-  onItemUpdated: (item: ItemDetailData) => void;
+  onItemUpdated: ItemUpdater;
   onItemDeleted: () => void;
 }
 
 function ItemDetailView({ item, onItemUpdated, onItemDeleted }: ItemDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false);
+
+  // Merges into the latest drawer item, so back-to-back favorite and pin saves don't overwrite
+  // each other with a stale copy.
+  function onItemPatched(patch: Partial<Pick<ItemDetailData, "isFavorite" | "isPinned">>) {
+    onItemUpdated((current) => (current ? { ...current, ...patch } : current));
+  }
   const copyText = item.content ?? item.url;
 
   async function handleCopy() {
@@ -120,7 +130,8 @@ function ItemDetailView({ item, onItemUpdated, onItemDeleted }: ItemDetailViewPr
           onCopy={handleCopy}
           onEdit={() => setIsEditing(true)}
           onDeleted={onItemDeleted}
-          onFavoriteSaved={(isFavorite) => onItemUpdated({ ...item, isFavorite })}
+          onFavoriteSaved={(isFavorite) => onItemPatched({ isFavorite })}
+          onPinSaved={(isPinned) => onItemPatched({ isPinned })}
         />
       )}
     </>
@@ -134,6 +145,7 @@ interface ItemDetailBodyProps {
   onEdit: () => void;
   onDeleted: () => void;
   onFavoriteSaved: (isFavorite: boolean) => void;
+  onPinSaved: (isPinned: boolean) => void;
 }
 
 function ItemDetailBody({
@@ -143,11 +155,18 @@ function ItemDetailBody({
   onEdit,
   onDeleted,
   onFavoriteSaved,
+  onPinSaved,
 }: ItemDetailBodyProps) {
   const favorite = useFavoriteToggle({
     isFavorite: item.isFavorite,
     save: (isFavorite) => toggleItemFavorite(item.id, isFavorite),
     onSaved: onFavoriteSaved,
+  });
+  const pin = useOptimisticToggle({
+    value: item.isPinned,
+    save: (isPinned) => toggleItemPin(item.id, isPinned),
+    onSaved: onPinSaved,
+    successMessage: (isPinned) => (isPinned ? "Item pinned" : "Item unpinned"),
   });
 
   return (
@@ -167,9 +186,11 @@ function ItemDetailBody({
         <Button
           variant="ghost"
           size="sm"
-          className={cn(item.isPinned && "text-violet-400 hover:text-violet-400")}
+          aria-pressed={pin.value}
+          onClick={pin.toggle}
+          className={cn(pin.value && "text-violet-400 hover:text-violet-400")}
         >
-          <Pin className={cn(item.isPinned && "fill-violet-400")} />
+          <Pin className={cn(pin.value && "fill-violet-400")} />
           Pin
         </Button>
         <Button variant="ghost" size="sm" onClick={onCopy} disabled={!copyText}>

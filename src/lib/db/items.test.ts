@@ -8,8 +8,11 @@ import {
   getItemsByType,
   getFavoriteItems,
   getItemStats,
+  getPinnedItems,
+  getRecentItems,
   getSearchItems,
   setItemFavorite,
+  setItemPinned,
   updateItem,
 } from "@/lib/db/items";
 
@@ -501,5 +504,62 @@ describe("setItemFavorite", () => {
   it("returns false when the item is missing or another user's", async () => {
     mockUpdateMany.mockResolvedValue({ count: 0 });
     await expect(setItemFavorite("user-1", "item-x", true)).resolves.toBe(false);
+  });
+});
+
+describe("setItemPinned", () => {
+  it.each([true, false])("sets isPinned to %s on the user's item", async (isPinned) => {
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+
+    await expect(setItemPinned("user-1", "item-1", isPinned)).resolves.toBe(true);
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: "item-1", userId: "user-1" },
+      data: { isPinned },
+    });
+  });
+
+  it("returns false when the item is missing or another user's", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 0 });
+    await expect(setItemPinned("user-1", "item-x", true)).resolves.toBe(false);
+  });
+});
+
+describe("getPinnedItems", () => {
+  it("reads only the user's pinned items, most recently updated first", async () => {
+    const mockFindMany = vi.mocked(prisma.item.findMany);
+    mockFindMany.mockResolvedValue([] as never);
+
+    await getPinnedItems("user-1", 5);
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-1", isPinned: true },
+        take: 5,
+        orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
+      })
+    );
+  });
+
+  it("maps rows to item cards", async () => {
+    vi.mocked(prisma.item.findMany).mockResolvedValue([
+      { ...dbItem, isPinned: true, tags: [{ tag: { name: "react" } }] },
+    ] as never);
+
+    const [item] = await getPinnedItems("user-1");
+
+    expect(item).toMatchObject({ id: "item-1", isPinned: true, tags: ["react"] });
+  });
+});
+
+describe("getRecentItems", () => {
+  it("reads only the user's items", async () => {
+    const mockFindMany = vi.mocked(prisma.item.findMany);
+    mockFindMany.mockResolvedValue([] as never);
+
+    await getRecentItems("user-1", 10);
+
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: "user-1" }, take: 10 })
+    );
   });
 });

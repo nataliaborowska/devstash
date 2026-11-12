@@ -64,18 +64,19 @@ const ITEM_SELECT = {
   tags: { select: { tag: { select: { name: true } } } },
 } as const
 
-export async function getPinnedItems(limit = 10): Promise<ItemWithType[]> {
+export async function getPinnedItems(userId: string, limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
-    where: { isPinned: true },
+    where: { userId, isPinned: true },
     take: limit,
     select: ITEM_SELECT,
-    orderBy: { updatedAt: "desc" },
+    orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
   })
   return items.map(mapItem)
 }
 
-export async function getRecentItems(limit = 10): Promise<ItemWithType[]> {
+export async function getRecentItems(userId: string, limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
+    where: { userId },
     take: limit,
     select: ITEM_SELECT,
     orderBy: [
@@ -319,6 +320,16 @@ export async function setItemFavorite(
   isFavorite: boolean
 ): Promise<boolean> {
   const { count } = await prisma.item.updateMany({ where: { id, userId }, data: { isFavorite } })
+  return count > 0
+}
+
+// Same contract as setItemFavorite: explicit value, false when missing or not the user's.
+export async function setItemPinned(
+  userId: string,
+  id: string,
+  isPinned: boolean
+): Promise<boolean> {
+  const { count } = await prisma.item.updateMany({ where: { id, userId }, data: { isPinned } })
   return count > 0
 }
 
