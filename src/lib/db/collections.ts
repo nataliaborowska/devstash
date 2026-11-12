@@ -125,6 +125,26 @@ export async function getCollectionsPage(
   return { data: collections, total }
 }
 
+export type FavoriteCollection = {
+  id: string
+  name: string
+  itemCount: number
+  updatedAt: Date
+}
+
+// Every collection the user has favorited, most recently updated first, for the /favorites list.
+export async function getAllFavoriteCollections(userId: string): Promise<FavoriteCollection[]> {
+  const collections = await prisma.collection.findMany({
+    where: { userId, isFavorite: true },
+    orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
+    select: { id: true, name: true, updatedAt: true, _count: { select: { items: true } } },
+  })
+  return collections.map(({ _count, ...collection }) => ({
+    ...collection,
+    itemCount: _count.items,
+  }))
+}
+
 export type CollectionOption = {
   id: string
   name: string

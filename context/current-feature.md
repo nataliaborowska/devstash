@@ -1,16 +1,29 @@
-# Current Feature
+# Current Feature: Favorites Page
 
-<!-- Describe the current feature being worked on -->
+Add a `/favorites` page displaying all favorited items and collections in a compact, dev-focused list.
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Star icon button in the TopBar linking to `/favorites`
+- Protected `/favorites` route (added to the proxy's protected routes)
+- Fetch all of the signed-in user's favorited items and collections
+- Compact list view (VS Code/terminal style, not cards)
+- Each row: type icon, title, type badge, date added
+- Separate Items and Collections sections, each with a count
+- Clicking an item opens the `ItemDrawer`; clicking a collection navigates to `/collections/[id]`
+- Empty state when there are no favorites
+- Sorted by most recently favorited (`updatedAt`)
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Spec: `context/features/favorites-spec.md`
+- UI style: monospace or semi-monospace font, minimal padding, high density, subtle hover states, no cards or heavy borders (clean lines only)
+- No `favoritedAt` column exists, so "most recently favorited" uses `updatedAt` as the spec says
+- Favorite toggling is still UI-only; this page only reads `isFavorite`
 
 ## History
 
