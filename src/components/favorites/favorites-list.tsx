@@ -19,16 +19,20 @@ function formatDate(date: Date) {
 interface SectionProps {
   title: string;
   count: number;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }
 
-function FavoritesSection({ title, count, children }: SectionProps) {
+function FavoritesSection({ title, count, action, children }: SectionProps) {
   return (
     <section>
-      <h2 className="flex items-center gap-2 px-2 pb-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground border-b border-border">
-        {title}
-        <span className="tabular-nums">({count})</span>
-      </h2>
+      <div className="flex items-center justify-between gap-2 px-2 pb-1.5 border-b border-border">
+        <h2 className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          {title}
+          <span className="tabular-nums">({count})</span>
+        </h2>
+        {action}
+      </div>
       <ul className="divide-y divide-border/50">{children}</ul>
     </section>
   );
@@ -47,9 +51,14 @@ function RowMeta({ badge, date }: { badge: string; date: Date }) {
   );
 }
 
-export function FavoriteItemsList({ items }: { items: FavoriteItem[] }) {
+interface FavoriteItemsListProps {
+  items: FavoriteItem[];
+  action?: React.ReactNode;
+}
+
+export function FavoriteItemsList({ items, action }: FavoriteItemsListProps) {
   return (
-    <FavoritesSection title="Items" count={items.length}>
+    <FavoritesSection title="Items" count={items.length} action={action}>
       {items.map((item) => (
         <li key={item.id}>
           <ItemDrawerTrigger itemId={item.id}>
@@ -69,9 +78,14 @@ export function FavoriteItemsList({ items }: { items: FavoriteItem[] }) {
   );
 }
 
-export function FavoriteCollectionsList({ collections }: { collections: FavoriteCollection[] }) {
+interface FavoriteCollectionsListProps {
+  collections: FavoriteCollection[];
+  action?: React.ReactNode;
+}
+
+export function FavoriteCollectionsList({ collections, action }: FavoriteCollectionsListProps) {
   return (
-    <FavoritesSection title="Collections" count={collections.length}>
+    <FavoritesSection title="Collections" count={collections.length} action={action}>
       {collections.map((collection) => (
         <li key={collection.id}>
           <Link

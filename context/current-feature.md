@@ -1,16 +1,29 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Favorites Sorting
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- `/favorites` has a sort control that lets the user sort by **Name**, **Date**, or **Item type**
+- Sorting is fully client-side: no new queries, no refetch, no URL changes required
+- Items and Collections each have their own sort control in their section header: Items sort by Date / Name / Type, Collections by Date / Name
+- Name sort: case-insensitive alphabetical (A–Z) on item title / collection name
+- Date sort: most recently updated first (matches the current default order)
+- Type sort: grouped by item type name, then by name within each type; collections (all one type) fall back to name
+- Default sort is Date, so the page looks the same as today until the user changes it
+- Control matches the compact monospace look of the favorites list (e.g. small segmented buttons or a shadcn `Select` in the header)
+- Sort logic lives in a pure utility in `src/lib/` with unit tests
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Data is already loaded server-side in `src/app/favorites/page.tsx` via `getFavoriteItems` and `getAllFavoriteCollections` (sorted `updatedAt` desc with `id` tiebreaker); keep that as-is
+- `src/components/favorites/favorites-list.tsx` is currently a server component; the sorting wrapper needs `"use client"` and holds sort state, rendering the existing lists (which use `ItemDrawerTrigger` and `Link`, both client-safe)
+- Dates arrive as `Date` objects across the server/client boundary; compare via `new Date(x).getTime()`
+- Use stable tiebreakers (e.g. `id`) so rows don't jump between renders
+- Toggling a favorite bumps `updatedAt`, so Date order reflects that (known, not in scope to fix)
+- Persisting the sort choice (localStorage/URL) is out of scope unless requested
 
 ## History
 

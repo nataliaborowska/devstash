@@ -1,10 +1,7 @@
 import { redirect } from "next/navigation";
 import { Star } from "lucide-react";
 import { auth } from "@/auth";
-import {
-  FavoriteCollectionsList,
-  FavoriteItemsList,
-} from "@/components/favorites/favorites-list";
+import { FavoritesView } from "@/components/favorites/favorites-view";
 import { getAllFavoriteCollections } from "@/lib/db/collections";
 import { getFavoriteItems } from "@/lib/db/items";
 
@@ -40,10 +37,7 @@ export default async function FavoritesPage() {
           </p>
         </div>
       ) : (
-        <>
-          {items.length > 0 && <FavoriteItemsList items={items} />}
-          {collections.length > 0 && <FavoriteCollectionsList collections={collections} />}
-        </>
+        <FavoritesView items={items} collections={collections} />
       )}
     </div>
   );
