@@ -1,29 +1,16 @@
-# Current Feature: Favorites Page
+# Current Feature
 
-Add a `/favorites` page displaying all favorited items and collections in a compact, dev-focused list.
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Star icon button in the TopBar linking to `/favorites`
-- Protected `/favorites` route (added to the proxy's protected routes)
-- Fetch all of the signed-in user's favorited items and collections
-- Compact list view (VS Code/terminal style, not cards)
-- Each row: type icon, title, type badge, date added
-- Separate Items and Collections sections, each with a count
-- Clicking an item opens the `ItemDrawer`; clicking a collection navigates to `/collections/[id]`
-- Empty state when there are no favorites
-- Sorted by most recently favorited (`updatedAt`)
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Spec: `context/features/favorites-spec.md`
-- UI style: monospace or semi-monospace font, minimal padding, high density, subtle hover states, no cards or heavy borders (clean lines only)
-- No `favoritedAt` column exists, so "most recently favorited" uses `updatedAt` as the spec says
-- Favorite toggling is still UI-only; this page only reads `isFavorite`
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -66,3 +53,4 @@ In Progress
 - **2026-11-08** — Pagination complete: `/items/[type]` and `/collections/[id]` show 21 items per page (`ITEMS_PER_PAGE`) and `/collections` shows 21 collections per page (`COLLECTIONS_PER_PAGE`), with the page read from `?page=N` (page 1 is the bare URL; invalid values fall back to page 1, out-of-range pages redirect to the last page); shared server `Pagination` component (`src/components/shared/pagination.tsx`) renders numbered page links with ellipses around the current page plus Previous/Next links that grey out at the ends, and hides itself when everything fits on one page; `src/lib/pagination.ts` holds the constants plus `parsePageParam`, `getTotalPages`, `toSkipTake`, `getPageHref`, and `getPageLinks`; `getItemsByType`/`getItemsByCollection` take `{ page, perPage }` and return `{ data, total }` from a shared `getItemsPage` (`skip`/`take` + `count`, `id` tiebreaker for stable ordering), `getCollectionsPage` replaces `getAllCollections`; header counts show totals; dashboard uses `DASHBOARD_COLLECTIONS_LIMIT` (6) and `DASHBOARD_RECENT_ITEMS_LIMIT` (10); unit tests for the helpers and queries
 - **2026-11-08** — Settings page complete: protected `/settings` (dashboard app shell via `src/app/settings/layout.tsx`, `loading.tsx` skeleton, `/settings/*` added to the proxy's protected routes) now holds the Account section moved from `/profile`: change password (email/password users only, via `getProfileUser().hasPassword`) and delete account; `ChangePasswordDialog` and `DeleteAccountDialog` moved to `src/components/settings/`, server actions unchanged in `src/actions/profile.ts`; `/profile` now shows only user info and usage stats; sidebar user dropdown has a "Settings" link between Profile and Sign out
 - **2026-11-08** — Editor preferences complete: `/settings` has an auto-saving "Editor Preferences" section (`EditorPreferencesForm`) with font size (12-20px, default 13), tab size (2/4/8, default 2), theme (`vs-dark` default, `monokai`, `github-dark`), word wrap (default on), and minimap (default off) toggles via a new shadcn `switch` (CLI `cn` import fixed to `@/lib/utils`, stray `cn` npm package removed); each change applies instantly and saves with a success toast, reverting with an error toast on failure (only the newest save updates state); stored in a new `User.editorPreferences` JSON column (migration `20261108183719_editor_preferences`); `editorPreferencesSchema`, `DEFAULT_EDITOR_PREFERENCES`, and lenient per-field `parseEditorPreferences` in `src/lib/validations/editor-preferences.ts`; `updateEditorPreferences` server action (`src/actions/settings.ts`, auth check, Zod validation) calls `updateEditorPreferences` in `src/lib/db/users.ts`, and `getEditorPreferences` is loaded in the dashboard layout; `EditorPreferencesContext` / `EditorPreferencesProvider` (`src/components/settings/editor-preferences-context.tsx`) wraps `DashboardShell`; `CodeEditor` applies font size (line height scales 1.5x), tab size, word wrap, minimap, and theme, with all three themes registered as prefixed `devstash-*` Monaco themes in `src/lib/editor-themes.ts` (custom Monokai and GitHub Dark definitions; the old `devstash-dark` theme is replaced by `vs-dark`); unit tests for the schema, parser, queries, action, and theme helpers
+- **2026-11-12** — Favorites page complete: star icon button in the `TopBar` links to a protected `/favorites` (dashboard app shell via `src/app/favorites/layout.tsx`, `loading.tsx` skeleton, `/favorites/*` added to the proxy's protected routes) listing the signed-in user's favorited items and collections in a compact monospace list (`src/components/favorites/favorites-list.tsx`: no cards, thin dividers, subtle hover) with separate Items and Collections sections and counts; each row shows a colored type icon (folder for collections), title, type badge (item count for collections), and date; items open the item drawer via `ItemDrawerTrigger`, collections link to `/collections/[id]`; empty state when there are no favorites; new owner-scoped queries `getFavoriteItems` (`src/lib/db/items.ts`) and `getAllFavoriteCollections` (`src/lib/db/collections.ts`), both sorted by `updatedAt` desc with an `id` tiebreaker since there is no `favoritedAt` column; favorite toggling is still UI-only; unit tests for the queries
