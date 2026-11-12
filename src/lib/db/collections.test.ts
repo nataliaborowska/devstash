@@ -10,6 +10,7 @@ import {
   getFavoriteCollections,
   getNonFavoriteCollections,
   getRecentCollections,
+  setCollectionFavorite,
   updateCollection,
   userOwnsCollections,
 } from "@/lib/db/collections";
@@ -247,6 +248,23 @@ describe("deleteCollection", () => {
   it("returns false when nothing matched", async () => {
     mockDeleteMany.mockResolvedValue({ count: 0 });
     await expect(deleteCollection("user-1", "col-x")).resolves.toBe(false);
+  });
+});
+
+describe("setCollectionFavorite", () => {
+  it.each([true, false])("sets isFavorite to %s on the user's collection", async (isFavorite) => {
+    mockUpdateMany.mockResolvedValue({ count: 1 });
+
+    await expect(setCollectionFavorite("user-1", "col-1", isFavorite)).resolves.toBe(true);
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: "col-1", userId: "user-1" },
+      data: { isFavorite },
+    });
+  });
+
+  it("returns false when the collection is missing or another user's", async () => {
+    mockUpdateMany.mockResolvedValue({ count: 0 });
+    await expect(setCollectionFavorite("user-1", "col-x", true)).resolves.toBe(false);
   });
 });
 

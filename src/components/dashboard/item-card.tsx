@@ -1,5 +1,6 @@
-import { Star, Pin, MoreHorizontal } from "lucide-react";
+import { Pin, MoreHorizontal } from "lucide-react";
 import { ItemDrawerTrigger } from "@/components/items/item-drawer-provider";
+import { ItemFavoriteButton } from "@/components/items/item-favorite-button";
 import { TypeIcon } from "@/lib/icon-map";
 import type { ItemWithType } from "@/lib/db/items";
 
@@ -42,9 +43,11 @@ export function ItemCard({ item }: ItemCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
             <h3 className="font-medium text-sm truncate">{item.title}</h3>
-            {item.isFavorite && (
-              <Star className="h-3 w-3 shrink-0 fill-yellow-400 text-yellow-400" />
-            )}
+            <ItemFavoriteButton
+              itemId={item.id}
+              itemTitle={item.title}
+              isFavorite={item.isFavorite}
+            />
             {item.isPinned && (
               <Pin className="h-3 w-3 shrink-0 text-violet-400 fill-violet-400" />
             )}

@@ -6,9 +6,11 @@ import { auth } from "@/auth";
 import {
   createCollection as createCollectionInDb,
   deleteCollection as deleteCollectionInDb,
+  setCollectionFavorite,
   updateCollection as updateCollectionInDb,
   type CollectionSummary,
 } from "@/lib/db/collections";
+import { isFavoriteSchema } from "@/lib/validations/items";
 import {
   collectionIdSchema,
   createCollectionSchema,
@@ -27,6 +29,10 @@ export type UpdateCollectionResult =
 
 export type DeleteCollectionResult =
   | { success: true; data: { id: string } }
+  | { success: false; error: string };
+
+export type ToggleCollectionFavoriteResult =
+  | { success: true; data: { id: string; isFavorite: boolean } }
   | { success: false; error: string };
 
 const SIGNED_OUT = "You must be signed in";
@@ -77,6 +83,38 @@ export async function updateCollection(
   } catch (error) {
     console.error(error);
     return { success: false, error: "Could not update the collection. Please try again." };
+  }
+}
+
+// Takes the desired value rather than flipping server-side, so rapid repeat clicks are idempotent.
+export async function toggleCollectionFavorite(
+  collectionId: string,
+  isFavorite: boolean
+): Promise<ToggleCollectionFavoriteResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: SIGNED_OUT };
+
+  const parsedId = collectionIdSchema.safeParse(collectionId);
+  if (!parsedId.success) {
+    return { success: false, error: parsedId.error.issues[0]?.message ?? "Invalid collection id" };
+  }
+
+  const parsedFavorite = isFavoriteSchema.safeParse(isFavorite);
+  if (!parsedFavorite.success) {
+    return { success: false, error: parsedFavorite.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  try {
+    const updated = await setCollectionFavorite(
+      session.user.id,
+      parsedId.data,
+      parsedFavorite.data
+    );
+    if (!updated) return { success: false, error: COLLECTION_NOT_FOUND };
+    return { success: true, data: { id: parsedId.data, isFavorite: parsedFavorite.data } };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Could not update the favorite. Please try again." };
   }
 }
 

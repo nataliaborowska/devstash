@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createItemSchema, isCreatableItemType, updateItemSchema } from "@/lib/validations/items";
+import {
+  createItemSchema,
+  isCreatableItemType,
+  isFavoriteSchema,
+  updateItemSchema,
+} from "@/lib/validations/items";
 
 describe("isCreatableItemType", () => {
   it.each(["snippet", "prompt", "command", "note", "link"])("accepts %s", (type) => {
@@ -112,5 +117,17 @@ describe("collectionIds", () => {
   it("is passed through by createItemSchema", () => {
     const result = createItemSchema.parse({ ...base, type: "note", collectionIds: ["col-1"] });
     expect(result.collectionIds).toEqual(["col-1"]);
+  });
+});
+
+describe("isFavoriteSchema", () => {
+  it.each([true, false])("accepts %s", (value) => {
+    expect(isFavoriteSchema.parse(value)).toBe(value);
+  });
+
+  it.each(["true", 1, null, undefined])("rejects %s", (value) => {
+    const result = isFavoriteSchema.safeParse(value);
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("Invalid favorite value");
   });
 });

@@ -5,11 +5,13 @@ import { userOwnsCollections } from "@/lib/db/collections";
 import {
   createItem as createItemInDb,
   deleteItem as deleteItemInDb,
+  setItemFavorite,
   updateItem as updateItemInDb,
   type ItemDetail,
 } from "@/lib/db/items";
 import {
   createItemSchema,
+  isFavoriteSchema,
   itemIdSchema,
   updateItemSchema,
   type CreateItemInput,
@@ -26,6 +28,10 @@ export type UpdateItemResult =
 
 export type DeleteItemResult =
   | { success: true; data: { id: string } }
+  | { success: false; error: string };
+
+export type ToggleItemFavoriteResult =
+  | { success: true; data: { id: string; isFavorite: boolean } }
   | { success: false; error: string };
 
 const COLLECTION_NOT_FOUND = "Collection not found";
@@ -95,5 +101,33 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
   } catch (error) {
     console.error(error);
     return { success: false, error: "Could not delete the item. Please try again." };
+  }
+}
+
+// Takes the desired value rather than flipping server-side, so rapid repeat clicks are idempotent.
+export async function toggleItemFavorite(
+  itemId: string,
+  isFavorite: boolean
+): Promise<ToggleItemFavoriteResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "You must be signed in" };
+
+  const parsedId = itemIdSchema.safeParse(itemId);
+  if (!parsedId.success) {
+    return { success: false, error: parsedId.error.issues[0]?.message ?? "Invalid item id" };
+  }
+
+  const parsedFavorite = isFavoriteSchema.safeParse(isFavorite);
+  if (!parsedFavorite.success) {
+    return { success: false, error: parsedFavorite.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  try {
+    const updated = await setItemFavorite(session.user.id, parsedId.data, parsedFavorite.data);
+    if (!updated) return { success: false, error: "Item not found" };
+    return { success: true, data: { id: parsedId.data, isFavorite: parsedFavorite.data } };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: "Could not update the favorite. Please try again." };
   }
 }

@@ -56,6 +56,8 @@ export const createItemSchema = updateItemSchema
 
 export const itemIdSchema = z.string().trim().min(1, "Invalid item id");
 
+export const isFavoriteSchema = z.boolean("Invalid favorite value");
+
 export type UpdateItemInput = z.input<typeof updateItemSchema>;
 export type UpdateItemData = z.output<typeof updateItemSchema>;
 export type CreateItemInput = z.input<typeof createItemSchema>;
