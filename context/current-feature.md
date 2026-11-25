@@ -1,16 +1,31 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Homepage
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Replace the placeholder `src/app/page.tsx` with the real public marketing homepage, ported from `prototypes/homepage/` (same sections, copy, and animations)
+- Sections in order: fixed navbar (more opaque after ~20px scroll), hero (gradient headline, CTAs, chaos → pulsing arrow → dashboard mockup visual), features (6 cards), AI section ("Pro Feature" badge, checklist, editor mockup with staggered "AI Generated Tags"), pricing (Free vs Pro, "Most Popular", Monthly/Yearly toggle $8/mo ↔ $72/yr "Save 25%"), CTA, footer with current year
+- Chaos panel: 8 floating icons that drift, bounce off walls, rotate/scale-pulse, and repel from the cursor (`requestAnimationFrame`)
+- Sections fade in on scroll; `prefers-reduced-motion` respected (static icons, reveals and tags shown immediately)
+- Responsive: hero visual stacks vertically with the arrow pointing down, grids collapse to one column, nav links hidden on small screens
+- Server components by default; small client leaves only for interactivity (`homepage-nav`, `chaos-icons`, `ai-tags`, `pricing-cards`, `reveal`) in `src/components/homepage/`, plus server `hero-section`, `dashboard-mockup`, `features-section`, `ai-section`, `pricing-section`, `cta-section`, `homepage-footer`, shared `logo`
+- DRY content: typed arrays in `src/lib/homepage.ts` (`FEATURES`, `CHAOS_ICONS`, `MOCK_ITEMS`, `AI_CAPABILITIES`, `AI_TAGS`, `PRICING_PLANS`, `FOOTER_LINKS`) rendered with `.map()`; pure physics (`stepIcon`) in `src/lib/chaos-physics.ts`
+- Tailwind v4 + shadcn `Button`/`Badge`, existing dark theme tokens, lucide icons (`TypeIcon` where a type icon fits), keyframes in `globals.css`; item type colors match the seeded system types, not the prototype palette
+- `page.tsx` calls `auth()` and passes `isSignedIn`: signed out CTAs go to `/sign-in` / `/register`; signed in they become Dashboard (`/dashboard`), Pro "Upgrade" goes to `/settings`; Features/Pricing anchor-scroll with `scroll-margin-top` under the fixed nav; all internal links via `next/link` (`Button asChild`)
+- Footer links limited to existing pages (Features, Pricing, Sign In/Register or Dashboard/Settings); placeholder links dropped
+- Unit tests for `chaos-physics` and `PRICING_PLANS`; verify in the browser signed in and out, then lint and build
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Spec: `context/features/homepage-spec.md`
+- `/` stays public; not added to the proxy's protected routes
+- Pricing must match the project overview (Free: 50 items, 3 collections; Pro: $8/mo or $72/yr)
+- Stripe isn't built yet, so "Upgrade to Pro" routes to `/register` (signed out) or `/settings` (signed in)
+- Keep `prototypes/homepage/` as the reference; no new dependencies
+- Brand-like chaos icons (Notion, Slack, VS Code) are illustrative; use lucide or the prototype's inline SVGs where lucide has no match
 
 ## History
 

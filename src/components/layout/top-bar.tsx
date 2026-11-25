@@ -29,7 +29,7 @@ export function TopBar({ searchItems, onMobileMenuOpen }: TopBarProps) {
 
       {/* Logo */}
       <Link
-        href="/dashboard"
+        href="/"
         className="flex items-center gap-2 shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       >
         <div className="h-6 w-6 rounded-md bg-violet-600 flex items-center justify-center shrink-0">

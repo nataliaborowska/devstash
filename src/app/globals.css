@@ -182,3 +182,21 @@
   & hr { @apply my-5 border-border; }
   & img { @apply max-w-full rounded-md; }
 }
+
+/* Homepage: pulsing chaos-to-order arrow and smooth anchor scrolling. */
+@theme {
+  --animate-arrow-pulse: arrow-pulse 2s ease-in-out infinite;
+
+  @keyframes arrow-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgb(139 92 246 / 0.45); }
+    50% { transform: scale(1.08); box-shadow: 0 0 0 14px rgb(139 92 246 / 0); }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(#homepage) { scroll-behavior: smooth; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-arrow-pulse { animation: none; }
+}
