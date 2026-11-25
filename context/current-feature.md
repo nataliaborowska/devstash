@@ -1,31 +1,16 @@
-# Current Feature: Homepage
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Replace the placeholder `src/app/page.tsx` with the real public marketing homepage, ported from `prototypes/homepage/` (same sections, copy, and animations)
-- Sections in order: fixed navbar (more opaque after ~20px scroll), hero (gradient headline, CTAs, chaos → pulsing arrow → dashboard mockup visual), features (6 cards), AI section ("Pro Feature" badge, checklist, editor mockup with staggered "AI Generated Tags"), pricing (Free vs Pro, "Most Popular", Monthly/Yearly toggle $8/mo ↔ $72/yr "Save 25%"), CTA, footer with current year
-- Chaos panel: 8 floating icons that drift, bounce off walls, rotate/scale-pulse, and repel from the cursor (`requestAnimationFrame`)
-- Sections fade in on scroll; `prefers-reduced-motion` respected (static icons, reveals and tags shown immediately)
-- Responsive: hero visual stacks vertically with the arrow pointing down, grids collapse to one column, nav links hidden on small screens
-- Server components by default; small client leaves only for interactivity (`homepage-nav`, `chaos-icons`, `ai-tags`, `pricing-cards`, `reveal`) in `src/components/homepage/`, plus server `hero-section`, `dashboard-mockup`, `features-section`, `ai-section`, `pricing-section`, `cta-section`, `homepage-footer`, shared `logo`
-- DRY content: typed arrays in `src/lib/homepage.ts` (`FEATURES`, `CHAOS_ICONS`, `MOCK_ITEMS`, `AI_CAPABILITIES`, `AI_TAGS`, `PRICING_PLANS`, `FOOTER_LINKS`) rendered with `.map()`; pure physics (`stepIcon`) in `src/lib/chaos-physics.ts`
-- Tailwind v4 + shadcn `Button`/`Badge`, existing dark theme tokens, lucide icons (`TypeIcon` where a type icon fits), keyframes in `globals.css`; item type colors match the seeded system types, not the prototype palette
-- `page.tsx` calls `auth()` and passes `isSignedIn`: signed out CTAs go to `/sign-in` / `/register`; signed in they become Dashboard (`/dashboard`), Pro "Upgrade" goes to `/settings`; Features/Pricing anchor-scroll with `scroll-margin-top` under the fixed nav; all internal links via `next/link` (`Button asChild`)
-- Footer links limited to existing pages (Features, Pricing, Sign In/Register or Dashboard/Settings); placeholder links dropped
-- Unit tests for `chaos-physics` and `PRICING_PLANS`; verify in the browser signed in and out, then lint and build
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Spec: `context/features/homepage-spec.md`
-- `/` stays public; not added to the proxy's protected routes
-- Pricing must match the project overview (Free: 50 items, 3 collections; Pro: $8/mo or $72/yr)
-- Stripe isn't built yet, so "Upgrade to Pro" routes to `/register` (signed out) or `/settings` (signed in)
-- Keep `prototypes/homepage/` as the reference; no new dependencies
-- Brand-like chaos icons (Notion, Slack, VS Code) are illustrative; use lucide or the prototype's inline SVGs where lucide has no match
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -72,3 +57,5 @@ In Progress
 - **2026-11-12** — Favorite toggle complete: the item drawer's Favorite button, a new star button on `ItemCard` (`src/components/items/item-favorite-button.tsx`; filled when favorited, outline on hover/focus otherwise; click and key events stop propagation so the drawer doesn't open), the `/collections/[id]` header star, and the `CollectionCard` 3-dots menu entry now toggle favorites; shared `useFavoriteToggle` hook (`src/hooks/use-favorite-toggle.ts`) flips the star optimistically via `useOptimistic`, saves the explicit new value, reverts with an error toast on failure, and on success runs `router.refresh()` (plus `onSaved` so the drawer's client-held item updates) inside a transition so the optimistic state holds until refreshed props arrive; `toggleItemFavorite` (`src/actions/items.ts`) and `toggleCollectionFavorite` (`src/actions/collections.ts`) server actions (auth check, `itemIdSchema`/`collectionIdSchema` + new `isFavoriteSchema` in `src/lib/validations/items.ts`, "Item not found" / "Collection not found") call owner-scoped `setItemFavorite` / `setCollectionFavorite` (`updateMany` by id + userId); Prisma's `@updatedAt` bumps on toggle, so favorited records move to the top of "recently updated" lists (a `favoritedAt` column would fix it later); pin toggling still UI-only; unit tests for the schema, actions, and queries
 - **2026-11-12** — Favorites sorting complete: `/favorites` sorts client-side with no new queries; the Items and Collections section headers each have a compact monospace segmented control (`aria-pressed` buttons in `src/components/favorites/favorites-view.tsx`, a new `"use client"` wrapper holding separate sort state; `FavoritesSection` and both lists gained an optional header `action` slot); Items sort by Date (newest first, default), Name (case-insensitive A–Z), or Type (type name, then name), Collections by Date or Name; `src/lib/favorites-sort.ts` holds `FAVORITES_SORT_OPTIONS`, `FAVORITE_COLLECTIONS_SORT_OPTIONS`, `DEFAULT_FAVORITES_SORT`, `sortFavoriteItems`, and `sortFavoriteCollections` (non-mutating, string-or-`Date` safe, `id` tiebreaker); sort choice is not persisted; unit tests for the sort helpers
 - **2026-11-12** — Pinned items complete: the item drawer's Pin button toggles the pin optimistically (`aria-pressed`, violet fill), with "Item pinned" / "Item unpinned" success toasts and an error toast that reverts; `toggleItemPin` server action (`src/actions/items.ts`, auth check, `itemIdSchema` + new `isPinnedSchema` in `src/lib/validations/items.ts`, "Item not found") calls owner-scoped `setItemPinned` (`updateMany` by id + userId) in `src/lib/db/items.ts`; `useFavoriteToggle` generalized into `useOptimisticToggle` (`src/hooks/use-optimistic-toggle.ts`, optional `successMessage`), with `useFavoriteToggle` kept as a thin wrapper so its callers are unchanged; the drawer's `onItemUpdated` is now the provider's state setter so favorite/pin saves merge into the latest item (back-to-back toggles no longer overwrite each other); listings already order pinned first, so `router.refresh()` updates `/items/[type]`, `/collections/[id]`, and the dashboard Pinned section; fixed `getPinnedItems` and `getRecentItems` to take a `userId` (the dashboard previously showed every user's pinned and recent items), with an `id` tiebreaker on pinned; `ItemCard` pin icon stays a static indicator, collections can't be pinned; roadmap "Favorites & pinned" checked off; unit tests for the schema, action, and queries
+- **2026-11-25** — Homepage mockup complete: static dark-theme marketing prototype in `prototypes/homepage/` (`index.html`, `styles.css`, `script.js`) per `context/features/homepage-mockup-spec.md`, with fixed nav, gradient hero, "chaos to order" visual (floating icons that bounce and repel from the cursor, pulsing arrow, dashboard mockup), features, AI section, pricing with monthly/yearly toggle, CTA, footer, scroll fade-ins, and mobile stacking
+- **2026-11-25** — Homepage complete: public `/` marketing page ported from the prototype with Tailwind v4 and shadcn `Badge`/`buttonVariants`, replacing the placeholder; server sections in `src/components/homepage/` (`hero-section`, `dashboard-mockup`, `features-section`, `ai-section`, `pricing-section`, `cta-section`, `homepage-footer`, shared `logo`, `link-button`, `section-heading`, `checklist`) with small client leaves (`homepage-nav` scroll opacity via `useSyncExternalStore`, `chaos-icons` RAF animation, `ai-tags` staggered pop-in, `pricing-cards` monthly/yearly toggle, `reveal` fade-in) and a shared `useInView` hook (`src/hooks/use-in-view.ts`); content (`FEATURES`, `MOCK_NAV`, `MOCK_ITEMS`, `AI_CAPABILITIES`, `AI_TAGS`, `PRICING_PLANS`, `TYPE_COLORS` matching the seeded item types) and auth-aware links (`getHomepageLinks`: signed-out CTAs go to `/register`, signed-in to `/dashboard`, Pro upgrade to `/settings` until Stripe exists; footer only links existing pages) in `src/lib/homepage.ts`; header always shows Sign In / Get Started (`NAV_ACTIONS`); pure icon physics (`createChaosBody`, `stepChaosBody`, `chaosTransform`) in `src/lib/chaos-physics.ts`; arrow-pulse keyframes and homepage-scoped smooth scrolling in `globals.css`; reduced motion respected; brand icons reuse the prototype's inline SVGs since `lucide-react` 1.x dropped brand icons; the app top bar logo now links to `/`; unit tests for the physics, pricing plans, and links
