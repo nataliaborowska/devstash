@@ -1,26 +1,16 @@
-# Current Feature: Responsive Top Bar
+# Current Feature
+
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Dashboard top bar never overflows the viewport (no horizontal page scroll at 320px+)
-- Search wrapper gets `min-w-0` so it can shrink; actions group gets `shrink-0`
-- Below `sm`: search is an icon-only button (magnifier) that opens the same Cmd+K palette
-- Below `md`: search placeholder shortened to "Search..."; full "Search items and collections..." from `md` up
-- Below `sm`: "DevStash" wordmark hidden, only the "DS" logo mark shows
-- Below `md`: "New Item" and "New Collection" are icon-only buttons (with `aria-label` and `title`)
-- Favorites star stays visible at all widths (the sidebar has no `/favorites` link, so it's the only entry point)
-- Desktop (`lg+`) layout unchanged
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Found via Playwright: at 375px the header needed 532px (Favorites/New Item off-screen), at 700px 728px ("New Item" clipped); root cause is the `flex-1` search wrapper's default `min-width: auto` holding it at 286px
-- Files: `src/components/layout/top-bar.tsx`, `src/components/layout/global-search.tsx`, `src/components/items/create-item-dialog.tsx` (`CreateItemButton`), `src/components/collections/create-collection-dialog.tsx` (`CreateCollectionButton`)
-- `CreateItemButton` is also used in `/items/[type]` page headers; keep its label behavior there unchanged (top bar opts in via a prop/className)
-- UI-only change; no server actions or utilities expected
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -69,3 +59,4 @@ In Progress
 - **2026-11-12** — Pinned items complete: the item drawer's Pin button toggles the pin optimistically (`aria-pressed`, violet fill), with "Item pinned" / "Item unpinned" success toasts and an error toast that reverts; `toggleItemPin` server action (`src/actions/items.ts`, auth check, `itemIdSchema` + new `isPinnedSchema` in `src/lib/validations/items.ts`, "Item not found") calls owner-scoped `setItemPinned` (`updateMany` by id + userId) in `src/lib/db/items.ts`; `useFavoriteToggle` generalized into `useOptimisticToggle` (`src/hooks/use-optimistic-toggle.ts`, optional `successMessage`), with `useFavoriteToggle` kept as a thin wrapper so its callers are unchanged; the drawer's `onItemUpdated` is now the provider's state setter so favorite/pin saves merge into the latest item (back-to-back toggles no longer overwrite each other); listings already order pinned first, so `router.refresh()` updates `/items/[type]`, `/collections/[id]`, and the dashboard Pinned section; fixed `getPinnedItems` and `getRecentItems` to take a `userId` (the dashboard previously showed every user's pinned and recent items), with an `id` tiebreaker on pinned; `ItemCard` pin icon stays a static indicator, collections can't be pinned; roadmap "Favorites & pinned" checked off; unit tests for the schema, action, and queries
 - **2026-11-25** — Homepage mockup complete: static dark-theme marketing prototype in `prototypes/homepage/` (`index.html`, `styles.css`, `script.js`) per `context/features/homepage-mockup-spec.md`, with fixed nav, gradient hero, "chaos to order" visual (floating icons that bounce and repel from the cursor, pulsing arrow, dashboard mockup), features, AI section, pricing with monthly/yearly toggle, CTA, footer, scroll fade-ins, and mobile stacking
 - **2026-11-25** — Homepage complete: public `/` marketing page ported from the prototype with Tailwind v4 and shadcn `Badge`/`buttonVariants`, replacing the placeholder; server sections in `src/components/homepage/` (`hero-section`, `dashboard-mockup`, `features-section`, `ai-section`, `pricing-section`, `cta-section`, `homepage-footer`, shared `logo`, `link-button`, `section-heading`, `checklist`) with small client leaves (`homepage-nav` scroll opacity via `useSyncExternalStore`, `chaos-icons` RAF animation, `ai-tags` staggered pop-in, `pricing-cards` monthly/yearly toggle, `reveal` fade-in) and a shared `useInView` hook (`src/hooks/use-in-view.ts`); content (`FEATURES`, `MOCK_NAV`, `MOCK_ITEMS`, `AI_CAPABILITIES`, `AI_TAGS`, `PRICING_PLANS`, `TYPE_COLORS` matching the seeded item types) and auth-aware links (`getHomepageLinks`: signed-out CTAs go to `/register`, signed-in to `/dashboard`, Pro upgrade to `/settings` until Stripe exists; footer only links existing pages) in `src/lib/homepage.ts`; header always shows Sign In / Get Started (`NAV_ACTIONS`); pure icon physics (`createChaosBody`, `stepChaosBody`, `chaosTransform`) in `src/lib/chaos-physics.ts`; arrow-pulse keyframes and homepage-scoped smooth scrolling in `globals.css`; reduced motion respected; brand icons reuse the prototype's inline SVGs since `lucide-react` 1.x dropped brand icons; the app top bar logo now links to `/`; unit tests for the physics, pricing plans, and links
+- **2026-11-25** — Responsive top bar complete: the dashboard top bar no longer overflows on small screens (at 375px it needed 532px because the `flex-1` search wrapper's default `min-width: auto` held it at 286px); search wrapper gets `min-w-0` and the actions group `shrink-0`; below `sm` the search is a right-aligned magnifier icon button opening the same Cmd+K palette and the "DevStash" wordmark is hidden (DS mark stays); `sm`–`md` shows a shorter "Search..." placeholder; below `md` New Collection and New Item are square icon-only buttons (`ICON_ONLY_BELOW_MD`) via a new optional `labelClassName` prop on `CreateItemButton` (default `hidden sm:inline` keeps `/items/[type]` headers unchanged) and `CreateCollectionButton` (label always shown by default, so `/collections` is unchanged), both now with `aria-label` and `title`; Favorites star stays visible at all widths since the sidebar has no `/favorites` link; desktop unchanged
