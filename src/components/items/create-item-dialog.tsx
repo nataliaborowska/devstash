@@ -281,9 +281,16 @@ interface CreateItemButtonProps {
   type?: CreatableItemType;
   label?: string;
   className?: string;
+  /** Classes for the text label, e.g. to hide it below a breakpoint. */
+  labelClassName?: string;
 }
 
-export function CreateItemButton({ type, label = "New Item", className }: CreateItemButtonProps) {
+export function CreateItemButton({
+  type,
+  label = "New Item",
+  className,
+  labelClassName = "hidden sm:inline",
+}: CreateItemButtonProps) {
   const { openCreateItem } = useCreateItem();
 
   return (
@@ -292,9 +299,10 @@ export function CreateItemButton({ type, label = "New Item", className }: Create
       className={cn("h-8 gap-1.5 text-xs", className)}
       onClick={() => openCreateItem(type)}
       aria-label={label}
+      title={label}
     >
       <Plus className="h-3.5 w-3.5" />
-      <span className="hidden sm:inline">{label}</span>
+      <span className={labelClassName}>{label}</span>
     </Button>
   );
 }

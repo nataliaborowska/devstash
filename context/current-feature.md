@@ -1,16 +1,26 @@
-# Current Feature
-
-<!-- Describe the current feature being worked on -->
+# Current Feature: Responsive Top Bar
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Dashboard top bar never overflows the viewport (no horizontal page scroll at 320px+)
+- Search wrapper gets `min-w-0` so it can shrink; actions group gets `shrink-0`
+- Below `sm`: search is an icon-only button (magnifier) that opens the same Cmd+K palette
+- Below `md`: search placeholder shortened to "Search..."; full "Search items and collections..." from `md` up
+- Below `sm`: "DevStash" wordmark hidden, only the "DS" logo mark shows
+- Below `md`: "New Item" and "New Collection" are icon-only buttons (with `aria-label` and `title`)
+- Favorites star stays visible at all widths (the sidebar has no `/favorites` link, so it's the only entry point)
+- Desktop (`lg+`) layout unchanged
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Found via Playwright: at 375px the header needed 532px (Favorites/New Item off-screen), at 700px 728px ("New Item" clipped); root cause is the `flex-1` search wrapper's default `min-width: auto` holding it at 286px
+- Files: `src/components/layout/top-bar.tsx`, `src/components/layout/global-search.tsx`, `src/components/items/create-item-dialog.tsx` (`CreateItemButton`), `src/components/collections/create-collection-dialog.tsx` (`CreateCollectionButton`)
+- `CreateItemButton` is also used in `/items/[type]` page headers; keep its label behavior there unchanged (top bar opts in via a prop/className)
+- UI-only change; no server actions or utilities expected
 
 ## History
 

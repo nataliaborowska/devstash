@@ -95,9 +95,11 @@ function CreateCollectionForm({ onCreated, onPendingChange }: CreateCollectionFo
 
 interface CreateCollectionButtonProps {
   className?: string;
+  /** Classes for the text label, e.g. to hide it below a breakpoint. */
+  labelClassName?: string;
 }
 
-export function CreateCollectionButton({ className }: CreateCollectionButtonProps) {
+export function CreateCollectionButton({ className, labelClassName }: CreateCollectionButtonProps) {
   const [open, setOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
@@ -114,9 +116,11 @@ export function CreateCollectionButton({ className }: CreateCollectionButtonProp
         size="sm"
         className={cn("h-8 gap-1.5 text-xs", className)}
         onClick={() => setOpen(true)}
+        aria-label="New Collection"
+        title="New Collection"
       >
         <FolderPlus className="h-3.5 w-3.5" />
-        New Collection
+        <span className={labelClassName}>New Collection</span>
       </Button>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">

@@ -56,10 +56,12 @@ export function GlobalSearch({ items }: GlobalSearchProps) {
         onClick={() => setOpen(true)}
         aria-label="Search items and collections"
         aria-keyshortcuts="Meta+K Control+K"
-        className="relative flex h-8 w-full items-center rounded-md bg-muted pl-9 pr-12 text-left text-sm text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        title="Search (⌘K)"
+        className="relative flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-ring sm:w-full sm:justify-start sm:bg-muted sm:pl-9 sm:pr-12 sm:text-left sm:text-sm"
       >
-        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2" />
-        <span className="truncate">Search items and collections...</span>
+        <Search className="h-4 w-4 sm:absolute sm:left-3 sm:top-1/2 sm:h-3.5 sm:w-3.5 sm:-translate-y-1/2" />
+        <span className="hidden truncate sm:inline md:hidden">Search...</span>
+        <span className="hidden truncate md:inline">Search items and collections...</span>
         <kbd className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-[10px] sm:inline-flex">
           ⌘K
         </kbd>
