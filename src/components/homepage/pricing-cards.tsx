@@ -33,7 +33,7 @@ export function PricingCards({ planLinks }: PricingCardsProps) {
             aria-pressed={billing === option.value}
             onClick={() => setBilling(option.value)}
             className={cn(
-              "flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
+              "flex min-h-11 items-center gap-2 rounded-full px-4 py-1.5 text-sm sm:min-h-0 font-medium transition-colors",
               billing === option.value ? "bg-violet-600 text-white" : "text-muted-foreground hover:text-foreground",
             )}
           >

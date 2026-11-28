@@ -7,7 +7,7 @@ import { ItemDrawerProvider } from "@/components/items/item-drawer-provider";
 import { TopBar } from "@/components/layout/top-bar";
 import { Sidebar, SidebarContent } from "@/components/layout/sidebar";
 import { EditorPreferencesProvider } from "@/components/settings/editor-preferences-context";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { ItemTypeWithCount, SearchItem } from "@/lib/db/items";
 import type { CollectionOption, CollectionWithStats } from "@/lib/db/collections";
 import type { SidebarUser } from "@/lib/db/users";
@@ -59,7 +59,16 @@ export function DashboardShell({
 
                 {/* Mobile drawer */}
                 <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                  <SheetContent side="left" className="w-64 p-0">
+                  <SheetContent side="left" className="w-64 gap-0 p-0">
+                    {/* Header row keeps the sheet's close button clear of the first nav group. */}
+                    <SheetHeader className="h-14 shrink-0 flex-row items-center border-b border-border px-4 pr-14">
+                      <SheetTitle className="flex items-center gap-2 text-sm font-semibold">
+                        <span className="flex size-6 items-center justify-center rounded-md bg-violet-600 text-[10px] font-bold leading-none text-white">
+                          DS
+                        </span>
+                        DevStash
+                      </SheetTitle>
+                    </SheetHeader>
                     <SidebarContent
                       user={user}
                       itemTypes={itemTypes}

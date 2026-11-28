@@ -9,8 +9,9 @@ const VARIANT_CLASSES = {
   ghost: buttonVariants({ variant: "ghost" }),
 };
 
+// The default size grows to a 44px touch target on mobile.
 const SIZE_CLASSES = {
-  default: "",
+  default: "h-11 px-4 sm:h-8 sm:px-2.5",
   lg: "h-11 px-6 text-base",
 };
 

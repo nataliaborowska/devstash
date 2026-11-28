@@ -20,6 +20,9 @@ import {
   URL_ITEM_TYPES as URL_TYPES,
 } from "@/lib/validations/items";
 
+// 44px touch targets on mobile, compact from sm up.
+const ACTION_BUTTON = "h-11 px-4 sm:h-7 sm:px-2.5";
+
 interface ItemEditFormProps {
   item: ItemDetailData;
   onCancel: () => void;
@@ -75,12 +78,17 @@ export function ItemEditForm({ item, onCancel, onSaved }: ItemEditFormProps) {
   return (
     <>
       {/* Action bar */}
-      <div className="flex items-center justify-end gap-2 border-y border-border px-4 py-2">
-        <Button variant="ghost" size="sm" onClick={onCancel} disabled={isSaving}>
+      <div className="flex items-center justify-end gap-2 border-y border-border px-2 py-1 sm:px-4 sm:py-2">
+        <Button variant="ghost" size="sm" className={ACTION_BUTTON} onClick={onCancel} disabled={isSaving}>
           <X />
           Cancel
         </Button>
-        <Button size="sm" onClick={handleSave} disabled={isSaving || title.trim() === ""}>
+        <Button
+          size="sm"
+          className={ACTION_BUTTON}
+          onClick={handleSave}
+          disabled={isSaving || title.trim() === ""}
+        >
           <Check />
           {isSaving ? "Saving..." : "Save"}
         </Button>

@@ -25,14 +25,14 @@ export function StatsCards({
       {stats.map(({ label, value, icon: Icon, color }) => (
         <div
           key={label}
-          className="rounded-lg border border-border bg-card p-4 flex items-center gap-3"
+          className="rounded-lg border border-border bg-card p-3 sm:p-4 flex items-center gap-2 sm:gap-3"
         >
-          <div className="rounded-md bg-muted p-2 shrink-0">
+          <div className="hidden sm:block rounded-md bg-muted p-2 shrink-0">
             <Icon className={`h-4 w-4 ${color}`} />
           </div>
           <div className="min-w-0">
             <p className="text-2xl font-bold tabular-nums">{value}</p>
-            <p className="text-xs text-muted-foreground truncate">{label}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">{label}</p>
           </div>
         </div>
       ))}

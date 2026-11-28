@@ -17,10 +17,13 @@ export function HomepageFooter({ columns }: HomepageFooterProps) {
         {columns.map((column) => (
           <div key={column.title}>
             <h4 className="mb-3 text-sm font-semibold">{column.title}</h4>
-            <ul className="space-y-2">
+            <ul className="sm:space-y-2">
               {column.links.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  <Link
+                    href={link.href}
+                    className="inline-flex min-h-11 items-center text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-0"
+                  >
                     {link.label}
                   </Link>
                 </li>

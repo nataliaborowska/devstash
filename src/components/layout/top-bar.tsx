@@ -8,8 +8,9 @@ import { GlobalSearch } from "@/components/layout/global-search";
 import { Button } from "@/components/ui/button";
 import type { SearchItem } from "@/lib/db/items";
 
-// Square 32px icon buttons on small screens, labelled buttons from md up.
-const ICON_ONLY_BELOW_MD = "w-8 px-0 md:w-auto md:px-2.5";
+// Square 44px icon buttons (touch targets) on small screens, 32px labelled buttons from md up.
+const ICON_ONLY_BELOW_MD = "size-11 px-0 md:h-8 md:w-auto md:px-2.5";
+const ICON_BUTTON = "size-11 shrink-0 md:size-8";
 
 interface TopBarProps {
   searchItems: SearchItem[];
@@ -23,7 +24,7 @@ export function TopBar({ searchItems, onMobileMenuOpen }: TopBarProps) {
       <Button
         variant="ghost"
         size="icon"
-        className="h-7 w-7 shrink-0 lg:hidden"
+        className={`${ICON_BUTTON} -ml-1.5 lg:hidden`}
         onClick={onMobileMenuOpen}
         aria-label="Open navigation"
       >
@@ -33,7 +34,7 @@ export function TopBar({ searchItems, onMobileMenuOpen }: TopBarProps) {
       {/* Logo */}
       <Link
         href="/"
-        className="flex items-center gap-2 shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="flex min-h-11 min-w-11 items-center gap-2 shrink-0 rounded-md md:min-h-0 md:min-w-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       >
         <div className="h-6 w-6 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
           <span className="text-[10px] font-bold text-white leading-none">DS</span>
@@ -51,7 +52,7 @@ export function TopBar({ searchItems, onMobileMenuOpen }: TopBarProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className={ICON_BUTTON}
           nativeButton={false}
           render={<Link href="/favorites" aria-label="Favorites" title="Favorites" />}
         >

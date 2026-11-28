@@ -17,6 +17,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 
+// Solid red with white text: the default destructive variant's red-on-dark-red is about 3:1 contrast.
+const SOLID_DESTRUCTIVE =
+  "bg-red-600 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 focus-visible:ring-red-500/40";
+
 interface DeleteItemDialogProps {
   itemId: string;
   itemTitle: string;
@@ -47,7 +51,11 @@ export function DeleteItemDialog({ itemId, itemTitle, onDeleted }: DeleteItemDia
     <AlertDialog open={open} onOpenChange={(next) => !isPending && setOpen(next)}>
       <AlertDialogTrigger
         render={
-          <Button variant="ghost" size="icon-sm" className="text-destructive hover:text-destructive" />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="size-11 text-destructive hover:text-destructive sm:size-7"
+          />
         }
       >
         <Trash2 />
@@ -63,7 +71,7 @@ export function DeleteItemDialog({ itemId, itemTitle, onDeleted }: DeleteItemDia
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
-          <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
+          <Button variant="destructive" className={SOLID_DESTRUCTIVE} onClick={handleDelete} disabled={isPending}>
             {isPending ? "Deleting..." : "Delete"}
           </Button>
         </AlertDialogFooter>

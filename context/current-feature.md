@@ -1,16 +1,28 @@
 # Current Feature
 
-<!-- Describe the current feature being worked on -->
+Mobile UI Fixes — fixes from the ui-reviewer audit of the homepage, dashboard, and item drawer.
 
 ## Status
 
+In Progress — implemented; tests (314), lint, and build pass; verified in the browser at 375px and 1440px.
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Homepage at 375px no longer scrolls horizontally (AI section grid gets `grid-cols-1` + `min-w-0` children)
+- 44px touch targets on mobile: dashboard top bar (hamburger, logo, search, favorites, New Collection, New Item), collection card actions menu (also visible on touch, below `md`), item drawer action bar (icon-only below `sm`, labels kept as sr-only), drawer Delete trigger and sheet Close button, edit-mode Save/Cancel; editor copy buttons 40px
+- Homepage mobile touch targets: `LinkButton` default size, Monthly/Yearly toggle, and footer links are 44px tall below `sm`
+- Dashboard stat labels no longer truncate at 375px (icon box hidden below `sm`, labels wrap to two lines)
+- Dashboard Pinned and Recent items use a 1/2/3-column grid (`md`/`lg`) like `/items/[type]`, with the loading skeleton matched
+- Mobile sidebar sheet gets a DevStash header row so the close button no longer overlaps the "Types" group (also gives the sheet a title)
+- Code editor capped at 240px and Markdown editor/preview at `max-h-60` below `sm`, reducing nested scrolling in the drawer
+- Delete item dialog's confirm button is solid red with white text for contrast
+- Hero paragraph uses `text-balance`
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Review item 10 (Monaco editor missing an accessible label) was a false positive: Monaco's editing surface is a `role="textbox"` with the `ariaLabel` we pass; the unlabelled textarea is an `aria-hidden`, non-focusable IME helper. No change.
+- UI-only changes; no server actions or utilities changed, so no new unit tests.
+- Collection and account delete dialogs still use the default destructive button style.
 
 ## History
 

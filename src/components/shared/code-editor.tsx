@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import type { EditorTheme } from "@/lib/validations/editor-preferences";
 
 const MAX_HEIGHT = 400;
+// Shorter cap below Tailwind's sm breakpoint so a swipe over the editor rarely traps the drawer scroll.
+const MOBILE_MAX_HEIGHT = 240;
+const MOBILE_QUERY = "(max-width: 639px)";
 const READ_ONLY_MIN_HEIGHT = 40;
 const EDIT_MIN_HEIGHT = 160;
 const LINE_HEIGHT_RATIO = 1.5;
@@ -48,12 +51,16 @@ export function CodeEditor({
   const monacoLanguage = toMonacoLanguage(language, fallbackLanguage);
   const languageLabel = language?.trim() || (fallbackLanguage === "plaintext" ? "text" : fallbackLanguage);
 
-  // Grow with the content up to MAX_HEIGHT, then scroll inside the editor.
+  // Grow with the content up to the max height, then scroll inside the editor.
   const handleMount: OnMount = (editor) => {
+    const mobile = window.matchMedia(MOBILE_QUERY);
     const fitToContent = () => {
-      setHeight(Math.min(Math.max(editor.getContentHeight(), minHeight), MAX_HEIGHT));
+      const maxHeight = mobile.matches ? MOBILE_MAX_HEIGHT : MAX_HEIGHT;
+      setHeight(Math.min(Math.max(editor.getContentHeight(), minHeight), maxHeight));
     };
     editor.onDidContentSizeChange(fitToContent);
+    mobile.addEventListener("change", fitToContent);
+    editor.onDidDispose(() => mobile.removeEventListener("change", fitToContent));
     fitToContent();
   };
 
@@ -81,6 +88,7 @@ export function CodeEditor({
             type="button"
             variant="ghost"
             size="icon-xs"
+            className="size-10 sm:size-6"
             onClick={handleCopy}
             disabled={value === ""}
             aria-label="Copy code"

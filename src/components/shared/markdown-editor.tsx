@@ -81,7 +81,7 @@ export function MarkdownEditor({
           onClick={handleCopy}
           disabled={value === ""}
           aria-label="Copy content"
-          className="ml-auto"
+          className="ml-auto size-10 sm:size-6"
         >
           <Copy />
         </Button>
@@ -95,10 +95,10 @@ export function MarkdownEditor({
           aria-label={id ? undefined : ariaLabel}
           placeholder={placeholder}
           spellCheck={false}
-          className="scrollbar-thin block field-sizing-content max-h-[400px] min-h-40 w-full resize-none bg-transparent px-4 py-3 font-mono text-xs leading-relaxed outline-none placeholder:text-muted-foreground"
+          className="scrollbar-thin block field-sizing-content max-h-60 min-h-40 sm:max-h-[400px] w-full resize-none bg-transparent px-4 py-3 font-mono text-xs leading-relaxed outline-none placeholder:text-muted-foreground"
         />
       ) : (
-        <div className={cn("scrollbar-thin max-h-[400px] overflow-auto px-4 py-3", !readOnly && "min-h-40")}>
+        <div className={cn("scrollbar-thin max-h-60 overflow-auto px-4 py-3 sm:max-h-[400px]", !readOnly && "min-h-40")}>
           {value.trim() ? (
             <div className="markdown-preview">
               <ReactMarkdown remarkPlugins={[remarkGfm]} components={MARKDOWN_COMPONENTS}>
