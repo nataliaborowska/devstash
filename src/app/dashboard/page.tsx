@@ -60,7 +60,7 @@ export default async function DashboardPage() {
       {pinnedItems.length > 0 && (
         <section>
           <h2 className="text-base font-semibold mb-4">Pinned</h2>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {pinnedItems.map((item) => (
               <ItemCard key={item.id} item={item} />
             ))}
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
             View all
           </Link>
         </div>
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {recentItems.map((item) => (
             <ItemCard key={item.id} item={item} />
           ))}

@@ -13,8 +13,8 @@ const NUMBER = "text-orange-400";
 export function AiSection() {
   return (
     <section className="border-y border-border bg-card/30 py-24">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
-        <Reveal>
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
+        <Reveal className="min-w-0">
           <Badge className="mb-4 border-violet-500/30 bg-violet-500/10 text-violet-300">Pro Feature</Badge>
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Let AI do the organizing</h2>
           <p className="mt-4 mb-8 text-muted-foreground">
@@ -23,7 +23,7 @@ export function AiSection() {
           <Checklist items={AI_CAPABILITIES} />
         </Reveal>
 
-        <Reveal>
+        <Reveal className="min-w-0">
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
             <div className="flex items-center gap-1.5 border-b border-border px-4 py-3">
               <span className="size-3 rounded-full bg-red-500/80" />

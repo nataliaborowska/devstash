@@ -37,7 +37,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
         </div>
         <CollectionActionsMenu
           collection={collection}
-          className="relative z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100"
+          className="relative z-10 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100"
         />
       </div>
 

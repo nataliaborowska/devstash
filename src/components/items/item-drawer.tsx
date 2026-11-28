@@ -26,6 +26,11 @@ export type ItemDetailData = Omit<ItemDetail, "createdAt" | "updatedAt" | "lastU
   lastUsedAt: string | null;
 };
 
+// Action bar buttons are 44px icon-only touch targets on mobile and labelled from sm up. The
+// label stays in the DOM as sr-only text so each button keeps its accessible name.
+const ACTION_BUTTON = "size-11 px-0 sm:h-7 sm:w-auto sm:px-2.5";
+const ACTION_LABEL = "sr-only sm:not-sr-only";
+
 // The provider's state setter: accepts a full item or an updater function.
 type ItemUpdater = Dispatch<SetStateAction<ItemDetailData | null>>;
 
@@ -54,7 +59,7 @@ export function ItemDrawer({ open, onOpenChange, item, error, onItemUpdated, onI
             onItemDeleted={onItemDeleted}
           />
         ) : error ? (
-          <SheetHeader className="pr-12">
+          <SheetHeader className="pr-14 sm:pr-12">
             <SheetTitle>Couldn&apos;t load item</SheetTitle>
             <p className="text-sm text-muted-foreground">{error}</p>
           </SheetHeader>
@@ -95,7 +100,7 @@ function ItemDetailView({ item, onItemUpdated, onItemDeleted }: ItemDetailViewPr
   return (
     <>
       {/* Header */}
-      <SheetHeader className="flex-row items-start gap-3 p-5 pr-12">
+      <SheetHeader className="flex-row items-start gap-3 p-5 pr-14 sm:pr-12">
         <div className="shrink-0 h-11 w-11 rounded-md flex items-center justify-center bg-muted">
           <TypeIcon
             name={item.type.icon}
@@ -172,34 +177,34 @@ function ItemDetailBody({
   return (
     <>
       {/* Action bar */}
-      <div className="flex items-center gap-1 border-y border-border px-4 py-2">
+      <div className="flex items-center gap-1 border-y border-border px-2 py-1 sm:px-4 sm:py-2">
         <Button
           variant="ghost"
           size="sm"
           aria-pressed={favorite.isFavorite}
           onClick={favorite.toggle}
-          className={cn(favorite.isFavorite && "text-yellow-400 hover:text-yellow-400")}
+          className={cn(ACTION_BUTTON, favorite.isFavorite && "text-yellow-400 hover:text-yellow-400")}
         >
           <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
-          Favorite
+          <span className={ACTION_LABEL}>Favorite</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           aria-pressed={pin.value}
           onClick={pin.toggle}
-          className={cn(pin.value && "text-violet-400 hover:text-violet-400")}
+          className={cn(ACTION_BUTTON, pin.value && "text-violet-400 hover:text-violet-400")}
         >
           <Pin className={cn(pin.value && "fill-violet-400")} />
-          Pin
+          <span className={ACTION_LABEL}>Pin</span>
         </Button>
-        <Button variant="ghost" size="sm" onClick={onCopy} disabled={!copyText}>
+        <Button variant="ghost" size="sm" className={ACTION_BUTTON} onClick={onCopy} disabled={!copyText}>
           <Copy />
-          Copy
+          <span className={ACTION_LABEL}>Copy</span>
         </Button>
-        <Button variant="ghost" size="sm" className="ml-auto" onClick={onEdit}>
+        <Button variant="ghost" size="sm" className={cn(ACTION_BUTTON, "ml-auto")} onClick={onEdit}>
           <Pencil />
-          Edit
+          <span className={ACTION_LABEL}>Edit</span>
         </Button>
         <DeleteItemDialog itemId={item.id} itemTitle={item.title} onDeleted={onDeleted} />
       </div>

@@ -29,7 +29,7 @@ export function HeroSection({ primaryLink }: HeroSectionProps) {
               Developer Knowledge
             </span>
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-balance text-muted-foreground">
             Snippets in VS Code, prompts in chat history, commands in bash history, links buried in bookmarks.
             DevStash brings it all into one fast, searchable, AI-enhanced hub.
           </p>

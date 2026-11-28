@@ -38,7 +38,8 @@ export function CollectionActionsMenu({ collection, className }: CollectionActio
         <DropdownMenuTrigger
           aria-label={`Actions for ${collection.name}`}
           className={cn(
-            "shrink-0 p-0.5 rounded hover:bg-muted transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+            // 44px touch target on mobile; the negative margin keeps the card layout unchanged.
+            "shrink-0 -m-3.5 p-3.5 md:m-0 md:p-0.5 rounded hover:bg-muted transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
             className
           )}
         >

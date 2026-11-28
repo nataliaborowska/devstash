@@ -57,7 +57,7 @@ export function GlobalSearch({ items }: GlobalSearchProps) {
         aria-label="Search items and collections"
         aria-keyshortcuts="Meta+K Control+K"
         title="Search (⌘K)"
-        className="relative flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-ring sm:w-full sm:justify-start sm:bg-muted sm:pl-9 sm:pr-12 sm:text-left sm:text-sm"
+        className="relative flex size-11 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted focus-visible:ring-1 focus-visible:ring-ring sm:h-8 sm:w-full sm:justify-start sm:bg-muted sm:pl-9 sm:pr-12 sm:text-left sm:text-sm"
       >
         <Search className="h-4 w-4 sm:absolute sm:left-3 sm:top-1/2 sm:h-3.5 sm:w-3.5 sm:-translate-y-1/2" />
         <span className="hidden truncate sm:inline md:hidden">Search...</span>

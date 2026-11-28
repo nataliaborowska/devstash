@@ -33,11 +33,11 @@ export default function DashboardLoading() {
       {/* Recent Items */}
       <section>
         <div className="h-5 w-32 rounded bg-muted mb-4" />
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-lg border border-border bg-card h-[72px]"
+              className="rounded-lg border border-border bg-card h-[96px]"
             />
           ))}
         </div>
