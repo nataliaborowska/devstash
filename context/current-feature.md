@@ -1,29 +1,16 @@
-# Current Feature: Auth Nav & Logo
+# Current Feature
 
-Show the homepage top nav on the sign-in and register pages, and use the homepage's gradient Layers logo mark everywhere the old "DS" box appears.
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- `/sign-in` and `/register` show the same top nav as the homepage (`HomepageNav`: logo, Features/Pricing links, Sign In / Get Started buttons)
-- Nav links work off the homepage: Features/Pricing point to `/#features` and `/#pricing` instead of bare `#` anchors
-- Auth page content sits below the fixed 64px nav (no overlap) and stays centered at 375px and desktop
-- Dashboard top bar logo uses the homepage logo mark (blue-to-violet gradient box with the Lucide `Layers` icon) instead of the violet "DS" box; "DevStash" wordmark behavior unchanged (hidden below `sm`)
-- Mobile sidebar sheet header uses the same mark instead of the "DS" box
-- `AuthCard`'s "DS" box above the title is replaced by the same mark (or removed, since the nav now shows the logo)
-- No "DS" text marks remain in the app
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Homepage logo lives in `src/components/homepage/logo.tsx` (mark + wordmark in one `Link`); extract a reusable `LogoMark` (size prop) so the top bar, sheet header, and `AuthCard` share it
-- "DS" box locations: `src/components/layout/top-bar.tsx`, `src/components/layout/dashboard-shell.tsx` (mobile sheet header), `src/components/auth/auth-card.tsx`
-- `HomepageNav` is used only in `src/app/page.tsx`; `NAV_LINKS` in `src/lib/homepage.ts` are `#features`/`#pricing` hash links, so off-homepage they need a `/` prefix (check `getHomepageLinks` unit tests if `NAV_LINKS` changes)
-- Optionally also add the nav to `/forgot-password` and `/reset-password` for consistency (not requested; confirm before doing)
-- Keep the 44px mobile touch targets from Mobile UI Fixes on the top bar logo
-- UI-only change; unit tests only if `src/lib/homepage.ts` changes
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -74,3 +61,4 @@ In Progress
 - **2026-11-25** — Homepage complete: public `/` marketing page ported from the prototype with Tailwind v4 and shadcn `Badge`/`buttonVariants`, replacing the placeholder; server sections in `src/components/homepage/` (`hero-section`, `dashboard-mockup`, `features-section`, `ai-section`, `pricing-section`, `cta-section`, `homepage-footer`, shared `logo`, `link-button`, `section-heading`, `checklist`) with small client leaves (`homepage-nav` scroll opacity via `useSyncExternalStore`, `chaos-icons` RAF animation, `ai-tags` staggered pop-in, `pricing-cards` monthly/yearly toggle, `reveal` fade-in) and a shared `useInView` hook (`src/hooks/use-in-view.ts`); content (`FEATURES`, `MOCK_NAV`, `MOCK_ITEMS`, `AI_CAPABILITIES`, `AI_TAGS`, `PRICING_PLANS`, `TYPE_COLORS` matching the seeded item types) and auth-aware links (`getHomepageLinks`: signed-out CTAs go to `/register`, signed-in to `/dashboard`, Pro upgrade to `/settings` until Stripe exists; footer only links existing pages) in `src/lib/homepage.ts`; header always shows Sign In / Get Started (`NAV_ACTIONS`); pure icon physics (`createChaosBody`, `stepChaosBody`, `chaosTransform`) in `src/lib/chaos-physics.ts`; arrow-pulse keyframes and homepage-scoped smooth scrolling in `globals.css`; reduced motion respected; brand icons reuse the prototype's inline SVGs since `lucide-react` 1.x dropped brand icons; the app top bar logo now links to `/`; unit tests for the physics, pricing plans, and links
 - **2026-11-25** — Responsive top bar complete: the dashboard top bar no longer overflows on small screens (at 375px it needed 532px because the `flex-1` search wrapper's default `min-width: auto` held it at 286px); search wrapper gets `min-w-0` and the actions group `shrink-0`; below `sm` the search is a right-aligned magnifier icon button opening the same Cmd+K palette and the "DevStash" wordmark is hidden (DS mark stays); `sm`–`md` shows a shorter "Search..." placeholder; below `md` New Collection and New Item are square icon-only buttons (`ICON_ONLY_BELOW_MD`) via a new optional `labelClassName` prop on `CreateItemButton` (default `hidden sm:inline` keeps `/items/[type]` headers unchanged) and `CreateCollectionButton` (label always shown by default, so `/collections` is unchanged), both now with `aria-label` and `title`; Favorites star stays visible at all widths since the sidebar has no `/favorites` link; desktop unchanged
 - **2026-11-28** — Mobile UI fixes complete (from the ui-reviewer audit): homepage no longer scrolls horizontally at 375px (AI section `grid-cols-1` + `min-w-0`); 44px touch targets on mobile for the dashboard top bar, collection card actions menu (now visible on touch below `md`), item drawer action bar (icon-only below `sm`, sr-only labels), drawer Delete and sheet Close buttons, edit-mode Save/Cancel, homepage `LinkButton`, Monthly/Yearly toggle, and footer links (editor copy buttons 40px); dashboard stat labels wrap instead of truncating (icon box hidden below `sm`); dashboard Pinned and Recent items use a 1/2/3-column grid with a matching skeleton; mobile sidebar sheet has a DevStash header row (and title) so Close no longer overlaps "Types"; code editor capped at 240px and Markdown editor/preview at `max-h-60` below `sm`; delete item confirm button is solid red; hero paragraph uses `text-balance`; Monaco accessible-label finding was a false positive; added the `ui-reviewer` agent (`.claude/agents/ui-reviewer.md`)
+- **2026-11-28** — Auth nav & logo complete: `/sign-in` and `/register` show the homepage top nav via a new `AuthPageShell` (`src/components/auth/auth-page-shell.tsx`, content offset below the fixed 64px nav); homepage `NAV_LINKS` and footer Features/Pricing links now use `/#features` and `/#pricing` so they work from any page; new shared `LogoMark` (`src/components/shared/logo-mark.tsx`, gradient blue-to-violet box with the Lucide `Layers` icon, `sm`/`md`/`lg` sizes) replaces the violet "DS" box in the dashboard top bar, mobile sidebar sheet header, and `AuthCard`, and is reused by the homepage `Logo`; `/forgot-password` and `/reset-password` keep the card mark without the nav; links unit test updated
