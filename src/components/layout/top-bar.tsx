@@ -5,6 +5,7 @@ import { Menu, Star } from "lucide-react";
 import { CreateCollectionButton } from "@/components/collections/create-collection-dialog";
 import { CreateItemButton } from "@/components/items/create-item-dialog";
 import { GlobalSearch } from "@/components/layout/global-search";
+import { LogoMark } from "@/components/shared/logo-mark";
 import { Button } from "@/components/ui/button";
 import type { SearchItem } from "@/lib/db/items";
 
@@ -36,9 +37,7 @@ export function TopBar({ searchItems, onMobileMenuOpen }: TopBarProps) {
         href="/"
         className="flex min-h-11 min-w-11 items-center gap-2 shrink-0 rounded-md md:min-h-0 md:min-w-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       >
-        <div className="h-6 w-6 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
-          <span className="text-[10px] font-bold text-white leading-none">DS</span>
-        </div>
+        <LogoMark size="sm" />
         <span className="hidden text-sm font-semibold tracking-tight sm:inline">DevStash</span>
       </Link>
 

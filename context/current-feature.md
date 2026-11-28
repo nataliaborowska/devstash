@@ -1,16 +1,29 @@
-# Current Feature
+# Current Feature: Auth Nav & Logo
 
-<!-- Describe the current feature being worked on -->
+Show the homepage top nav on the sign-in and register pages, and use the homepage's gradient Layers logo mark everywhere the old "DS" box appears.
 
 ## Status
 
+In Progress
+
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- `/sign-in` and `/register` show the same top nav as the homepage (`HomepageNav`: logo, Features/Pricing links, Sign In / Get Started buttons)
+- Nav links work off the homepage: Features/Pricing point to `/#features` and `/#pricing` instead of bare `#` anchors
+- Auth page content sits below the fixed 64px nav (no overlap) and stays centered at 375px and desktop
+- Dashboard top bar logo uses the homepage logo mark (blue-to-violet gradient box with the Lucide `Layers` icon) instead of the violet "DS" box; "DevStash" wordmark behavior unchanged (hidden below `sm`)
+- Mobile sidebar sheet header uses the same mark instead of the "DS" box
+- `AuthCard`'s "DS" box above the title is replaced by the same mark (or removed, since the nav now shows the logo)
+- No "DS" text marks remain in the app
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Homepage logo lives in `src/components/homepage/logo.tsx` (mark + wordmark in one `Link`); extract a reusable `LogoMark` (size prop) so the top bar, sheet header, and `AuthCard` share it
+- "DS" box locations: `src/components/layout/top-bar.tsx`, `src/components/layout/dashboard-shell.tsx` (mobile sheet header), `src/components/auth/auth-card.tsx`
+- `HomepageNav` is used only in `src/app/page.tsx`; `NAV_LINKS` in `src/lib/homepage.ts` are `#features`/`#pricing` hash links, so off-homepage they need a `/` prefix (check `getHomepageLinks` unit tests if `NAV_LINKS` changes)
+- Optionally also add the nav to `/forgot-password` and `/reset-password` for consistency (not requested; confirm before doing)
+- Keep the 44px mobile touch targets from Mobile UI Fixes on the top bar logo
+- UI-only change; unit tests only if `src/lib/homepage.ts` changes
 
 ## History
 

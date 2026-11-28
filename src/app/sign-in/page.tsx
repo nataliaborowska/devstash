@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AuthCard } from "@/components/auth/auth-card";
+import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { getSafeCallbackUrl } from "@/lib/safe-redirect";
 
@@ -35,8 +36,10 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const initialSuccess = getSuccessMessage(params);
 
   return (
-    <AuthCard title="Sign in to DevStash" description="Welcome back. Pick up where you left off.">
-      <SignInForm callbackUrl={callbackUrl} initialError={initialError} initialSuccess={initialSuccess} />
-    </AuthCard>
+    <AuthPageShell>
+      <AuthCard title="Sign in to DevStash" description="Welcome back. Pick up where you left off.">
+        <SignInForm callbackUrl={callbackUrl} initialError={initialError} initialSuccess={initialSuccess} />
+      </AuthCard>
+    </AuthPageShell>
   );
 }
