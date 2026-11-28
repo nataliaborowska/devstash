@@ -1,28 +1,16 @@
 # Current Feature
 
-Mobile UI Fixes — fixes from the ui-reviewer audit of the homepage, dashboard, and item drawer.
+<!-- Describe the current feature being worked on -->
 
 ## Status
 
-In Progress — implemented; tests (314), lint, and build pass; verified in the browser at 375px and 1440px.
-
 ## Goals
 
-- Homepage at 375px no longer scrolls horizontally (AI section grid gets `grid-cols-1` + `min-w-0` children)
-- 44px touch targets on mobile: dashboard top bar (hamburger, logo, search, favorites, New Collection, New Item), collection card actions menu (also visible on touch, below `md`), item drawer action bar (icon-only below `sm`, labels kept as sr-only), drawer Delete trigger and sheet Close button, edit-mode Save/Cancel; editor copy buttons 40px
-- Homepage mobile touch targets: `LinkButton` default size, Monthly/Yearly toggle, and footer links are 44px tall below `sm`
-- Dashboard stat labels no longer truncate at 375px (icon box hidden below `sm`, labels wrap to two lines)
-- Dashboard Pinned and Recent items use a 1/2/3-column grid (`md`/`lg`) like `/items/[type]`, with the loading skeleton matched
-- Mobile sidebar sheet gets a DevStash header row so the close button no longer overlaps the "Types" group (also gives the sheet a title)
-- Code editor capped at 240px and Markdown editor/preview at `max-h-60` below `sm`, reducing nested scrolling in the drawer
-- Delete item dialog's confirm button is solid red with white text for contrast
-- Hero paragraph uses `text-balance`
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Review item 10 (Monaco editor missing an accessible label) was a false positive: Monaco's editing surface is a `role="textbox"` with the `ariaLabel` we pass; the unlabelled textarea is an `aria-hidden`, non-focusable IME helper. No change.
-- UI-only changes; no server actions or utilities changed, so no new unit tests.
-- Collection and account delete dialogs still use the default destructive button style.
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -72,3 +60,4 @@ In Progress — implemented; tests (314), lint, and build pass; verified in the 
 - **2026-11-25** — Homepage mockup complete: static dark-theme marketing prototype in `prototypes/homepage/` (`index.html`, `styles.css`, `script.js`) per `context/features/homepage-mockup-spec.md`, with fixed nav, gradient hero, "chaos to order" visual (floating icons that bounce and repel from the cursor, pulsing arrow, dashboard mockup), features, AI section, pricing with monthly/yearly toggle, CTA, footer, scroll fade-ins, and mobile stacking
 - **2026-11-25** — Homepage complete: public `/` marketing page ported from the prototype with Tailwind v4 and shadcn `Badge`/`buttonVariants`, replacing the placeholder; server sections in `src/components/homepage/` (`hero-section`, `dashboard-mockup`, `features-section`, `ai-section`, `pricing-section`, `cta-section`, `homepage-footer`, shared `logo`, `link-button`, `section-heading`, `checklist`) with small client leaves (`homepage-nav` scroll opacity via `useSyncExternalStore`, `chaos-icons` RAF animation, `ai-tags` staggered pop-in, `pricing-cards` monthly/yearly toggle, `reveal` fade-in) and a shared `useInView` hook (`src/hooks/use-in-view.ts`); content (`FEATURES`, `MOCK_NAV`, `MOCK_ITEMS`, `AI_CAPABILITIES`, `AI_TAGS`, `PRICING_PLANS`, `TYPE_COLORS` matching the seeded item types) and auth-aware links (`getHomepageLinks`: signed-out CTAs go to `/register`, signed-in to `/dashboard`, Pro upgrade to `/settings` until Stripe exists; footer only links existing pages) in `src/lib/homepage.ts`; header always shows Sign In / Get Started (`NAV_ACTIONS`); pure icon physics (`createChaosBody`, `stepChaosBody`, `chaosTransform`) in `src/lib/chaos-physics.ts`; arrow-pulse keyframes and homepage-scoped smooth scrolling in `globals.css`; reduced motion respected; brand icons reuse the prototype's inline SVGs since `lucide-react` 1.x dropped brand icons; the app top bar logo now links to `/`; unit tests for the physics, pricing plans, and links
 - **2026-11-25** — Responsive top bar complete: the dashboard top bar no longer overflows on small screens (at 375px it needed 532px because the `flex-1` search wrapper's default `min-width: auto` held it at 286px); search wrapper gets `min-w-0` and the actions group `shrink-0`; below `sm` the search is a right-aligned magnifier icon button opening the same Cmd+K palette and the "DevStash" wordmark is hidden (DS mark stays); `sm`–`md` shows a shorter "Search..." placeholder; below `md` New Collection and New Item are square icon-only buttons (`ICON_ONLY_BELOW_MD`) via a new optional `labelClassName` prop on `CreateItemButton` (default `hidden sm:inline` keeps `/items/[type]` headers unchanged) and `CreateCollectionButton` (label always shown by default, so `/collections` is unchanged), both now with `aria-label` and `title`; Favorites star stays visible at all widths since the sidebar has no `/favorites` link; desktop unchanged
+- **2026-11-28** — Mobile UI fixes complete (from the ui-reviewer audit): homepage no longer scrolls horizontally at 375px (AI section `grid-cols-1` + `min-w-0`); 44px touch targets on mobile for the dashboard top bar, collection card actions menu (now visible on touch below `md`), item drawer action bar (icon-only below `sm`, sr-only labels), drawer Delete and sheet Close buttons, edit-mode Save/Cancel, homepage `LinkButton`, Monthly/Yearly toggle, and footer links (editor copy buttons 40px); dashboard stat labels wrap instead of truncating (icon box hidden below `sm`); dashboard Pinned and Recent items use a 1/2/3-column grid with a matching skeleton; mobile sidebar sheet has a DevStash header row (and title) so Close no longer overlaps "Types"; code editor capped at 240px and Markdown editor/preview at `max-h-60` below `sm`; delete item confirm button is solid red; hero paragraph uses `text-balance`; Monaco accessible-label finding was a false positive; added the `ui-reviewer` agent (`.claude/agents/ui-reviewer.md`)
