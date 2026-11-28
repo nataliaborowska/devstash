@@ -169,8 +169,8 @@ export interface HomepageLinks {
   footer: { title: string; links: HomepageLink[] }[];
 }
 
-const FEATURES_LINK: HomepageLink = { label: "Features", href: `#${SECTION_IDS.features}` };
-const PRICING_LINK: HomepageLink = { label: "Pricing", href: `#${SECTION_IDS.pricing}` };
+const FEATURES_LINK: HomepageLink = { label: "Features", href: `/#${SECTION_IDS.features}` };
+const PRICING_LINK: HomepageLink = { label: "Pricing", href: `/#${SECTION_IDS.pricing}` };
 
 export const NAV_LINKS: HomepageLink[] = [FEATURES_LINK, PRICING_LINK];
 

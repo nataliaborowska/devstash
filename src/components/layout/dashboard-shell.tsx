@@ -7,6 +7,7 @@ import { ItemDrawerProvider } from "@/components/items/item-drawer-provider";
 import { TopBar } from "@/components/layout/top-bar";
 import { Sidebar, SidebarContent } from "@/components/layout/sidebar";
 import { EditorPreferencesProvider } from "@/components/settings/editor-preferences-context";
+import { LogoMark } from "@/components/shared/logo-mark";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { ItemTypeWithCount, SearchItem } from "@/lib/db/items";
 import type { CollectionOption, CollectionWithStats } from "@/lib/db/collections";
@@ -63,9 +64,7 @@ export function DashboardShell({
                     {/* Header row keeps the sheet's close button clear of the first nav group. */}
                     <SheetHeader className="h-14 shrink-0 flex-row items-center border-b border-border px-4 pr-14">
                       <SheetTitle className="flex items-center gap-2 text-sm font-semibold">
-                        <span className="flex size-6 items-center justify-center rounded-md bg-violet-600 text-[10px] font-bold leading-none text-white">
-                          DS
-                        </span>
+                        <LogoMark size="sm" />
                         DevStash
                       </SheetTitle>
                     </SheetHeader>

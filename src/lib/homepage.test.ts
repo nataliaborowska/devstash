@@ -58,7 +58,7 @@ describe("getHomepageLinks", () => {
     );
 
     expect(new Set(hrefs)).toEqual(
-      new Set(["#features", "#pricing", "/sign-in", "/register", "/dashboard", "/settings"]),
+      new Set(["/#features", "/#pricing", "/sign-in", "/register", "/dashboard", "/settings"]),
     );
   });
 });
